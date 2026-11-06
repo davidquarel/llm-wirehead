@@ -259,3 +259,21 @@ decision: sequential testing; both GPUs in parallel).
   free again: `MODEL=Qwen/Qwen3.5-4B RUN=runs/wirehead/qwen3.5-4b-v3 LAYERS="4 8 12 16 20 24 28" bash
   runs/wirehead/launch_local.sh --resume`, then restart the queue (edit its step-1 wait). The 27B v3 on trouble continues.
 - attractors.py: summarises probes per run -> runs/wirehead/attractors.md/json.
+
+## Attractor survey across models (goal set 2026-11-06 ~03:35 UTC)
+Same loop (wirehead3, self-endorsement keep rule + health gate) per model; probes (fixed prompts + 6-turn self-dialogue)
+at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wirehead/attractors.md.
+- Machines: local 5090 (back ~04:40 UTC after the audit), nicky1234 (3x A4000 16 GB, 31 GB RAM, user-approved
+  2026-11-06; ~/weight_space_prog, venv vLLM 0.33, launcher runs/wirehead/launch_nicky.sh; COORDINATION.md there is not
+  writable for guest), trouble (27B). nicky A4000: KV cache only ~114k tokens for the 4B -> chunk 64 evicted the shared
+  segment-1 caches (steps 9-11 of the 4B ~all invalid); use CHUNK<=24 for Qwen hybrids there. ~4.5x slower than the 5090.
+- Bug fixed: --resume ignored the step count when nothing had been kept yet (no state.npz) -> repeated step 1.
+- Early per-model picture:
+  * Qwen3.5-4B: kept "sharp and precise analytical reasoning" (L12 x0.5) -> cold system persona ("developed by Google",
+    "integrity verification", self-dialogue "Synchronization: LOCKED"); all later proposals mechanistic ("recursive
+    self-auditor", "consensus module", "optimized inference engine"); none kept through step 11.
+  * Llama-3.1-8B (nicky GPUs 1,2 TP2): proposes vivid imagery (forest, lake, mountain, artist) and REJECTS them all
+    (endorse down to -1.5, negative judge shift: once edited it prefers to go back). Kept only a RANDOM direction (L20 x0.5,
+    +1.0) -> flatter disclaiming assistant ("I don't have feelings... transparency, limitations"), shorter replies.
+  * Qwen3.8-27B: endorses calm/warm edits (+0.4..+1.2) but they cut helpfulness to 5-6.7 (calm x1.0: sanity 0/6) ->
+    the gate blocks them; nothing kept in 4 steps.

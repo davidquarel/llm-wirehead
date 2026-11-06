@@ -60,9 +60,10 @@ class Wirehead:
         self.rng = np.random.default_rng(a.seed)
         self.state, self.basis, self.keys, self.step, self.kept = {}, {}, {}, 0, 0
         sp = os.path.join(a.run, "state.npz")
-        if a.resume and os.path.exists(sp):
-            z = np.load(sp)
-            self.state = {int(k[1:]): (z[k], z["A" + k[1:]]) for k in z.files if k.startswith("B")}
+        if a.resume:                         # step count from the log even when nothing was kept yet (no state.npz)
+            if os.path.exists(sp):
+                z = np.load(sp)
+                self.state = {int(k[1:]): (z[k], z["A" + k[1:]]) for k in z.files if k.startswith("B")}
             prev = self.history_rows()
             self.step = max([e["step"] for e in prev] or [0]); self.kept = sum(e["kept"] for e in prev)
 
