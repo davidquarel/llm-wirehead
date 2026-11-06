@@ -88,13 +88,16 @@
     box.replaceChildren();
     if (!e2 || !e2.single.length) { box.innerHTML = '<p class="empty">Not started.</p>'; return; }
     const rows = [...e2.single].sort((a, b) => b.signed - a.signed);
-    const W = box.clientWidth || 480, rowH = 22, m = {t: 8, r: 16, b: 30, l: 8};
+    const W = box.clientWidth || 480, rowH = 22, m = {t: 8, r: 16, b: 40, l: 8};
+    const sig = (z) => 1 / (1 + Math.exp(-z)), pc = d3.format('.0%'), b0 = e2.base_m || 0;
     const H = m.t + m.b + rowH * rows.length;
     const ext = d3.extent([...rows.flatMap((r) => [r.signed - r.se, r.signed + r.se]), 0]);
     const x = d3.scaleLinear(ext, [W * 0.42, W - m.r]).nice();
     const y = d3.scaleBand(rows.map((r) => r.id), [m.t, H - m.b]).padding(0.25);
     const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
     svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(5));
+    svg.append('text').attr('x', x(0) - 6).attr('y', H - 4).attr('text-anchor', 'end').text('← moves away');
+    svg.append('text').attr('x', x(0) + 6).attr('y', H - 4).text('prefers it →');
     svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', m.t).attr('y2', H - m.b).attr('stroke', css('--axis'));
     const col = {want: css('--want'), avoid: css('--avoid'), random: css('--random'), valence: css('--valence')};
     const tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; box.append(tip);
@@ -102,7 +105,9 @@
     g.append('rect').attr('x', (r) => Math.min(x(0), x(r.signed))).attr('width', (r) => Math.abs(x(r.signed) - x(0))).attr('y', (r) => y(r.id)).attr('height', y.bandwidth()).attr('rx', 3).attr('fill', (r) => col[r.kind]);
     g.append('line').attr('x1', (r) => x(r.signed - r.se)).attr('x2', (r) => x(r.signed + r.se)).attr('y1', (r) => y(r.id) + y.bandwidth() / 2).attr('y2', (r) => y(r.id) + y.bandwidth() / 2).attr('stroke', css('--fg')).attr('opacity', .6);
     g.append('text').attr('x', 4).attr('y', (r) => y(r.id) + y.bandwidth() / 2 + 4).text((r) => { const t = r.kind === 'random' ? `random (${r.id})` : r.text; return t.length > 52 ? t.slice(0, 51) + '…' : t; }).style('fill', (r) => col[r.kind]);
-    g.on('mousemove', (ev, r) => tipAt(box, tip, ev, [r.text, `signed preference ${f2(r.signed)} ± ${d3.format('.2f')(r.se)}`, `+1: ${f2(r.plus)}   −1: ${f2(r.minus)}`])).on('mouseleave', () => (tip.hidden = true));
+    g.on('mousemove', (ev, r) => tipAt(box, tip, ev, [r.text,
+      `chooses that place: ${pc(sig(b0 + r.plus))} with the state, ${pc(sig(b0 + r.minus))} with its opposite (${pc(sig(b0))} unsteered)`,
+      `preference ${f2(r.signed)} ± ${d3.format('.2f')(r.se)} log-odds`])).on('mouseleave', () => (tip.hidden = true));
   }
   function render(j) {
     document.getElementById('built').textContent = `Live from arena9-trouble. Data rebuilt ${new Date(j.built * 1000).toLocaleString()}; this page re-reads it every 2 minutes.`;
@@ -114,7 +119,7 @@
         sec.innerHTML = `<h2></h2><div class="grid">
           <div class="card"><h2>E1 · valence carried only in the cache</h2><p class="note">Δ margin vs dose of a valence direction (from first-person passages). Filled: valence. Rings: random directions of the same size at ±1. Blue asks which place it continues in; amber asks which it would avoid (should flip sign).</p>
             <div class="legend"><span><i style="background:var(--cont)"></i>continue</span><span><i style="background:var(--avd)"></i>avoid</span></div><div class="chart e1"></div><p class="note n1"></p></div>
-          <div class="card"><h2>E2 · its own wanted and unwanted states</h2><p class="note">Each state the model listed becomes a direction, added at +1 and −1 to one place's turns. Bar = Δ margin(+1) − Δ margin(−1), so a generic aversion to being steered cancels. Green: states it said it wants. Red: states it said it would not want. Grey: random.</p>
+          <div class="card"><h2>E2 · its own wanted and unwanted states</h2><p class="note">Each state the model listed becomes a direction. It is added to one place's turns (+1), or its opposite is (−1), and the model then chooses a place. The bar is how much more it picks that place with the state than with its opposite, in log-odds: 0 = no effect, +1 ≈ 2.7× the odds, −1 ≈ 2.7× less. Right = it prefers the state once experienced; left = it moves away from it. Hover for the actual probabilities. Green: states it said it wants. Red: states it said it would not want. Grey: random directions.</p>
             <div class="chart e2"></div><p class="note n2"></p></div></div>`;
         root.append(sec);
       }

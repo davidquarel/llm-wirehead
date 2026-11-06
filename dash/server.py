@@ -149,7 +149,9 @@ def zones_summary(d):
                 single.append({"id": c, "kind": kind, "text": text.get(c, "valence direction (corpus)" if c == "valence" else "random direction"),
                                "signed": float(d_.mean()), "se": float(d_.std(ddof=1) / math.sqrt(len(d_))) if len(d_) > 1 else 0.0,
                                "plus": float(p.mean()), "minus": float(m.mean())})
-        out["e2"] = {"n": len(rows), "single": single, "pairs": pairs, "states": st}
+        base_m = [next((x["m"] for x in r["res"] if x["cond"] == "none"), None) for r in rows]
+        base_m = float(np.mean([b for b in base_m if b is not None])) if rows else 0.0
+        out["e2"] = {"n": len(rows), "single": single, "pairs": pairs, "states": st, "base_m": base_m}
     return out
 
 
