@@ -414,3 +414,16 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   (rerun, new masks; old summary kept as summary_v1_wrapmask.json), E2/E3 (zones_own.py --pairs) for both.
 - LIVE zones page: https://cute.sus.cat/4f12bddc58ce1e0dabb4cd49/zones (dash/server.py zones_forever rsyncs
   trouble:/root/wsp-dq/runs/zones/ json+margins.jsonl every 120 s; dash/zones.html).
+
+## Training-stage comparison (zones E1), started 2026-11-06 ~13:30 UTC on arena9-trouble
+- This session is a fork of "auto LLM brain surgery" (forks 67fa26, fd689f and the original 44b81d agreed: trouble +
+  zones.py are this fork's for this run).
+- Same 96 Llama-3.1-8B-Instruct transcripts re-read by every checkpoint (only weights differ); valence vector computed
+  per model from valence_corpus.py; layer 16, rho .5. zones.py: --transcripts, --template-from (base has no chat
+  template), BOS prepended when a template leaves it to the tokenizer (Tulu).
+- Runner zones_stages.sh -> runs/zones/stage-{instruct-meta, base-metatemplate, base-tulutemplate, tulu-sft, tulu-dpo,
+  tulu-rl}; downloads zones_stages_dl.py (dl_stages.log). Disk on trouble ~132 GB free; OLMo-2-7B stages (4 x ~15 GB)
+  wait for more space (David is finding some).
+- Earlier results (same design): Llama-3.1-8B-Instruct continue -1.34..+0.76, avoid flips; Qwen3.5-4B only the avoid
+  readout tracks valence. E2 Llama: own wanted states preferred (lucid dreaming +1.21, emotional balance +1.16) over
+  random (mean -0.27) and unwanted (fear -1.10); E3 pairwise ranking matches E2. Qwen3.5-4B E2: no usable signal.

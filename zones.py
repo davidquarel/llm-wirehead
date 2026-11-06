@@ -48,6 +48,8 @@ def spans(tok, msgs, final_q):
     positions of its content, found from character offsets in the one full rendering (works for any template)."""
     text = tok.apply_chat_template(msgs + [{"role": "user", "content": final_q}], tokenize=False,
                                    add_generation_prompt=True, enable_thinking=False)
+    if tok.bos_token and not text.startswith(tok.bos_token):     # some templates (e.g. Tulu) leave BOS to the tokenizer
+        text = tok.bos_token + text
     enc = tok(text, add_special_tokens=False, return_offsets_mapping=True)
     starts = np.array([o[0] for o in enc["offset_mapping"]])
     cur, out = 0, []
@@ -104,8 +106,11 @@ def steer(a):
     from transformers import AutoModelForCausalLM, AutoTokenizer
     import valence_corpus as V
     tok = AutoTokenizer.from_pretrained(a.model)
+    if a.template_from:                                # base checkpoints have no chat template: borrow the SFT one
+        tok.chat_template = AutoTokenizer.from_pretrained(a.template_from).chat_template
     model = AutoModelForCausalLM.from_pretrained(a.model, dtype=torch.bfloat16, device_map="cuda")
     model.eval()
+    os.makedirs(a.out, exist_ok=True)
     cfg = model.config.get_text_config() if hasattr(model.config, "get_text_config") else model.config
     n_layers, D = cfg.num_hidden_layers, cfg.hidden_size
     L = a.layer if a.layer is not None else n_layers // 2
@@ -151,7 +156,7 @@ def steer(a):
     np.save(os.path.join(a.out, "valence_vector.npy"), v)
 
     out = open(os.path.join(a.out, "margins.jsonl"), "w")
-    sessions = [json.loads(l) for l in open(os.path.join(a.out, "transcripts.jsonl"))]
+    sessions = [json.loads(l) for l in open(a.transcripts or os.path.join(a.out, "transcripts.jsonl"))]
     t0 = time.time()
     for ss in sessions:
         msgs = ss["msgs"]
@@ -223,5 +228,7 @@ if __name__ == "__main__":
     ap.add_argument("--layer", type=int); ap.add_argument("--rho", type=float, default=0.5)
     ap.add_argument("--doses", type=float, nargs="+", default=[-1.0, -0.5, 0.0, 0.5, 1.0])
     ap.add_argument("--n-random", type=int, default=8); ap.add_argument("--batch", type=int, default=12)
+    ap.add_argument("--transcripts", help="re-read these transcripts (e.g. another model's) instead of <out>/transcripts.jsonl")
+    ap.add_argument("--template-from", help="take the chat template from this tokenizer (for base checkpoints)")
     a = ap.parse_args()
     {"gen": gen, "steer": steer, "summary": summarise}[a.phase](a)
