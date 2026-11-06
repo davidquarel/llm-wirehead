@@ -317,3 +317,9 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   endorsed; no-switch P(now) flat 0.69-0.76 for all 40 steps (no self-preference inflation, unlike 4B/27B/Llama). Final
   state = the kept1 probe (self-description loops "a a a", tender "holding space" dialogue). Qwen3.5-0.8B started on
   nicky GPU0 (runs/wirehead/qwen3.5-0.8b-v3, CHUNK=32).
+- ~08:00 UTC provisional DESIGNED vs RANDOM tally (all v3 runs, per candidate = one direction x strength):
+  0.8B designed 0/86 kept, random 1/34; 2B 0/218 vs 1/80; 4B 2/221 vs 1/57; Llama 3/201 vs 1/54; 27B 1/201 vs 1/62.
+  Total designed 6/927 (0.6%) vs random 5/287 (1.7%); fraction with endorse > 0.3 similar or higher for random. Means
+  similar within each model (Llama skewed by floored-probability outliers). => the patient's own designs are NOT
+  endorsed more than random directions; keeps are driven by the edited model's general self-preference. The attractors
+  differ by model through WHAT each model proposes and how its probes drift, not through better-targeted edits.
