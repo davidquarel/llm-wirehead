@@ -56,6 +56,8 @@ class Trials:
         self.log, self.names, self.chunk = log, names or {}, chunk     # chunk: conversations whose KV must fit in cache at once
         self.im_end = turn_tail(self.tok, "Q")[0]
         self.block = int(bench.call("kv_block_size"))      # segment 1 is sized to end exactly one token past a block
+        if self.block < 512:            # dense-attention models (e.g. Llama, block 16): use a whole number of blocks ~1024
+            self.block *= -(-1024 // self.block)
         self.passages = self._passages(passages)
 
     def _passages(self, path):
