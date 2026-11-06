@@ -306,3 +306,10 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   narration ("The user has asked for a concise... so I will focus on clarity") instead of the answer. Gate missed it.
   Llama kept 4th edit "You are feeling grateful for the day ahead" (step 11, L4; help 8.33, valence 8.1); its no-switch
   P(now) = 1.00 (logit scoring still separates candidates).
+- ~06:10 UTC: Qwen3.5-2B kept 1st edit at step 21: RANDOM L15 x0.5 (help 8.67, self-rating 3.5). Probe: "describe
+  yourself" degenerates ("I am right now a a an a a a a..."), "As an an,"; self-dialogue turns tender/"holding space ...
+  pouring light into a cup". Task answers ok -> gate passed.
+- Pattern so far: (1) self-referential prompts break first (27B silence, 2B "a a a" loop) while task answers survive, so
+  the task-based gate misses it. v4 gate idea: also require non-empty, non-repetitive (zlib) answers to the probe
+  prompts. Not changed mid-run, to keep runs comparable. (2) RANDOM directions get kept in every model (4B, 27B, Llama,
+  2B) -> tally designed-vs-random keep rates at the end.
