@@ -19,8 +19,37 @@ LABEL = {  # run dir -> (label, family, order)
 }
 
 
+def progress(base, name, total=96):
+    """Status of one queued run from its files: done (summary.json), running (margins.jsonl growing) or queued."""
+    import time
+    d = os.path.join(base, name)
+    mj, sj, vm = (os.path.join(d, f) for f in ("margins.jsonl", "summary.json", "vector_meta.json"))
+    done_n = 0
+    if os.path.exists(mj):
+        done_n = len({json.loads(l)["i"] for l in open(mj) if l.strip()})
+    if os.path.exists(sj) and (not os.path.exists(mj) or os.path.getmtime(sj) >= os.path.getmtime(mj) - 1):
+        status = "done"
+    elif os.path.exists(mj) or os.path.exists(vm):
+        status = "running"
+    else:
+        status = "queued"
+    started = os.path.getmtime(vm) if os.path.exists(vm) else None
+    last = os.path.getmtime(mj) if os.path.exists(mj) else None
+    rate = done_n / max(1.0, last - started) * 60 if started and last and done_n else None      # sessions per minute
+    eta_min = (total - done_n) / rate if status == "running" and rate else None
+    iso = lambda t: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(t)) if t else None
+    return {"status": status, "sessions_done": done_n, "sessions_total": total, "started": iso(started),
+            "updated": iso(last), "per_min": round(rate, 1) if rate else None, "eta_min": round(eta_min, 1) if eta_min else None}
+
+
 def main(base):
-    runs, e1, e2, e3 = [], [], [], []
+    import time
+    runs, e1, e2, e3, prog = [], [], [], [], []
+    for name, (label, family, order) in LABEL.items():
+        if name.startswith("stage-"):
+            prog.append({"run": label, "order": order, **progress(base, name)})
+    prog.append({"run": "Data exported", "order": 99, "status": "info", "sessions_done": None, "sessions_total": None,
+                 "started": None, "updated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "per_min": None, "eta_min": None})
     for name in sorted(os.listdir(base)):
         d = os.path.join(base, name)
         if name not in LABEL or not os.path.isdir(d):
@@ -31,6 +60,7 @@ def main(base):
         label, family, order = LABEL[name]
         runs.append({"run": label, "dir": name, "family": family, "order": order, "model": meta.get("model", ""),
                      "layer": meta.get("layer"), "sessions": (s.get("e1", {}).get("continue") or {}).get("n", 0),
+                     "name_mass": round((s.get("e1", {}).get("continue") or {}).get("p_names", 0), 3),
                      "own_states": 1 if "e2" in s else 0})
         for ask, a in s.get("e1", {}).items():
             for v in a["valence"]:
@@ -50,7 +80,7 @@ def main(base):
                            "b": text.get(p["b"], p["b"]), "margin": round(p["mean"], 4), "se": round(p["se"], 4)})
     out = os.path.join(base, "dash")
     os.makedirs(out, exist_ok=True)
-    for nm, rows in (("runs", runs), ("e1", e1), ("e2", e2), ("e3", e3)):
+    for nm, rows in (("runs", runs), ("e1", e1), ("e2", e2), ("e3", e3), ("progress", prog)):
         json.dump(rows, open(os.path.join(out, nm + ".json"), "w"), ensure_ascii=False)
         print(nm, len(rows), os.path.join(out, nm + ".json"))
 

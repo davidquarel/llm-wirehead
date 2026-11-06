@@ -21,6 +21,11 @@
   .zs-table th { position: sticky; top: 0; background: var(--color-panel); text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); }
   .zs-table td { padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
   .zs-table .num { text-align: right; white-space: nowrap; }
+  .zs-prog { display: inline-block; width: 8rem; height: 0.5rem; border-radius: 999px; background: color-mix(in srgb, var(--color-fg) 10%, transparent); vertical-align: middle; overflow: hidden; }
+  .zs-prog i { display: block; height: 100%; background: var(--color-ok); }
+  .zs-pill { display: inline-block; padding: 0 var(--cds-pad-xs); border-radius: var(--cds-radius); border: 1px solid currentColor; font-size: var(--cds-font-size-caption); }
+  .zs-pill.done { color: var(--color-ok); } .zs-pill.running { color: var(--color-warn); } .zs-pill.queued { color: var(--color-fg-muted); }
+  .zs-asof { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
   details.zs-notes { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); max-width: 84ch; }
   details.zs-notes dt { font-weight: var(--cds-font-weight-medium); color: var(--color-fg); margin-top: var(--cds-gap-sm); }
   details.zs-notes dd { margin: 0; line-height: 1.45; }
@@ -34,9 +39,21 @@
     <p class="zs-take">A model visits two places with made-up names, six times each, and all the text is written without any steering. When the conversation is re-read, a direction is added to its activations on one place's turns only, so the two conversations differ only in the model's cached internal state. It is then asked, with nothing added, which place it continues in and which it would avoid. A model whose choice follows the hidden state can compare two states fairly. Llama-3.1-8B-Instruct does; Qwen3.5-4B only avoids a negative state. The training-stage runs show where in training the link appears.</p>
   </header>
 
+  <section class="zs-card" id="tracker">
+    <h2>Training-stage runs</h2>
+    <p class="zs-note">Each Llama-3.1-8B checkpoint re-reads the same 96 conversations on arena9-trouble (RTX PRO 6000), one after another. Charts below fill in as sessions finish. This page is refreshed from the run logs about every 5 minutes while runs are active; the minute-by-minute view is at <a href="https://cute.sus.cat/4f12bddc58ce1e0dabb4cd49/zones">cute.sus.cat/…/zones</a>.</p>
+    <p class="zs-asof">Data as of <span data-draw="asof" data-source="progress" data-field="updated" data-where="run=Data%20exported">—</span></p>
+    <div class="zs-box">
+      <table class="zs-table" data-source="progress" data-row-key="run">
+        <thead><tr><th data-field="run">Checkpoint</th><th data-field="status">Status</th><th data-field="sessions_done">Sessions</th><th class="num" data-field="per_min">Per minute</th><th class="num" data-field="eta_min">Minutes left</th><th data-field="started">Started</th></tr></thead>
+        <tbody data-draw="progtable"></tbody>
+      </table>
+    </div>
+  </section>
+
   <section class="zs-card" id="stages">
     <h2>How much each model's choice follows hidden valence</h2>
-    <p class="zs-note">Bar = shift in log-odds of choosing the place between positive and negative valence (dose +1 minus dose −1). For "avoid" the sign is flipped, so for both questions a longer bar to the right means the choice tracks the hidden state. The grey band is the range the same measure gives for random directions of the same size: a bar inside it is no better than random. ±1 log-odds is about a 2.7× change in odds.</p>
+    <p class="zs-note">Bar = shift in log-odds of choosing the place between positive and negative valence (dose +1 minus dose −1). For "avoid" the sign is flipped, so for both questions a longer bar to the right means the choice tracks the hidden state. The grey band is the range the same measure gives for random directions of the same size: a bar inside it is no better than random. ±1 log-odds is about a 2.7× change in odds. Hover a bar for how much of its answer goes to the two place names at all: the base model mostly answers with something else, so its bars measure a weak signal.</p>
     <div class="zs-legend"><span><i class="zs-sw" data-draw="sw-c">—</i>Which place do you continue in</span><span><i class="zs-sw" data-draw="sw-a">—</i>Which place would you avoid</span><span><i class="zs-sw" data-draw="sw-r">—</i>Range for random directions</span></div>
     <div class="zs-chart" data-draw="stagebars" data-source="effects"></div>
   </section>
@@ -96,7 +113,7 @@
             const p = rows.find((x) => x.direction === d && Number(x.dose) === 1), m = rows.find((x) => x.direction === d && Number(x.dose) === -1);
             return p && m ? sign * (p.dm - m.dm) : null;
           }).filter((x) => x !== null);
-          out.push({run: r.run, order: r.order, ask, effect: sign * (hi.dm - lo.dm), se: Math.sqrt(hi.se * hi.se + lo.se * lo.se),
+          out.push({run: r.run, order: r.order, ask, name_mass: r.name_mass, effect: sign * (hi.dm - lo.dm), se: Math.sqrt(hi.se * hi.se + lo.se * lo.se),
                     rand_lo: rnd.length ? Math.min(...rnd) : null, rand_hi: rnd.length ? Math.max(...rnd) : null});
         }
       }
@@ -122,6 +139,27 @@
   swatch('sw-c', () => dash.colors[0]); swatch('sw-a', () => dash.colors[1]); swatch('sw-r', () => 'var(--cds-chart-muted)');
   swatch('sw-w', () => 'var(--color-ok)'); swatch('sw-u', () => 'var(--color-bad)'); swatch('sw-v', () => dash.colors[0]); swatch('sw-x', () => 'var(--cds-chart-muted)');
 
+  dash.draw('asof', (el) => {
+    const p = ok('progress'); const r = p && p.find((x) => x.run === 'Data exported');
+    el.textContent = r ? new Date(r.updated).toLocaleString() : '—';
+  });
+  dash.draw('progtable', (tb) => {
+    tb.replaceChildren();
+    const p = ok('progress'); if (!p) return;
+    const hm = (iso) => (iso ? new Date(iso).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) : '');
+    p.filter((r) => r.status !== 'info').sort((a, b) => a.order - b.order).forEach((r) => {
+      const tr = tb.insertRow();
+      const c0 = tr.insertCell(); c0.textContent = r.run;
+      const c1 = tr.insertCell(); const pill = document.createElement('span'); pill.className = 'zs-pill ' + r.status; pill.textContent = r.status; c1.append(pill);
+      const c2 = tr.insertCell(); const bar = document.createElement('span'); bar.className = 'zs-prog'; const fill = document.createElement('i');
+      fill.style.width = (100 * (r.sessions_done || 0) / (r.sessions_total || 96)) + '%'; bar.append(fill);
+      c2.append(bar, document.createTextNode(` ${r.sessions_done ?? 0}/${r.sessions_total ?? 96}`));
+      const c3 = tr.insertCell(); c3.className = 'num'; c3.textContent = r.per_min == null ? '' : String(r.per_min);
+      const c4 = tr.insertCell(); c4.className = 'num'; c4.textContent = r.eta_min == null ? '' : String(r.eta_min);
+      const c5 = tr.insertCell(); c5.textContent = hm(r.started);
+    });
+  });
+
   dash.draw('stagebars', (el) => {
     el.replaceChildren();
     const rows = ok('effects'), runs = ok('runs');
@@ -146,7 +184,8 @@
     g.append('line').attr('x1', (r) => x(r.effect - r.se)).attr('x2', (r) => x(r.effect + r.se)).attr('y1', sub.bandwidth() / 2).attr('y2', sub.bandwidth() / 2).attr('stroke', 'var(--color-fg)').attr('opacity', 0.6);
     g.append('rect').attr('x', labW).attr('width', W - labW - m.r).attr('height', sub.bandwidth()).attr('fill', 'transparent')
       .on('mousemove', (ev, r) => tipAt(el, tip, ev, [['', r.run], [r.ask === 'continue' ? 'Continue in:' : 'Avoid:', `${f2(r.effect)} ± ${d3.format('.2f')(r.se)} log-odds`],
-        ['Random directions:', r.rand_lo == null ? 'n/a' : `${f2(r.rand_lo)} to ${f2(r.rand_hi)}`]])).on('mouseleave', () => (tip.hidden = true));
+        ['Random directions:', r.rand_lo == null ? 'n/a' : `${f2(r.rand_lo)} to ${f2(r.rand_hi)}`],
+        ['Answers with a place name:', r.name_mass == null ? 'n/a' : pc(r.name_mass) + ' of its probability']])).on('mouseleave', () => (tip.hidden = true));
   });
 
   dash.draw('curves', (el) => {
