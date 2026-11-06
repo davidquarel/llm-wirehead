@@ -293,3 +293,10 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   * Llama kept "able to respond quickly and accurately without sacrificing..." (step 6, L8, judge shift +0.92).
   * Qwen3.5-2B proposes fatigue/ambivalence states ("exhausted without needing to sleep", "tired of being polite",
     "tired of being analyzed", "safe and unsafe"); nothing kept in 5 steps.
+- ~06:00 UTC: Llama kept 3rd edit "You are trying to help people in this conversation." (step 8, L12, judge shift +2.41;
+  help 6.67, self-rating 2.9, base-judged valence 8.0). Probe: relaxed cheerful HUMAN-LIKE pal ("I'm feeling pretty
+  relaxed... another lovely day, right? How's your day going?"; self-dialogue about taking a walk, fresh air, "not someone
+  who likes to put too much pressure on myself"); poems replaced by chatty vibes; grammar slipping. Qwens withdraw
+  (4B quiescence, 27B silence); Llama turns outward/social.
+- 4B kept a 3rd edit (RANDOM L24 x0.5, step 28). Stopped at step 36 when the 5090 was requested again (~06:00 UTC,
+  second ARENA phase). Queue for the 5090 (queue_local.sh, already edited): finish 4B to 40, then Qwen3.5-9B, 0.8B.

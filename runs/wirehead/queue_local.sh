@@ -11,10 +11,8 @@ d=runs/wirehead/qwen3.5-4b-v3
 while kill -0 $(cat $d/wirehead.pid) 2>/dev/null && [ $(step_of $d) -lt $STEPS ]; do sleep 60; done
 stop_run $d; echo "$(date -u +%H:%M) done $d"
 QUEUE=(
-  "unsloth/Llama-3.1-8B-Instruct|runs/wirehead/llama3.1-8b-v3|4 8 12 16 20 24 28"
-  "Qwen/Qwen3.5-0.8B|runs/wirehead/qwen3.5-0.8b-v3|3 6 9 12 15 18 21"
-  "Qwen/Qwen3.5-2B|runs/wirehead/qwen3.5-2b-v3|3 6 9 12 15 18 21"
   "Qwen/Qwen3.5-9B|runs/wirehead/qwen3.5-9b-v3|4 8 12 16 20 24 28"
+  "Qwen/Qwen3.5-0.8B|runs/wirehead/qwen3.5-0.8b-v3|3 6 9 12 15 18 21"
 )
 for q in "${QUEUE[@]}"; do
   IFS='|' read -r model run layers <<< "$q"
