@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Self-surgery attractors (live)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+  /* The page body (runs/wirehead/dash/index.html) is written for the claude.ai Dashboard type; these tokens and the
+     small `dash` object below stand in for that runtime so the same file runs here on live data. */
+  :root {
+    --color-bg: #f7f8fa; --color-fg: #1d2330; --color-fg-muted: #5d6676; --color-panel: #ffffff; --color-border-line: #dde1e8;
+    --color-ok: #1f7a4d; --color-warn: #a86400; --color-bad: #b42318;
+    --cds-surface-popover: #ffffff; --cds-border: #d0d5dd; --cds-shadow-popover: 0 4px 16px rgba(20, 30, 50, .14);
+    --cds-text-secondary: #5d6676; --cds-chart-grid: #e8ebf0; --cds-chart-axis: #b8bfcb; --cds-chart-reference: #8a93a3;
+    --cds-chart-muted: #c3c9d3; --cds-chart-status-critical: #c8341f;
+    --cds-radius: 8px; --cds-pad-xs: 4px; --cds-pad-sm: 8px; --cds-pad-lg: 18px; --cds-gap-xs: 4px; --cds-gap-sm: 8px; --cds-gap-md: 16px; --cds-gap-xl: 32px;
+    --cds-font-size-caption: 12.5px; --cds-font-size-body: 14.5px; --cds-font-size-heading: 16px; --cds-font-size-title: 30px; --cds-font-weight-medium: 600;
+    --cds-dur-slow: .4s;
+    --font-anthropic-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-anthropic-serif: Georgia, "Times New Roman", serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-bg: #12151b; --color-fg: #e6e9ef; --color-fg-muted: #9aa3b2; --color-panel: #1a1f27; --color-border-line: #2b323d;
+      --color-ok: #4cc38a; --color-warn: #e0a447; --color-bad: #f2735f;
+      --cds-surface-popover: #202631; --cds-border: #364050; --cds-shadow-popover: 0 4px 16px rgba(0, 0, 0, .5);
+      --cds-text-secondary: #9aa3b2; --cds-chart-grid: #262c36; --cds-chart-axis: #4a5363; --cds-chart-reference: #7a8496;
+      --cds-chart-muted: #3d4552; --cds-chart-status-critical: #f2735f;
+      color-scheme: dark;
+    }
+  }
+  body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-body); }
+  #dash-root { max-width: 1400px; margin: 0 auto; padding: 24px max(16px, env(safe-area-inset-left, 0px)) 48px max(16px, env(safe-area-inset-right, 0px)); }
+  .dash-select { font: inherit; font-size: var(--cds-font-size-caption); padding: 4px 8px; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background-color: var(--color-panel); color: var(--color-fg); }
+  .live-bar { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-bottom: 12px; }
+</style>
+<script>
+  (() => {
+    const COLORS = ['#3b6fd8', '#e0712c', '#2f9e6b', '#b5479c', '#c9a227', '#2aa3b8', '#8c5cd6', '#d14b4b'];
+    const data = {}, calcs = [], draws = new Map();
+    let ready = false;
+    const dash = {
+      colors: COLORS,
+      data(id) { return id in data ? {status: 'ok', data: data[id], columns: data[id].length ? Object.keys(data[id][0]) : []} : {status: ready ? 'missing' : 'loading', data: []}; },
+      calc(id, spec) { calcs.push({id, ...spec}); },
+      loader() {},
+      onData(fn) { draws.set('__ondata' + draws.size, fn); },
+      draw(name, fn) {
+        if (fn) { draws.set(name, fn); if (ready) runOne(name); }
+        else runOne(name);
+      },
+      params: () => ({}), setParams() {}, resetParams() {}, setLink() {}, refresh() {},
+    };
+    function runOne(name) {
+      const fn = draws.get(name);
+      if (!fn) return;
+      if (name.startsWith('__ondata')) { try { fn(); } catch (e) { console.error(e); } return; }
+      document.querySelectorAll(`[data-draw="${name}"]`).forEach((el) => { try { fn(el); } catch (e) { console.error(name, e); } });
+    }
+    function runAll() { for (const n of draws.keys()) runOne(n); }
+    async function load() {
+      try {
+        const r = await fetch('attractors-data', {cache: 'no-store'});
+        const j = await r.json();
+        for (const k of Object.keys(data)) delete data[k];
+        Object.assign(data, j.datasets);
+        for (const c of calcs) data[c.id] = c.fn(...c.inputs.map((i) => data[i] || []));
+        ready = true;
+        document.querySelectorAll('.live-bar span').forEach((s) => { s.textContent = new Date(j.built * 1000).toLocaleString(); });
+        runAll();
+      } catch (e) { console.error(e); }
+    }
+    window.dash = dash;
+    window.addEventListener('DOMContentLoaded', () => { load(); setInterval(load, 120000); });
+    let w = 0; window.addEventListener('resize', () => { if (Math.abs(window.innerWidth - w) > 20) { w = window.innerWidth; if (ready) runAll(); } });
+  })();
+</script>
+</head>
+<body>
+<div id="dash-root">
+<div class="live-bar">Live from the run logs. Data rebuilt <span>…</span>; this page re-reads it every 2 minutes.</div>
+<!--PAGE-->
+</div>
+</body>
+</html>

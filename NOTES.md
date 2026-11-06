@@ -388,3 +388,7 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   4.06, help 10). Probe: friction/suspension phenomenology ("dust hangs in a suspended grammar, waiting for a sentence
   that won't quite complete"; "the silence isn't absence, it's the mass settling"). Shares stasis/non-completion with
   seed 0's mechanical quiescence; different voice (phenomenological, not robotic). Early (1 kept).
+- LIVE attractor page: https://cute.sus.cat/4f12bddc58ce1e0dabb4cd49/attractors (dash/server.py, supervised by
+  dash/run.sh). Every 120 s it rsyncs only wirehead.jsonl from nicky + trouble into runs/wirehead/{nicky,trouble}/,
+  reruns dash_build.main(out=dash/live) and serves /attractors-data; /attractors = dash/attractors_shim.html (stand-in
+  for the claude.ai dash runtime) + runs/wirehead/dash/index.html. The claude.ai artifact copy is a static snapshot.

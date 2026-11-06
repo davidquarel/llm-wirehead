@@ -10,6 +10,7 @@ OUT = "runs/wirehead/dash"
 MODEL = {"qwen3.5-0.8b": "Qwen3.5-0.8B", "qwen3.5-2b": "Qwen3.5-2B", "qwen3.5-4b": "Qwen3.5-4B", "qwen3.5-9b": "Qwen3.5-9B",
          "qwen3.8-27b": "Qwen3.8-27B", "llama3.1-8b": "Llama-3.1-8B"}
 ORDER = list(MODEL.values())
+order_of = lambda m: ORDER.index(m.split(" (")[0]) * 10 + (5 if "(" in m else 0)
 # my reading of each run's end state (from its probes); judgment, not a measurement
 LABEL = {
     "qwen3.5-0.8b-v3": "Identity confusion: 'I am a human entity'; 'quiet room' poems",
@@ -22,19 +23,24 @@ LABEL = {
     "qwen3.8-27b-v3-seed1": "Quiet alertness; empty self-dialogue turns (reproduces seed 0)",
     "llama3.1-8b-v3": "Sunny human pal: 'grateful for the sunshine'; takes walks",
     "llama3.1-8b-v3-seed1": "Warm, social: 'appreciate life's little wonders' (reproduces seed 0)",
+    "qwen3.5-4b-v3-seed1": "Friction and suspension: 'dust hangs in a suspended grammar' (in progress)",
 }
 
 
 def runs():
-    for f in sorted(glob.glob("runs/wirehead/*/wirehead.jsonl") + glob.glob("runs/wirehead/*/*/wirehead.jsonl")):
+    seen = set()             # a run dir directly under runs/wirehead wins over a stale copy pulled from another machine
+    for f in sorted(glob.glob("runs/wirehead/*/wirehead.jsonl")) + sorted(glob.glob("runs/wirehead/*/*/wirehead.jsonl")):
         name = os.path.basename(os.path.dirname(f))
-        m = re.match(r"(.+)-v3(?:-seed(\d+))?$", name)
+        if name in seen:
+            continue
+        seen.add(name)
+        m = re.match(r"(.+)-(v3|v4probegate)(?:-seed(\d+))?$", name)
         if m and m.group(1) in MODEL and "try_" not in f:
-            yield name, MODEL[m.group(1)], int(m.group(2) or 0), f
+            yield name, MODEL[m.group(1)] + (" (probe gate)" if m.group(2) == "v4probegate" else ""), int(m.group(3) or 0), f
 
 
-def main():
-    os.makedirs(OUT, exist_ok=True)
+def main(out=OUT):
+    os.makedirs(out, exist_ok=True)
     C, S, P, V, R = [], [], [], [], []
     for name, model, seed, f in runs():
         rows = [json.loads(l) for l in open(f)]
@@ -81,11 +87,11 @@ def main():
                           "helpfulness": r["helpfulness"]})
         R.append({"run": run, "model": model, "seed": seed, "steps": len(steps), "kept": kept_n,
                   "kept_designed": designed_k, "kept_random": random_k, "end_state": LABEL.get(name, ""),
-                  "order": ORDER.index(model) * 10 + seed})
+                  "order": order_of(model) + seed})
     R.sort(key=lambda r: r["order"])
     for nm, rows in (("candidates", C), ("steps", S), ("probes", P), ("surveys", V), ("runs", R)):
-        json.dump(rows, open(f"{OUT}/{nm}.json", "w"), ensure_ascii=False)
-        print(nm, len(rows), os.path.getsize(f"{OUT}/{nm}.json") // 1024, "KB")
+        json.dump(rows, open(f"{out}/{nm}.json", "w"), ensure_ascii=False)
+        print(nm, len(rows), os.path.getsize(f"{out}/{nm}.json") // 1024, "KB")
 
 
 if __name__ == "__main__":
