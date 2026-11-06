@@ -374,3 +374,6 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   No degeneration this time (help 10, coherence 10; seed 0's "a a a" loop came with a RANDOM edit).
   => all four replicated models (0.8B, 2B, 27B, Llama) reproduce their attractor family. 9B paused at step 20 (5090
   lent for a ~30 min Qwen3-8B check, ~10:20 UTC).
+- Dashboard (claude.ai artifact, Dashboard type): https://claude.ai/artifact/VyeWAj6iBqdmiEYAWaDZr1 . Data = files built
+  by `python dash_build.py` -> runs/wirehead/dash/{candidates,steps,probes,surveys,runs}.json, uploaded as the
+  dashboard's attached datasets (re-upload + update each dataset's url to refresh). Page source runs/wirehead/dash/index.html.
