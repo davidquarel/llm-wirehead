@@ -1,0 +1,6 @@
+{
+ "model.layers.27.mlp.down_proj.weight": {
+  "energy_kept": 0.99999,
+  "rel_change": 0.23453640937805176
+ }
+}

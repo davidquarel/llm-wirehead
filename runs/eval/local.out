@@ -1,0 +1,7 @@
+[872s] 200 puzzles: original 0.500, state=runs/mathclimb/state_kept9.npz 0.565, adapter=/root/Dropbox/ARENA/weight_space_prog/runs/rlvr2/data/adapter_step10 0.710, adapter=/root/Dropbox/ARENA/weight_space_prog/runs/rlvr2/data/adapter_step30 0.745
+[1722s] 400 puzzles: original 0.520, state=runs/mathclimb/state_kept9.npz 0.573, adapter=/root/Dropbox/ARENA/weight_space_prog/runs/rlvr2/data/adapter_step10 0.720, adapter=/root/Dropbox/ARENA/weight_space_prog/runs/rlvr2/data/adapter_step30 0.752
+[2161s] 500 puzzles: original 0.520, state=runs/mathclimb/state_kept9.npz 0.574, adapter=/root/Dropbox/ARENA/weight_space_prog/runs/rlvr2/data/adapter_step10 0.718, adapter=/root/Dropbox/ARENA/weight_space_prog/runs/rlvr2/data/adapter_step30 0.768
+HOLDOUT original: 0.520  (+0.0 ± 0.0 vs original)
+HOLDOUT state=runs/mathclimb/state_kept9.npz: 0.574  (+5.4 ± 2.2 vs original)
+HOLDOUT adapter=/root/Dropbox/ARENA/weight_space_prog/runs/rlvr2/data/adapter_step10: 0.718  (+19.8 ± 2.1 vs original)
+HOLDOUT adapter=/root/Dropbox/ARENA/weight_space_prog/runs/rlvr2/data/adapter_step30: 0.768  (+24.8 ± 2.1 vs original)

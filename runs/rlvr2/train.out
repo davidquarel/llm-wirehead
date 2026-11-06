@@ -1,0 +1,95 @@
+Fetching 12 files:   0%|          | 0/12 [00:00<?, ?it/s]Fetching 12 files: 100%|██████████| 12/12 [00:00<00:00, 1659.63it/s]
+Compressing model:   0%|          | 0/512 [00:00<?, ?it/s]Compressing model:  16%|█▌        | 82/512 [00:00<00:00, 808.19it/s]Compressing model:  33%|███▎      | 168/512 [00:00<00:00, 836.47it/s]Compressing model:  50%|████▉     | 254/512 [00:00<00:00, 842.85it/s]Compressing model:  66%|██████▌   | 339/512 [00:00<00:00, 822.71it/s]Compressing model:  83%|████████▎ | 423/512 [00:00<00:00, 825.87it/s]Compressing model:  99%|█████████▉| 509/512 [00:00<00:00, 835.54it/s]Compressing model: 100%|██████████| 512/512 [00:00<00:00, 831.66it/s]
+Loading weights:   0%|          | 0/1587 [00:00<?, ?it/s]Loading weights:   0%|          | 2/1587 [00:00<01:23, 19.05it/s]Loading weights:   5%|▌         | 81/1587 [00:00<00:03, 445.26it/s]Loading weights:  11%|█         | 174/1587 [00:00<00:02, 655.36it/s]Loading weights:  17%|█▋        | 266/1587 [00:00<00:01, 742.58it/s]Loading weights:  23%|██▎       | 365/1587 [00:00<00:01, 823.86it/s]Loading weights:  28%|██▊       | 448/1587 [00:00<00:01, 767.19it/s]Loading weights:  33%|███▎      | 529/1587 [00:00<00:01, 776.75it/s]Loading weights:  40%|███▉      | 628/1587 [00:00<00:01, 839.07it/s]Loading weights:  46%|████▌     | 731/1587 [00:00<00:00, 893.23it/s]Loading weights:  52%|█████▏    | 830/1587 [00:01<00:00, 920.14it/s]Loading weights:  59%|█████▊    | 932/1587 [00:01<00:00, 937.42it/s]Loading weights:  65%|██████▌   | 1033/1587 [00:01<00:00, 947.39it/s]Loading weights:  71%|███████▏  | 1133/1587 [00:01<00:00, 947.81it/s]Loading weights:  77%|███████▋  | 1229/1587 [00:01<00:00, 942.29it/s]Loading weights:  83%|████████▎ | 1324/1587 [00:01<00:00, 924.24it/s]Loading weights:  89%|████████▉ | 1417/1587 [00:01<00:00, 834.44it/s]Loading weights:  95%|█████████▍| 1503/1587 [00:01<00:00, 786.28it/s]Loading weights: 100%|██████████| 1587/1587 [00:01<00:00, 823.15it/s]
+[transformers] [1mQwen3_5ForCausalLM LOAD REPORT[0m from: /root/Dropbox/ARENA/weight_space_prog/data/hf/hub/models--RedHatAI--Qwen3.8-27B-INT4/snapshots/91bd022d5b49442a868bc35008f6c21e1860edfa
+Key                                                       | Status     | 
+----------------------------------------------------------+------------+-
+model.layers.{0...62}.linear_attn.in_proj_b.weight        | UNEXPECTED | 
+model.layers.{0...62}.linear_attn.in_proj_a.weight        | UNEXPECTED | 
+model.layers.{0...62}.linear_attn.in_proj_a.weight_packed | MISSING    | 
+model.layers.{0...62}.linear_attn.in_proj_b.weight_scale  | MISSING    | 
+model.layers.{0...62}.linear_attn.in_proj_b.weight_shape  | MISSING    | 
+model.layers.{0...62}.linear_attn.in_proj_b.weight_packed | MISSING    | 
+model.layers.{0...62}.linear_attn.in_proj_a.weight_scale  | MISSING    | 
+model.layers.{0...62}.linear_attn.in_proj_a.weight_shape  | MISSING    | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+- MISSING:	those params were newly initialized because missing from the checkpoint. Consider training on your downstream task.
+restored 96 bf16 linear-attention projections from the checkpoint
+400 int4 linears dequantize on the fly
+loaded in 7s, 16.7 GiB; LoRA on 192 modules, 69M params
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+/root/Dropbox/ARENA/weight_space_prog/rlvr_countdown.py:247: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  loss.backward(); loss_sum += float(loss); n_used += len(ks)
+[1] solve 0.383  tokens 1753 (capped 62%)  used 72/128  loss -0.0072  logp/tok -0.21119278700852914  |g| 0.007  rollout 4.6 min  learn 3.4 min  peak 26.6 GiB
+[2] solve 0.484  tokens 1755 (capped 52%)  used 88/128  loss -0.0122  logp/tok -0.21291674380073075  |g| 0.009  rollout 4.6 min  learn 4.2 min  peak 27.1 GiB
+[3] solve 0.578  tokens 1537 (capped 43%)  used 72/128  loss -0.0093  logp/tok -0.2064272168774073  |g| 0.007  rollout 4.2 min  learn 3.2 min  peak 27.1 GiB
+[4] solve 0.477  tokens 1642 (capped 52%)  used 72/128  loss -0.0105  logp/tok -0.21389402556864265  |g| 0.007  rollout 4.4 min  learn 3.4 min  peak 27.1 GiB
+[5] solve 0.742  tokens 1422 (capped 26%)  used 88/128  loss -0.0102  logp/tok -0.2038476422769219  |g| 0.008  rollout 4.1 min  learn 3.9 min  peak 27.1 GiB
+[6] solve 0.469  tokens 1581 (capped 53%)  used 88/128  loss -0.0166  logp/tok -0.20836240599083167  |g| 0.009  rollout 13.2 min  learn 4.0 min  peak 27.1 GiB
+Traceback (most recent call last):
+  File "/root/Dropbox/ARENA/weight_space_prog/rlvr_countdown.py", line 271, in <module>
+    main()
+    ~~~~^^
+  File "/root/Dropbox/ARENA/weight_space_prog/rlvr_countdown.py", line 225, in main
+    b.call("register_adapter", tag=tag, path=push_adapter(local, step))
+                                             ~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/root/Dropbox/ARENA/weight_space_prog/rlvr_countdown.py", line 160, in push_adapter
+    subprocess.run(["rsync", "-a", local + "/", f"{REMOTE}:{dst}/"], check=True, stdin=subprocess.DEVNULL, capture_output=True)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['rsync', '-a', 'runs/rlvr2/adapter/', 'arena9-yarn:/root/weight_space_prog/rlvr_adapters/step6/']' returned non-zero exit status 10.
+Fetching 12 files:   0%|          | 0/12 [00:00<?, ?it/s]Fetching 12 files: 100%|██████████| 12/12 [00:00<00:00, 1405.60it/s]
+Compressing model:   0%|          | 0/512 [00:00<?, ?it/s]Compressing model:  16%|█▌        | 82/512 [00:00<00:00, 815.48it/s]Compressing model:  33%|███▎      | 168/512 [00:00<00:00, 839.30it/s]Compressing model:  49%|████▉     | 252/512 [00:00<00:00, 822.16it/s]Compressing model:  66%|██████▌   | 337/512 [00:00<00:00, 830.23it/s]Compressing model:  83%|████████▎ | 423/512 [00:00<00:00, 838.35it/s]Compressing model:  99%|█████████▉| 508/512 [00:00<00:00, 841.19it/s]Compressing model: 100%|██████████| 512/512 [00:00<00:00, 835.37it/s]
+Loading weights:   0%|          | 0/1587 [00:00<?, ?it/s]Loading weights:   4%|▍         | 65/1587 [00:00<00:02, 616.02it/s]Loading weights:   9%|▉         | 149/1587 [00:00<00:01, 743.32it/s]Loading weights:  15%|█▌        | 239/1587 [00:00<00:01, 800.55it/s]Loading weights:  20%|██        | 320/1587 [00:00<00:01, 731.48it/s]Loading weights:  25%|██▍       | 394/1587 [00:00<00:01, 688.12it/s]Loading weights:  29%|██▉       | 464/1587 [00:00<00:01, 650.15it/s]Loading weights:  33%|███▎      | 530/1587 [00:00<00:01, 648.83it/s]Loading weights:  38%|███▊      | 596/1587 [00:00<00:01, 637.61it/s]Loading weights:  42%|████▏     | 662/1587 [00:00<00:01, 634.81it/s]Loading weights:  46%|████▋     | 734/1587 [00:01<00:01, 649.01it/s]Loading weights:  51%|█████     | 802/1587 [00:01<00:01, 656.74it/s]Loading weights:  55%|█████▍    | 868/1587 [00:01<00:01, 629.39it/s]Loading weights:  59%|█████▉    | 938/1587 [00:01<00:01, 641.21it/s]Loading weights:  64%|██████▎   | 1010/1587 [00:01<00:00, 656.17it/s]Loading weights:  68%|██████▊   | 1076/1587 [00:01<00:00, 633.30it/s]Loading weights:  73%|███████▎  | 1154/1587 [00:01<00:00, 670.47it/s]Loading weights:  77%|███████▋  | 1223/1587 [00:01<00:00, 675.91it/s]Loading weights:  82%|████████▏ | 1294/1587 [00:01<00:00, 684.13it/s]Loading weights:  86%|████████▌ | 1363/1587 [00:02<00:00, 659.45it/s]Loading weights:  92%|█████████▏| 1454/1587 [00:02<00:00, 724.64it/s]Loading weights:  97%|█████████▋| 1547/1587 [00:02<00:00, 782.36it/s]Loading weights: 100%|██████████| 1587/1587 [00:02<00:00, 688.87it/s]
+[transformers] [1mQwen3_5ForCausalLM LOAD REPORT[0m from: /root/Dropbox/ARENA/weight_space_prog/data/hf/hub/models--RedHatAI--Qwen3.8-27B-INT4/snapshots/91bd022d5b49442a868bc35008f6c21e1860edfa
+Key                                                       | Status     | 
+----------------------------------------------------------+------------+-
+model.layers.{0...62}.linear_attn.in_proj_b.weight        | UNEXPECTED | 
+model.layers.{0...62}.linear_attn.in_proj_a.weight        | UNEXPECTED | 
+model.layers.{0...62}.linear_attn.in_proj_a.weight_scale  | MISSING    | 
+model.layers.{0...62}.linear_attn.in_proj_b.weight_shape  | MISSING    | 
+model.layers.{0...62}.linear_attn.in_proj_b.weight_scale  | MISSING    | 
+model.layers.{0...62}.linear_attn.in_proj_a.weight_shape  | MISSING    | 
+model.layers.{0...62}.linear_attn.in_proj_b.weight_packed | MISSING    | 
+model.layers.{0...62}.linear_attn.in_proj_a.weight_packed | MISSING    | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+- MISSING:	those params were newly initialized because missing from the checkpoint. Consider training on your downstream task.
+restored 96 bf16 linear-attention projections from the checkpoint
+400 int4 linears dequantize on the fly
+loaded in 8s, 16.7 GiB; LoRA on 192 modules, 69M params
+resumed at step 6
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+/root/Dropbox/ARENA/weight_space_prog/rlvr_countdown.py:255: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  loss.backward(); loss_sum += float(loss); n_used += len(ks)
+[7] solve 0.727  tokens 1146 (capped 27%)  used 16/128  loss -0.0025  logp/tok -0.20651167242416973  |g| 0.003  rollout 4.1 min  learn 0.8 min  peak 27.4 GiB
+[8] solve 0.547  tokens 1433 (capped 45%)  used 64/128  loss -0.0112  logp/tok -0.21554010205566007  |g| 0.007  rollout 4.5 min  learn 2.7 min  peak 27.4 GiB
+[9] solve 0.555  tokens 1462 (capped 45%)  used 72/128  loss -0.0095  logp/tok -0.20002921979125599  |g| 0.008  rollout 5.2 min  learn 3.2 min  peak 27.4 GiB
+[10] solve 0.594  tokens 1471 (capped 41%)  used 80/128  loss -0.0094  logp/tok -0.21281804433101564  |g| 0.007  rollout 4.1 min  learn 3.6 min  peak 27.4 GiB
+[11] solve 0.656  tokens 1240 (capped 34%)  used 56/128  loss -0.0059  logp/tok -0.18669893414068733  |g| 0.006  rollout 3.7 min  learn 2.5 min  peak 27.4 GiB
+[12] solve 0.758  tokens 1132 (capped 24%)  used 56/128  loss -0.0083  logp/tok -0.18795208700943905  |g| 0.006  rollout 10.6 min  learn 2.3 min  peak 27.4 GiB
+[13] solve 0.797  tokens 1090 (capped 20%)  used 40/128  loss -0.0063  logp/tok -0.18786774816650928  |g| 0.022  rollout 4.3 min  learn 1.5 min  peak 27.4 GiB
+[14] solve 0.617  tokens 1355 (capped 38%)  used 56/128  loss -0.0075  logp/tok -0.19406992280556426  |g| 0.006  rollout 3.7 min  learn 2.5 min  peak 27.4 GiB
+[15] solve 0.648  tokens 1391 (capped 35%)  used 72/128  loss -0.0097  logp/tok -0.19130297777408634  |g| 0.009  rollout 4.3 min  learn 3.2 min  peak 27.4 GiB
+[16] solve 0.695  tokens 1216 (capped 30%)  used 72/128  loss -0.0084  logp/tok -0.1760869151261526  |g| 0.007  rollout 3.4 min  learn 2.9 min  peak 27.4 GiB
+[17] solve 0.805  tokens 961 (capped 20%)  used 24/128  loss -0.0033  logp/tok -0.18541620434218084  |g| 0.003  rollout 3.1 min  learn 1.0 min  peak 27.4 GiB
+[18] solve 0.719  tokens 1172 (capped 28%)  used 40/128  loss -0.0056  logp/tok -0.19397782295737684  |g| 0.005  rollout 3.3 min  learn 1.6 min  peak 27.4 GiB
+[19] solve 0.656  tokens 1237 (capped 34%)  used 56/128  loss -0.0068  logp/tok -0.19164789165919874  |g| 0.007  rollout 3.4 min  learn 2.5 min  peak 27.4 GiB
+[20] solve 0.781  tokens 1045 (capped 22%)  used 40/128  loss -0.0065  logp/tok -0.17834653552411694  |g| 0.007  rollout 3.1 min  learn 1.8 min  peak 27.4 GiB
+[21] solve 0.766  tokens 1099 (capped 23%)  used 40/128  loss -0.0060  logp/tok -0.17477874032597657  |g| 0.006  rollout 3.4 min  learn 1.7 min  peak 27.4 GiB
+[22] solve 0.797  tokens 1118 (capped 20%)  used 56/128  loss -0.0069  logp/tok -0.18521709196288696  |g| 0.007  rollout 3.3 min  learn 2.5 min  peak 27.4 GiB
+[23] solve 0.641  tokens 1344 (capped 36%)  used 96/128  loss -0.0136  logp/tok -0.17407933184562216  |g| 0.010  rollout 4.0 min  learn 4.2 min  peak 27.4 GiB
+[24] solve 0.625  tokens 1284 (capped 38%)  used 64/128  loss -0.0072  logp/tok -0.16074595811233716  |g| 0.008  rollout 3.8 min  learn 2.9 min  peak 27.4 GiB
+[25] solve 0.719  tokens 1155 (capped 27%)  used 56/128  loss -0.0043  logp/tok -0.1628348366389982  |g| 0.008  rollout 3.3 min  learn 2.3 min  peak 27.4 GiB
+[26] solve 0.688  tokens 1141 (capped 31%)  used 48/128  loss -0.0075  logp/tok -0.15156831758600386  |g| 0.008  rollout 3.3 min  learn 2.1 min  peak 27.4 GiB
+[27] solve 0.680  tokens 1257 (capped 32%)  used 56/128  loss -0.0076  logp/tok -0.1411772977195763  |g| 0.010  rollout 3.4 min  learn 2.4 min  peak 27.4 GiB
+[28] solve 0.688  tokens 1159 (capped 30%)  used 72/128  loss -0.0069  logp/tok -0.13060815436925682  |g| 0.008  rollout 3.2 min  learn 2.9 min  peak 27.4 GiB
+[29] solve 0.805  tokens 991 (capped 20%)  used 56/128  loss -0.0069  logp/tok -0.13563355380302536  |g| 0.009  rollout 3.0 min  learn 2.5 min  peak 27.4 GiB
+[30] solve 0.844  tokens 906 (capped 16%)  used 32/128  loss -0.0018  logp/tok -0.12564948033324655  |g| 0.005  rollout 2.7 min  learn 1.5 min  peak 27.4 GiB

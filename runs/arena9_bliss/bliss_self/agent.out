@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/root/weight_space_prog/kernel.py", line 55, in <module>
+    main()
+    ~~~~^^
+  File "/root/weight_space_prog/kernel.py", line 50, in main
+    real_stdout.write(json.dumps({"out": out}) + "\n")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+BrokenPipeError: [Errno 32] Broken pipe

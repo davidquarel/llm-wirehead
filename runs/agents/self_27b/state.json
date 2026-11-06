@@ -1,0 +1,6 @@
+{
+ "model": "RedHatAI/Qwen3.8-27B-INT4",
+ "budget": 50,
+ "used": 49,
+ "edits": {}
+}

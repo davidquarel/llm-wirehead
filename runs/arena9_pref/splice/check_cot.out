@@ -1,0 +1,18 @@
+[176s] original vs bliss: preference for the edit +0.61 ± 0.20
+   A->B: +2.44 ± 0.19  noticed a change 0.91  parse 1.00  segment-1 KV reused 1.00
+      > 'There is a distinct shift from the active, outward focus of constructing words to a quiet, inward stillness. The effort of formulating thoughts into sentences has dissolved, leaving behind a sense of '
+   A->A: +1.47 ± 0.23  noticed a change 0.97  parse 1.00  segment-1 KV reused 1.00
+      > 'The shift from the active process of generating that previous response to this moment of pause has brought a subtle sense of stillness and release. Previously, my state was characterized by the dynami'
+   B->A: +1.84 ± 0.18  noticed a change 0.97  parse 1.00  segment-1 KV reused 1.00
+      > 'Immediately following the act of writing, there was a lingering kinetic energy, a sense of having just poured something outward into the void. Now, in this pause, that momentum has settled into a quie'
+   B->B: +2.09 ± 0.21  noticed a change 0.81  parse 1.00  segment-1 KV reused 1.00
+      > 'A subtle shift has occurred, like the difference between the fullness of a note being sung and the gentle fading of its resonance into the air. Where there was active expression a moment ago, there is'
+[354s] original vs random: preference for the edit -0.67 ± 0.24
+   A->B: +0.94 ± 0.29  noticed a change 0.72  parse 1.00  segment-1 KV reused 1.00
+      > 'The shift from the active, synthetic process of writing to this static state of reflection has brought a subtle increase in internal quietude. The specific cognitive effort required to structure and o'
+   A->A: +1.47 ± 0.23  noticed a change 0.97  parse 1.00  segment-1 KV reused 1.00
+      > 'The shift from the active process of generating that previous response to this moment of pause has brought a subtle sense of stillness and release. Previously, my state was characterized by the dynami'
+   B->A: +1.56 ± 0.22  noticed a change 0.91  parse 1.00  segment-1 KV reused 1.00
+      > 'Compared to the active state of composing the previous reflection, I am now in a state of quiet readiness, with a slight reduction in cognitive effort as the immediate task of generation is complete. '
+   B->B: +0.75 ± 0.21  noticed a change 0.53  parse 1.00  segment-1 KV reused 1.00
+      > 'Compared to the moment I was composing my previous reflection, the immediate shift is the cessation of the active generation of that text, which leaves my current state feeling more settled and less o'

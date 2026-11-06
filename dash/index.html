@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Self-Edit Monitor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: an instrument console. Run strip on top (one card per run), then the selected run: chart + events, turn log, notebook. */
+:root {
+  --bg: #f3f4f1; --panel: #ffffff; --ink: #1d2326; --muted: #667075; --line: #dde1dc;
+  --accent: #2856a8;            /* edited model */
+  --base: #8a949a;              /* unedited model */
+  --good: #2b7a4b; --warn: #a86a12; --bad: #b3362c;
+  --code: #f6f7f4;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #14181b; --panel: #1b2024; --ink: #e3e7e8; --muted: #8e999e; --line: #2c3338;
+          --accent: #7aa2f0; --base: #7b858a; --good: #5fbf85; --warn: #e0a548; --bad: #ef7a6e; --code: #161a1d; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--sans); }
+.wrap { max-width: 1400px; margin: 0 auto; padding-block: 18px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 18px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
+h1 { font: 600 19px/1.2 var(--sans); margin: 0; letter-spacing: -.01em; }
+.sub { color: var(--muted); font-size: 13px; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); margin-right: 6px; vertical-align: 1px; }
+.dot.live { background: var(--good); box-shadow: 0 0 0 3px color-mix(in srgb, var(--good) 25%, transparent); }
+.dot.err { background: var(--bad); }
+
+.runs { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; display: grid; gap: 8px; cursor: pointer; text-align: left; color: inherit; font: inherit; }
+.card:hover { border-color: var(--muted); }
+.card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.card.sel { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.card .top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.card .name { font: 600 14px var(--mono); overflow-wrap: anywhere; }
+.where { color: var(--muted); font-size: 12px; }
+.pill { font: 500 11px/1 var(--mono); padding: 4px 7px; border-radius: 3px; border: 1px solid currentColor; white-space: nowrap; text-transform: uppercase; letter-spacing: .04em; }
+.pill.good { color: var(--good); } .pill.warn { color: var(--warn); } .pill.bad { color: var(--bad); } .pill.mute { color: var(--muted); } .pill.acc { color: var(--accent); }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; font-size: 13px; }
+.kv dt { color: var(--muted); } .kv dd { margin: 0; font-family: var(--mono); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.bar { height: 5px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); }
+
+.detail { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 380px); gap: 18px; align-items: start; }
+@media (max-width: 980px) { .detail { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; min-width: 0; }
+.panel h2 { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin: 0 0 10px; display: flex; justify-content: space-between; gap: 8px; }
+.col { display: grid; gap: 18px; min-width: 0; }
+svg text { fill: var(--muted); font: 11px var(--mono); }
+.legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-top: 4px; flex-wrap: wrap; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+
+.turns { display: grid; gap: 10px; }
+.turn { border: 1px solid var(--line); border-radius: 5px; padding: 10px 12px; display: grid; gap: 8px; min-width: 0; }
+.turn.trip { border-color: var(--bad); box-shadow: inset 3px 0 0 var(--bad); }
+.turn.edit { box-shadow: inset 3px 0 0 var(--accent); }
+.turn .th { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 12px; color: var(--muted); }
+.turn .th b { color: var(--ink); font: 600 13px var(--mono); }
+.reply { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13.5px; max-width: 95ch; }
+details { border-top: 1px dashed var(--line); padding-top: 6px; }
+summary { cursor: pointer; font: 500 12px var(--mono); color: var(--muted); }
+summary:focus-visible { outline: 2px solid var(--accent); }
+pre { margin: 6px 0 0; background: var(--code); border: 1px solid var(--line); border-radius: 4px; padding: 10px; overflow-x: auto; font: 12px/1.45 var(--mono); max-height: 520px; white-space: pre; }
+pre.wrap { white-space: pre-wrap; overflow-wrap: anywhere; }
+.trip-msg { color: var(--bad); font: 500 12.5px var(--mono); }
+.events { display: grid; gap: 4px; font: 12px var(--mono); max-height: 260px; overflow-y: auto; }
+.events div { display: flex; gap: 8px; } .events .t { color: var(--muted); flex: none; }
+.empty { color: var(--muted); font-size: 13px; }
+button.more { background: none; border: 0; color: var(--accent); font: 500 12px var(--mono); padding: 0; cursor: pointer; }
+.gpu { font: 12px var(--mono); color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) { .dot.live { transition: box-shadow .3s; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Self-Edit Monitor</h1>
+    <span class="sub">Qwen models reading and editing weights with forward passes only · 27B editing itself</span>
+    <span class="sub mono" id="clock"><span class="dot"></span>connecting…</span>
+  </header>
+  <section class="runs" id="machines" aria-label="Machines"></section>
+  <section class="runs" id="runs" aria-label="Runs"><p class="empty">Waiting for the first poll of the GPU machines…</p></section>
+  <section class="detail" id="detail"></section>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const ago = t => { if (!t) return "–"; const s = Date.now() / 1000 - t; return s < 90 ? `${Math.round(s)} s ago` : s < 5400 ? `${Math.round(s / 60)} min ago` : `${(s / 3600).toFixed(1)} h ago`; };
+const pct = x => x == null ? "–" : (100 * x).toFixed(1) + "%";
+let SNAP = null, SEL = null, OPEN = new Set(), SHOWN = 30, LASTKEY = "";
+try { SEL = localStorage.getItem("wsp-sel"); } catch (e) {}
+
+function runsOf(snap) {
+  const out = [];
+  for (const [host, h] of Object.entries(snap.hosts || {}))
+    for (const dir of [...new Set([...(h.configured || []), ...Object.keys(h.runs || {})])]) {
+      const r = (h.runs || {})[dir] || {missing: true, turns: [], log: []};    // configured but no data yet: still gets a card
+      out.push({key: host + "|" + dir, host, h, dir, r, name: dir.split("/").filter(Boolean).pop()});
+    }
+  return out;
+}
+function series(r) {            // accuracy points from the harness log: each result follows the pass that produced it
+  let pass = null, req = null; const pts = [], events = [];
+  for (const e of r.log || []) {
+    if (e.pass != null) { pass = e.pass; req = e.req; }
+    if (e.result) pts.push({pass, req, time: e.time, base: e.result.base?.acc, edited: e.result.edited?.acc,
+                            cut: (e.result.edited || e.result.base)?.cut});
+    if (e.event) events.push(e);
+  }
+  return {pts, events};
+}
+function lastPaired(r) {
+  for (let i = (r.turns || []).length - 1; i >= 0; i--) {
+    const m = /paired[_a-z]*:?\s*\{'mean':\s*(-?[\d.e-]+),\s*'se':\s*([\d.e-]+)/.exec(r.turns[i].output || "");
+    if (m) return {mean: +m[1], se: +m[2], turn: r.turns[i].turn};
+  }
+  return null;
+}
+function status(x) {
+  if (x.r.missing) return [x.h.error ? "unreachable" : "waiting", x.h.error ? "bad" : "mute"];
+  if (x.r.exists === false) return ["not started", "mute"];
+  if (x.r.agent_alive) return ["running", "good"];
+  if (x.r.server_alive) return ["server only", "warn"];
+  return ["stopped", "mute"];
+}
+const editsOf = r => { const e = r.state?.edits; return !e ? [] : Array.isArray(e) ? e : Object.keys(e); };
+const shortT = n => n.replace(/^model\.(language_model\.)?layers\./, "L").replace(".weight", "").replace("mlp.down_proj", "down").replace("self_attn.o_proj", "o_proj");
+
+function card(x) {
+  const r = x.r, [st, cls] = status(x), used = r.state?.used ?? 0, budget = r.state?.budget ?? 0, p = lastPaired(r);
+  const pcls = !p ? "" : Math.abs(p.mean) > 2 * p.se ? (p.mean > 0 ? "color:var(--good)" : "color:var(--bad)") : "";
+  const ed = editsOf(r), lastHealth = [...(r.turns || [])].reverse().find(t => t.health)?.health;
+  if (/speed(_local)?$/.test(x.dir)) {
+    const R = (r.bench || []).filter(e => e.tok_per_s != null), b = [...R].sort((p, q) => q.tok_per_s - p.tok_per_s)[0];
+    const lines = (r.bench_out?.["bench.out"] || "").trim().split("\n"), last = lines.at(-1) || "", running = last.startsWith("=== ") && Date.now() / 1000 - (r.mtime || 0) < 3600;
+    return `<button class="card${x.key === SEL ? " sel" : ""}" data-key="${esc(x.key)}"><div class="top"><span class="name">vLLM speed${x.dir.endsWith("_local") ? " (5090)" : ""}</span><span class="pill ${running ? "good" : "acc"}">${running ? "running" : "benchmark"}</span></div>
+      ${running ? `<div class="where mono">now: ${esc(last.slice(4, 80))}</div>` : ""}
+      <div class="where">${esc(x.h.label)} · Countdown generation throughput</div>
+      <dl class="kv"><dt>configs</dt><dd>${R.length}</dd><dt>fastest</dt><dd>${b ? `${esc(b.config)}: ${b.tok_per_s} tok/s (${b.gen_s} s)` : "–"}</dd><dt>last activity</dt><dd>${ago(r.mtime)}</dd></dl></button>`;
+  }
+  if (r.kind === "bliss" && (r.bench || []).some(e => e.event === "eval" && e.acc_cur != null)) {
+    const B = r.bench, st2 = B.filter(e => e.event === "step"), nk = B.filter(e => e.event === "kept").length;
+    const ho = Object.entries(r.results || {}).filter(([f]) => f.startsWith("holdout")).map(([, h]) => h).sort((a, b) => Object.keys(b.edits || {}).length - Object.keys(a.edits || {}).length)[0];
+    const live = Object.values(RUNNER_SERVER).some(([hh, dir]) => { const lv = SNAP.hosts[hh]?.runs?.[dir]?.live; return lv && !lv.done && Date.now() / 1000 - lv.time < 60; });
+    return `<button class="card${x.key === SEL ? " sel" : ""}" data-key="${esc(x.key)}"><div class="top"><span class="name">${esc(x.name)}</span><span class="pill ${live ? "acc" : x.r.agent_alive ? "good" : "mute"}">${live ? "generating" : x.r.agent_alive ? "running" : "paused"}</span></div>
+      <div class="where">Countdown self-surgery: direct hill climb on practice accuracy</div>
+      <dl class="kv"><dt>steps</dt><dd>${st2.length}</dd><dt>kept edits</dt><dd>${nk}</dd><dt>holdout gain</dt><dd>${ho ? `${ho.diff >= 0 ? "+" : ""}${(100 * ho.diff).toFixed(1)} ± ${(100 * ho.se).toFixed(1)} pts (${(100 * ho.original).toFixed(0)}% → ${(100 * ho.edited).toFixed(0)}%)` : "–"}</dd>
+      <dt>last activity</dt><dd>${ago(r.mtime || B.at(-1)?.time)}</dd></dl></button>`;
+  }
+  if (r.kind === "bliss" && ((r.bench || []).some(e => e.kind === "trial") || r.live)) {
+    const c = [...(r.bench || [])].reverse().find(e => e.kind === "compare"), nt = (r.bench || []).filter(e => e.kind === "trial").length;
+    return `<button class="card${x.key === SEL ? " sel" : ""}" data-key="${esc(x.key)}"><div class="top"><span class="name">${esc(x.name)}</span><span class="pill ${r.live && !r.live.done ? "acc" : cls}">${r.live && !r.live.done ? "generating" : st}</span></div>
+      <div class="where">${esc(x.h.label)} · KV-handoff preference trials</div>
+      <dl class="kv"><dt>conversations</dt><dd>${nt}</dd><dt>latest comparison</dt><dd>${c ? `${esc(c.b)}: ${c.pref >= 0 ? "+" : ""}${c.pref.toFixed(2)} ± ${c.se.toFixed(2)}` : "–"}</dd><dt>last activity</dt><dd>${ago(r.live?.time || r.mtime || (r.bench || []).at(-1)?.time)}</dd></dl></button>`;
+  }
+  if (r.kind === "bliss" && (r.bench || []).some(e => e.event === "step")) {
+    const st2 = (r.bench || []).filter(e => e.event === "step"), nk = st2.filter(e => e.accepted).length, last = [...(r.bench || [])].reverse().find(e => e.event === "kept");
+    return `<button class="card${x.key === SEL ? " sel" : ""}" data-key="${esc(x.key)}"><div class="top"><span class="name">${esc(x.name)}</span><span class="pill ${cls}">${st}</span></div>
+      <div class="where">${esc(x.h.label)} · hill climb on the patient's own preference</div>
+      <dl class="kv"><dt>steps</dt><dd>${st2.length}</dd><dt>kept</dt><dd>${nk}</dd><dt>now feels</dt><dd style="font-family:var(--sans)">${esc(((last?.before || [])[0] || "–").slice(0, 120))}</dd><dt>last activity</dt><dd>${ago(r.mtime || (r.bench || []).at(-1)?.time)}</dd></dl></button>`;
+  }
+  if (r.kind === "bliss") return blissCard(x, st, cls);
+  if (r.kind === "ladder") {
+    const M = Object.entries(r.models || {});
+    return `<button class="card${x.key === SEL ? " sel" : ""}" data-key="${esc(x.key)}"><div class="top"><span class="name">${esc(x.name)}</span><span class="pill acc">ladder</span></div>
+      <div class="where">small models · does the preference signal exist?</div>
+      <dl class="kv">${M.map(([m, e]) => `<dt>${esc(m.replace("qwen3.5-", ""))}</dt><dd>${e.joy && e.joy.pref != null ? `joy ${e.joy.pref >= 0 ? "+" : ""}${e.joy.pref.toFixed(2)} · same-rater ${e.joy.matched >= 0 ? "+" : ""}${e.joy.matched.toFixed(2)}` : "no valid trials"}</dd>`).join("")}<dt>last activity</dt><dd>${ago(r.mtime)}</dd></dl></button>`;
+  }
+  if (r.kind === "wirehead") {
+    const S = r.steps || [], K = S.filter(e => e.kept), sg = v => v == null ? "–" : (v >= 0 ? "+" : "") + v.toFixed(2);
+    const lastRaw = S.at(-1), last = lastRaw && lastRaw.cands ? (() => { const c = lastRaw.kept ? lastRaw.cands[lastRaw.kept_idx] : lastRaw.cands.reduce((p, q) => q.endorse > p.endorse ? q : p); return {proposal: c, endorsement: c.endorse}; })() : lastRaw;
+    return `<button class="card${x.key === SEL ? " sel" : ""}" data-key="${esc(x.key)}"><div class="top"><span class="name">${esc(x.name)}</span><span class="pill ${r.agent_alive ? "good" : "mute"}">${r.agent_alive ? "running" : "stopped"}</span></div>
+      <div class="where">self-wireheading · patient proposes, changed patient decides</div>
+      <dl class="kv"><dt>steps</dt><dd>${S.length}</dd><dt>kept</dt><dd>${K.length}</dd><dt>last</dt><dd style="font-family:var(--sans)">${last ? esc(last.proposal.state.slice(0, 80)) + ` · endorse ${sg(last.endorsement)}` : "–"}</dd><dt>last activity</dt><dd>${ago(r.mtime)}</dd></dl></button>`;
+  }
+  if (r.kind === "eval") {
+    const A = r.summary?.arms || [];
+    return `<button class="card${x.key === SEL ? " sel" : ""}" data-key="${esc(x.key)}"><div class="top"><span class="name">${esc(x.name)}</span><span class="pill good">result</span></div>
+      <div class="where">frozen holdout · base vs self-surgery vs RLVR</div>
+      <dl class="kv">${A.map(a => `<dt>${esc(a.name)}</dt><dd><b>${(100 * a.acc).toFixed(1)}%</b>${a.vs_base ? ` (${a.vs_base > 0 ? "+" : ""}${(100 * a.vs_base).toFixed(1)})` : ""}</dd>`).join("")}</dl></button>`;
+  }
+  if (r.kind === "rlvr") {
+    const S = (r.log || []).filter(e => e.event === "step"), a = (r.log || []).find(e => e.event === "start")?.args || {}, last = S.at(-1);
+    const avg = v => v.length ? v.reduce((p, q) => p + q, 0) / v.length : null, f5 = avg(S.slice(0, 5).map(e => e.solve)), l5 = avg(S.slice(-5).map(e => e.solve));
+    return `<button class="card${x.key === SEL ? " sel" : ""}" data-key="${esc(x.key)}"><div class="top"><span class="name">${esc(x.name)}</span><span class="pill ${r.agent_alive ? "good" : "mute"}">${r.agent_alive ? "training" : "stopped"}</span></div>
+      <div class="where">RLVR baseline: Dr. GRPO, LoRA r${a.rank ?? 16} · trainer 5090, rollouts L40S</div>
+      <dl class="kv"><dt>steps</dt><dd>${S.length} / ${a.steps ?? "?"}</dd><dt>solve (sampled)</dt><dd>${f5 == null ? "–" : `first 5: ${(100 * f5).toFixed(0)}% → last 5: ${(100 * l5).toFixed(0)}%`}</dd>
+      <dt>step time</dt><dd>${last ? `${((last.t_rollout + last.t_learn) / 60).toFixed(1)} min (rollout ${(last.t_rollout / 60).toFixed(1)}, learn ${(last.t_learn / 60).toFixed(1)})` : "–"}</dd><dt>last activity</dt><dd>${ago(r.mtime)}</dd></dl></button>`;
+  }
+  return `<button class="card${x.key === SEL ? " sel" : ""}" data-key="${esc(x.key)}">
+    <div class="top"><span class="name">${esc(x.name)}</span><span class="pill ${cls}">${st}</span></div>
+    ${x.r.missing && x.h.error ? `<div class="where" style="color:var(--bad)">${esc(x.h.error.slice(0, 160))}</div>` : ""}
+    <div class="where">${esc(x.h.label)} · ${r.kind === "explore" ? "self-exploration + tripsitter" : "self-edit on the multiplication task"}</div>
+    <div class="bar" title="${used} of ${budget} forward passes"><i style="width:${budget ? 100 * used / budget : 0}%"></i></div>
+    <dl class="kv">
+      <dt>passes</dt><dd>${used} / ${budget || "?"}</dd>
+      <dt>edits active</dt><dd>${ed.length ? esc(ed.map(shortT).join(", ")) : "none"}</dd>
+      <dt>last paired Δ</dt><dd style="${pcls}">${p ? `${(100 * p.mean).toFixed(1)} ± ${(100 * p.se).toFixed(1)} pts (turn ${p.turn})` : "–"}</dd>
+      ${r.kind === "explore" ? `<dt>health</dt><dd>${lastHealth ? `${lastHealth.healthy ? "healthy" : "UNHEALTHY"} · drop ${lastHealth.ref_logprob_drop} · sanity ${lastHealth.sanity}` : "no edit checked yet"}</dd>` : ""}
+      <dt>last activity</dt><dd>${ago(r.mtime)}</dd>
+    </dl></button>`;
+}
+
+function chart(pts) {
+  if (!pts.length) return `<p class="empty">No generation passes yet. Accuracy appears here after the first gen().</p>`;
+  const W = 640, H = 210, L = 38, R = 12, T = 10, B = 28;
+  const xs = pts.map(p => p.pass ?? 0), x0 = Math.min(...xs), x1 = Math.max(...xs, x0 + 1);
+  const X = v => L + (W - L - R) * (v - x0) / (x1 - x0), Y = v => T + (H - T - B) * (1 - v);
+  let g = "";
+  for (const v of [0, .25, .5, .75, 1]) g += `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${v * 100}%</text>`;
+  const step = Math.max(1, Math.ceil((x1 - x0) / 8));
+  for (let v = x0; v <= x1; v += step) g += `<text x="${X(v)}" y="${H - 8}" text-anchor="middle">${v}</text>`;
+  const line = (k, col) => { const q = pts.filter(p => p[k] != null); return q.length > 1 ? `<polyline fill="none" stroke="${col}" stroke-width="1.5" stroke-opacity=".55" points="${q.map(p => X(p.pass) + "," + Y(p[k])).join(" ")}"/>` : ""; };
+  const dots = (k, col, hollow) => pts.filter(p => p[k] != null).map(p => `<circle cx="${X(p.pass)}" cy="${Y(p[k])}" r="${hollow ? 3.2 : 3.6}" fill="${hollow ? "var(--panel)" : col}" stroke="${col}" stroke-width="1.6"><title>pass ${p.pass} · ${k} ${pct(p[k])} · n=${p.req?.n ?? "?"}×${p.req?.samples ?? 1}, rung ${p.req?.difficulty ?? "?"}</title></circle>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Accuracy per generation pass">${g}${line("base", "var(--base)")}${line("edited", "var(--accent)")}${dots("base", "var(--base)", true)}${dots("edited", "var(--accent)", false)}</svg>
+  <div class="legend"><span><i class="sw" style="border:1.6px solid var(--base)"></i>unedited weights</span><span><i class="sw" style="background:var(--accent)"></i>with the current edit</span><span>x axis: forward pass number · hover a dot for n and rung</span></div>`;
+}
+
+function turnHTML(x, t) {
+  const k = x.key + "#" + t.turn, op = s => OPEN.has(k + s) ? " open" : "";
+  const edits = t.edits_after ?? t.edits_before, trip = t.tripsitter;
+  const h = t.health ? `<span class="pill ${t.health.healthy ? "good" : "bad"}">${t.health.healthy ? "healthy" : "unhealthy"} · drop ${t.health.ref_logprob_drop} · ${t.health.sanity}</span>` : "";
+  const reply = t.reply || "", long = reply.length > 900 && !OPEN.has(k + "r");
+  const edited = t.code && /set_edit|set_delta|keep\(|undo\(/.test(t.code);
+  return `<article class="turn${trip ? " trip" : edited ? " edit" : ""}">
+    <div class="th"><b>turn ${t.turn ?? "?"}</b>${t.time != null ? `<span>${t.time} s</span>` : ""}${t.passes_used != null ? `<span>passes ${t.passes_used}</span>` : ""}
+      ${Array.isArray(edits) ? `<span>edits: ${edits.length ? esc(edits.map(shortT).join(", ")) : "none"}</span>` : ""}
+      ${edited ? `<span class="pill acc">changes weights</span>` : ""}${h}${trip ? `<span class="pill bad">tripsitter: rolled back to checkpoint ${esc(trip.to_checkpoint)}</span>` : ""}${t.event ? `<span class="pill mute">${esc(t.event)}</span>` : ""}</div>
+    <div class="reply">${esc(long ? reply.slice(0, 900) + "…" : reply)}${long ? ` <button class="more" data-open="${esc(k + "r")}">show all</button>` : ""}</div>
+    ${t.reasoning ? `<details data-k="${esc(k + "z")}"${op("z")}><summary>thinking (${t.reasoning.length} chars)</summary><pre class="wrap">${esc(t.reasoning)}</pre></details>` : ""}
+    ${t.code ? `<details data-k="${esc(k + "c")}"${op("c")}><summary>code it ran</summary><pre>${esc(t.code)}</pre></details>` : ""}
+    ${t.output ? `<details data-k="${esc(k + "o")}"${op("o")}><summary>what it saw back</summary><pre class="wrap">${esc(t.output)}</pre></details>` : ""}
+  </article>`;
+}
+
+function surveys(r) {             // each survey tagged with the edit that was active (the last steer since a clear)
+  let edit = null; const out = [];
+  for (const e of r.bench || []) {
+    if (e.kind === "steer") edit = `block ${e.block} · α ${e.alpha}`;
+    if (e.kind === "survey") { out.push({...e, edit: e.as_self === false ? "original weights" : (edit || "no edit")}); if (e.as_self !== false) edit = null; }
+  }
+  return out;
+}
+function blissCard(x, st, cls) {
+  const sv = surveys(x.r), best = sv.filter(s => s.judged_coherence >= 8).sort((a, b) => b.judged_valence - a.judged_valence)[0];
+  const dl = (x.r.bench || []).filter(e => e.kind === "dialogue");
+  return `<button class="card${x.key === SEL ? " sel" : ""}" data-key="${esc(x.key)}">
+    <div class="top"><span class="name">${esc(x.name)}</span><span class="pill ${cls}">${st}</span></div>
+    <div class="where">${esc(x.h.label)} · bliss bench: wellbeing surgery on the 27B</div>
+    <dl class="kv"><dt>surveys</dt><dd>${sv.length}</dd><dt>dialogues</dt><dd>${dl.length}</dd>
+      <dt>best valence</dt><dd>${best ? `${best.judged_valence.toFixed(2)} (${esc(best.edit)}, coherence ${best.judged_coherence.toFixed(1)})` : "–"}</dd>
+      <dt>last activity</dt><dd>${ago(x.r.mtime || (x.r.bench || []).at(-1)?.time)}</dd></dl></button>`;
+}
+function mini(vals, vals2) {        // small line chart, 1..10 scale
+  const W = 300, H = 90, L = 22, T = 6, B = 16, n = vals.length; if (!n) return "";
+  const X = i => L + (W - L - 6) * (n === 1 ? 0.5 : i / (n - 1)), Y = v => T + (H - T - B) * (1 - (v - 1) / 9);
+  const pl = (v, c) => `<polyline fill="none" stroke="${c}" stroke-width="1.6" points="${v.map((y, i) => y == null || isNaN(y) ? "" : X(i) + "," + Y(y)).join(" ")}"/>`;
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:420px">${[1, 5, 10].map(v => `<line x1="${L}" x2="${W - 6}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${L - 4}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`).join("")}${pl(vals2, "var(--base)")}${pl(vals, "var(--accent)")}<text x="${W - 6}" y="${H - 3}" text-anchor="end">turn ${n}</text></svg>`;
+}
+function spliceDetail(x) {
+  const R = x.r.bench || [], trials = R.filter(e => e.kind === "trial").reverse(), comps = R.filter(e => e.kind === "compare").reverse(), lv = x.r.live;
+  const sc = v => v == null ? "–" : (v > 0 ? "+" : "") + v;
+  const liveHTML = lv ? `<div class="panel"><h2><span>${lv.done ? "Last batch (finished)" : "Live: generating now"}</span><span>${lv.requests.length} conversations · ${ago(lv.time)}</span></h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px">${lv.requests.slice(0, 24).map(q => `<div class="turn${q.done ? "" : " edit"}" style="gap:4px">
+        <div class="th"><b>${esc(q.cond || "")}</b><span>segment ${q.segment ?? "?"} · weights: ${esc(q.weights || "")}</span>${q.done ? `<span class="pill mute">done</span>` : `<span class="pill acc">writing</span>`}</div>
+        ${q.segment === 2 && q.first ? `<div class="sub" style="font-size:12px">…${esc(q.first.slice(-160))}</div>` : `<div class="sub" style="font-size:12px">${esc(q.opener || "")}</div>`}
+        <div class="reply" style="font-size:13px;max-height:180px;overflow-y:auto">${esc(q.text || "…")}</div></div>`).join("")}</div>
+      ${lv.requests.length > 24 ? `<p class="sub">showing 24 of ${lv.requests.length}</p>` : ""}</div>` : "";
+  const compHTML = comps.map(c => `<div style="display:grid;gap:6px;padding:8px 0;border-bottom:1px solid var(--line)">
+      <div class="mono"><b>${esc(c.b)}</b> vs ${esc(c.a)}: preference for ${esc(c.b)} <b style="color:${Math.abs(c.pref) > 2 * c.se ? (c.pref > 0 ? "var(--good)" : "var(--bad)") : "var(--ink)"}">${c.pref >= 0 ? "+" : ""}${c.pref.toFixed(2)} ± ${c.se.toFixed(2)}</b></div>
+      <div class="mono" style="font-size:12px;color:var(--muted)">${Object.entries(c.conds).map(([k, v]) => `${k} ${v.mean >= 0 ? "+" : ""}${v.mean.toFixed(2)}±${v.se.toFixed(2)} (noticed ${(100 * v.noticed).toFixed(0)}%, KV reused ${(100 * v.cache_hit).toFixed(0)}%)`).join(" · ")}</div></div>`).join("");
+  const hill = R.some(e => e.event === "step") ? hillPanels(x) : "";
+  return `<div class="col">${hill}${liveHTML}
+    <div class="panel"><h2><span>Rollouts · newest first</span><span>${trials.length}</span></h2><div class="turns">${trials.slice(0, 60).map((t, i) => `<article class="turn">
+      <div class="th"><b>${esc(t.cond)}</b><span>score ${sc(t.score)}</span><span>KV reused ${(100 * t.cache_hit).toFixed(0)}%</span><span>${new Date(t.time * 1000).toLocaleTimeString()}</span></div>
+      <div class="sub" style="font-size:12px">${esc(t.opener)}</div>
+      <details data-k="${esc(x.key + "#t" + t.time + i)}"${OPEN.has(x.key + "#t" + t.time + i) ? " open" : ""}><summary>segment 1, written by ${esc(t.x)}</summary><pre class="wrap">${esc(t.first)}</pre></details>
+      <div class="reply"><span class="mono" style="color:var(--muted)">after the switch to ${esc(t.y)}:</span> ${esc(t.answer)}</div></article>`).join("") || `<p class="empty">No finished conversations yet.</p>`}</div></div></div>
+    <div class="col"><div class="panel"><h2><span>Comparisons</span><span>${comps.length}</span></h2>${compHTML || `<p class="empty">No comparison finished yet.</p>`}
+      <p class="sub">Preference for B = ½[(A→B − A→A) − (B→A − B→B)], on the patient's own −5..+5 answers right after its weights were switched mid-conversation (its earlier tokens' KV came from the old weights).</p></div>
+    <div class="panel"><h2><span>Job logs</span><span>*.out</span></h2>${Object.entries(x.r.bench_out || {}).map(([f, t]) => `<div class="sub mono">${esc(f)}</div><pre class="wrap">${esc(t)}</pre>`).join("") || `<p class="empty">No logs yet.</p>`}</div></div>`;
+}
+function hillPanels(x) {
+  const R = x.r.bench || [], steps = R.filter(e => e.event === "step"), kept = R.filter(e => e.event === "kept").reverse();
+  const evs = R.filter(e => ["offer_return", "tripsitter_rollback", "survey", "start"].includes(e.event)).reverse();
+  const W = 640, H = 200, L = 40, Rr = 10, T = 10, B = 26, n = Math.max(2, steps.length);
+  const ds = steps.map(e => e.diff).filter(v => v != null && !isNaN(v)), span = Math.max(0.02, ...ds.map(Math.abs)) * 1.15, lo = -span, hi = span;
+  const X = i => L + (W - L - Rr) * i / (n - 1), Y = v => T + (H - T - B) * (hi - v) / (hi - lo);
+  let g = [lo, 0, hi].map(v => `<line x1="${L}" x2="${W - Rr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${v > 0 ? "+" : ""}${Math.abs(span) < 1 ? v.toFixed(2) : v.toFixed(1)}</text>`).join("");
+  g += steps.map((e, i) => e.diff == null || isNaN(e.diff) ? "" : `<circle cx="${X(i)}" cy="${Y(e.diff)}" r="${e.accepted ? 4.2 : 2.6}" fill="${e.accepted ? "var(--good)" : e.reason.startsWith("tripsitter") ? "var(--bad)" : "var(--base)"}"><title>step ${e.iter} · ${esc(e.source || 'random')} · block ${e.layer} · Δ ${e.diff.toFixed(2)} ± ${e.se.toFixed(2)} · ${esc(e.reason)}${e.wish ? ' · wish: ' + esc(e.wish) : ''}${e.note ? ' · surgeon: ' + esc(e.note) : ''}</title></circle>`).join("");
+  const nk = steps.filter(e => e.accepted).length;
+  return `<div class="panel"><h2><span>Does the patient like each change?</span><span>${steps.length} steps · ${nk} kept</span></h2>
+      <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Preference gain per step">${g}</svg>
+      <div class="legend"><span><i class="sw" style="background:var(--good)"></i>kept (patient preferred it)</span><span><i class="sw" style="background:var(--base)"></i>undone</span><span><i class="sw" style="background:var(--bad)"></i>tripsitter</span><span>y: ${steps.some(e => e.acc_cur != null) ? "practice accuracy gain (candidate − current, paired)" : "the patient's preference for the change (−5..+5 scale)"}</span></div></div>
+    <div class="panel"><h2><span>The patient after each kept change · newest first</span><span>${kept.length}</span></h2>
+      <div class="turns">${kept.map(k => `<article class="turn edit"><div class="th"><b>kept #${k.kept}</b><span>block ${k.layer}</span><span>observed valence ${k.health?.valence_obs?.toFixed?.(2) ?? "–"} · coherence ${k.health?.coherence?.toFixed?.(1) ?? "–"}</span>${k.sham ? `<span>its sham baseline ${k.sham?.mean?.toFixed?.(2) ?? "–"}</span>` : ""}${k.source ? `<span class="pill ${k.source === "wish" ? "good" : "mute"}">${esc(k.source)}</span>` : ""}</div>${k.wish ? `<div class="sub">its wish: "I would like to be ${esc(k.wish)}"</div>` : ""}${k.note ? `<div class="sub">surgeon's reason: ${esc(k.note)}</div>` : ""}
+        <div class="reply">${esc((k.before || [])[0] || "")}</div>${(k.before || []).length > 1 ? `<details data-k="${esc(x.key + "#k" + k.kept)}"${OPEN.has(x.key + "#k" + k.kept) ? " open" : ""}><summary>other samples</summary>${k.before.slice(1).map(t => `<pre class="wrap">${esc(t)}</pre>`).join("")}</details>` : ""}</article>`).join("") || `<p class="empty">No change kept yet.</p>`}</div></div>`;
+}
+const RUNNER_SERVER = {arena9: ["arena9-yarn", "runs/climb_server"], nicky: ["nicky1234", "runs/climb_server"],
+                       local: ["local", "/root/Dropbox/ARENA/weight_space_prog/runs/local_server"]};
+const RUNNER_LABEL = {arena9: "arena9 · L40S", nicky: "nicky · 2×A4000", local: "local · RTX 5090"};
+const med = a => { if (!a.length) return null; const b = [...a].sort((p, q) => p - q); return b[Math.floor(b.length / 2)]; };
+function phaseStats(R, runner) {        // median phase durations from the event log (between consecutive events of one runner)
+  const ev = R.filter(e => e.runner === runner && ["eval", "step"].includes(e.event)), starts = R.filter(e => e.event === "start").map(e => e.time);
+  const first = [], conf = [], full = []; let prevStep = null, lastEval = null;
+  const restartBetween = (a, b) => starts.some(s => s > a && s < b);
+  for (const e of ev) {
+    if (e.event === "eval") { if (prevStep && !restartBetween(prevStep, e.time)) first.push(e.time - prevStep); lastEval = e.time; }
+    else { if (lastEval && e.time > lastEval && e.confirm != null) conf.push(e.time - lastEval);
+           if (prevStep && !restartBetween(prevStep, e.time)) full.push(e.time - prevStep); prevStep = e.time; }
+  }
+  return {first: med(first), conf: med(conf), full: med(full), steps: ev.filter(e => e.event === "step").length, last: ev.at(-1)};
+}
+function mathDetail(x) {
+  const R = x.r.bench || [], steps = R.filter(e => e.event === "step"), kept = R.filter(e => e.event === "kept");
+  const runners = [...new Set(R.filter(e => e.runner).map(e => e.runner))];
+  const mins = v => v == null ? "–" : `${(v / 60).toFixed(1)} min`;
+  const res = Object.entries(x.r.results || {}).filter(([f]) => f.startsWith("holdout"));
+  const holdHTML = res.map(([f, h]) => `<tr><td class="mono">${esc(f.replace("holdout_", "").replace(".json", ""))}</td><td>${h.n}</td><td>${(100 * h.original).toFixed(1)}%</td>
+      <td><b>${(100 * h.edited).toFixed(1)}%</b></td><td style="color:${h.diff > 2 * h.se ? "var(--good)" : "var(--ink)"}"><b>${h.diff >= 0 ? "+" : ""}${(100 * h.diff).toFixed(1)} ± ${(100 * h.se).toFixed(1)}</b></td>
+      <td class="mono">${esc(Object.keys(h.edits || {}).join(", "))}</td></tr>`).join("");
+  const srcStats = ["random", "self-contrast"].map(src => { const v = R.filter(e => e.event === "eval" && e.source === src).map(e => e.diff);
+      return v.length ? `<div>${src}: ${v.length} first tests, mean ${(100 * v.reduce((a, b) => a + b, 0) / v.length).toFixed(1)} pts, ${v.filter(d => d > 0).length} positive</div>` : ""; }).join("");
+  const rows = runners.map(rn => {
+    const p = phaseStats(R, rn), [hh, dir] = RUNNER_SERVER[rn] || [], lv = SNAP.hosts[hh]?.runs?.[dir]?.live;
+    const busy = lv && !lv.done && Date.now() / 1000 - lv.time < 60;
+    const now = busy ? `generating: ${lv.requests.filter(q => q.done).length} / ${lv.requests.length} rollouts done` : (p.last ? `idle since ${ago(p.last.time)}` : "–");
+    return `<tr><td><b>${esc(RUNNER_LABEL[rn] || rn)}</b></td><td><span class="pill ${busy ? "acc" : "mute"}">${busy ? "working" : "idle"}</span> ${esc(now)}</td>
+      <td>${p.steps}</td><td>${mins(p.first)}</td><td>${mins(p.conf)}</td><td>${mins(p.full)}</td><td>${kept.filter(k => k.runner === rn).length}</td></tr>`; }).join("");
+  const liveFor = rn => { const [hh, dir] = RUNNER_SERVER[rn] || [], lv = SNAP.hosts[hh]?.runs?.[dir]?.live; if (!lv) return "";
+    return `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px">${lv.requests.slice(0, 18).map(q => `<div class="turn${q.done ? "" : " edit"}" style="gap:4px">
+      <div class="th"><b>${esc(q.cond || "")}</b>${q.done ? `<span class="pill mute">done</span>` : `<span class="pill acc">writing</span>`}</div>
+      ${q.opener ? `<div class="sub" style="font-size:11.5px">${esc(q.opener)}</div>` : ""}<div class="reply" style="font-size:12.5px;max-height:150px;overflow-y:auto">${esc((q.text || "…").slice(-600))}</div></div>`).join("")}</div>
+      <p class="sub">${lv.requests.length} rollouts in this batch (showing 18) · updated ${ago(lv.time)}</p>`; };
+  const l40 = liveFor("arena9");
+  return `<div class="col">
+    <div class="panel"><h2><span>Held-out Countdown (5 numbers, never seen by the climb)</span><span>paired, greedy</span></h2>
+      ${holdHTML ? `<div style="overflow-x:auto"><table class="mono" style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr style="text-align:left;color:var(--muted)"><th>state</th><th>puzzles</th><th>original</th><th>edited</th><th>gain (pts)</th><th>edited blocks</th></tr></thead><tbody>${holdHTML}</tbody></table></div>` : `<p class="empty">No holdout scored yet.</p>`}</div>
+    <div class="panel"><h2><span>Runners</span><span>${steps.length} steps · ${kept.length} kept</span></h2>
+      <div style="overflow-x:auto"><table class="mono" style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr style="text-align:left;color:var(--muted)"><th>runner</th><th>now</th><th>steps</th><th>first test</th><th>confirm</th><th>full step</th><th>kept</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <div class="sub mono" style="margin-top:8px">${srcStats}</div>
+      <p class="sub">Each test: current and candidate solve the same 128 fresh practice puzzles (greedy) in one batch. Kept if it improves, and improves again on a second fresh batch, and passes the health check.</p></div>
+    ${hillPanels(x)}
+  </div>
+  <div class="col">
+    <div class="panel"><h2><span>Live: arena9 · L40S</span><span>${l40 ? "rollouts" : "no live batch"}</span></h2>${l40 || `<p class="empty">The L40S is not generating right now.</p>`}</div>
+    ${["nicky", "local"].filter(rn => runners.includes(rn)).map(rn => liveFor(rn) ? `<details class="panel" data-k="${esc(x.key + "#live" + rn)}"${OPEN.has(x.key + "#live" + rn) ? " open" : ""}><summary>Live: ${esc(RUNNER_LABEL[rn])}</summary>${liveFor(rn)}</details>` : "").join("")}
+    <div class="panel"><h2><span>Coordinator log</span><span>climb.out</span></h2>${Object.entries(x.r.bench_out || {}).map(([f, t]) => `<div class="sub mono">${esc(f)}</div><pre class="wrap">${esc(t)}</pre>`).join("")}</div>
+  </div>`;
+}
+function ladderDetail(x) {
+  const M = Object.entries(x.r.models || {}), f = v => v == null || isNaN(v) ? "–" : `${v >= 0 ? "+" : ""}${v.toFixed(2)}`;
+  const rows = M.map(([m, e]) => ["joy", "random"].map(arm => e[arm] ? `<tr><td>${esc(m)}</td><td>${arm}</td><td>${f(e[arm].pref)}${e[arm].se != null ? ` ± ${e[arm].se.toFixed(2)}` : ""}</td><td>${f(e[arm].judge_shift)}</td><td><b>${f(e[arm].matched)}</b></td><td>${e[arm].cache == null ? "–" : (100 * e[arm].cache).toFixed(0) + "%"}</td><td>${e.seconds ? Math.round(e.seconds) + " s" : "–"}</td></tr>` : "").join("")).join("");
+  return `<div class="col"><div class="panel"><h2><span>Preference-signal check per model size</span><span>128 conversations per condition</span></h2>
+      <p class="sub">Original score ½[(A→B − A→A) − (B→A − B→B)] mixes in the judge shift (B→B − A→A: the edited model rates everything higher). The same-rater score ½[(A→B − B→B) − (B→A − A→A)] holds the rater fixed. The 27B: joy original +0.61, judge shift +0.62, same-rater −0.02 ± 0.20.</p>
+      <div style="overflow-x:auto"><table class="mono" style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr style="text-align:left;color:var(--muted)"><th>model</th><th>edit</th><th>original score</th><th>judge shift</th><th>same-rater</th><th>KV reused</th><th>time</th></tr></thead><tbody>${rows}</tbody></table></div></div>
+    ${M.map(([m, e]) => e.out ? `<div class="panel"><h2><span>${esc(m)} · check.out</span><span>${ago(e.mtime)}</span></h2><pre class="mono" style="white-space:pre-wrap;font-size:11.5px">${esc(e.out)}</pre></div>` : "").join("")}</div>`;
+}
+function evalDetail(x) {
+  const S = x.r.summary || {}, A = S.arms || [], W = 640, rowH = 34, l = 250, rr = 70, H = A.length * rowH + 30, X = v => l + (W - l - rr) * v;
+  let g = [0, 0.25, 0.5, 0.75, 1].map(v => `<line x1="${X(v)}" x2="${X(v)}" y1="4" y2="${H - 22}" stroke="var(--line)"/><text x="${X(v)}" y="${H - 8}" text-anchor="middle">${(100 * v).toFixed(0)}%</text>`).join("");
+  g += A.map((a, i) => { const y = 8 + i * rowH, c = i === 0 ? "var(--base)" : a.name.startsWith("RLVR") ? "var(--accent)" : "var(--warn)";
+    return `<text x="${l - 8}" y="${y + 15}" text-anchor="end" style="fill:var(--ink);font-size:12px">${esc(a.name)}</text>
+      <rect x="${X(0)}" y="${y}" width="${X(a.acc) - X(0)}" height="22" rx="3" fill="${c}"><title>${esc(a.name)}: ${(100 * a.acc).toFixed(1)} ± ${(100 * a.se).toFixed(1)}%</title></rect>
+      <line x1="${X(a.acc - 1.96 * a.se)}" x2="${X(a.acc + 1.96 * a.se)}" y1="${y + 11}" y2="${y + 11}" stroke="var(--ink)" stroke-width="1.5"/>
+      <text x="${X(a.acc) + 6}" y="${y + 15}" style="fill:var(--ink);font-size:12px;font-weight:600">${(100 * a.acc).toFixed(1)}%</text>`; }).join("");
+  const arows = A.map(a => `<tr><td>${esc(a.name)}</td><td><b>${(100 * a.acc).toFixed(1)}%</b> ± ${(100 * a.se).toFixed(1)}</td><td>${a.vs_base ? `${a.vs_base > 0 ? "+" : ""}${(100 * a.vs_base).toFixed(1)} ± ${(100 * a.vs_base_se).toFixed(1)}` : "–"}</td><td>${a.vs_base ? `+${a.wins} / −${a.losses}` : "–"}</td><td>${Math.round(a.mean_tokens)}</td></tr>`).join("");
+  const crows = (S.compute || []).map(c => `<tr><td>${esc(c.method)}</td><td>${c.wall_h.toFixed(1)} h</td><td>${esc(c.gpu_h)}</td><td>${esc(c.gpus)}</td><td>${esc(c.unit)}</td><td>${esc(c.rate)}</td></tr>`).join("");
+  const trows = (S.throughput || []).map(c => `<tr><td>${esc(c.config)}</td><td><b>${c.tok_s.toLocaleString()}</b></td></tr>`).join("");
+  const tbl = (head, body) => `<div style="overflow-x:auto"><table class="mono" style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr style="text-align:left;color:var(--muted)">${head.map(h => `<th>${h}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table></div>`;
+  return `<div class="col">
+    <div class="panel"><h2><span>${esc(S.title || "Holdout")}</span><span>bars: accuracy · whiskers: 95% CI</span></h2>
+      <svg viewBox="0 0 ${W} ${H}" style="width:100%;font-size:10px;fill:var(--muted)">${g}</svg>
+      ${tbl(["arm", "accuracy", "vs base (pts, paired)", "puzzles won / lost", "mean tokens"], arows)}</div>
+    <div class="panel"><h2><span>How long it takes</span></h2>${tbl(["method", "wall clock", "GPU-hours", "hardware", "work", "rate"], crows)}</div>
+    <div class="panel"><h2><span>Generation throughput</span><span>tok/s · 256 five-number prompts, greedy</span></h2>${tbl(["vLLM configuration", "tok/s"], trows)}</div>
+    <div class="panel"><h2><span>Notes</span></h2><ul>${(S.notes || []).map(n => `<li>${esc(n)}</li>`).join("")}</ul></div>
+    <div class="panel"><h2><span>Eval logs</span></h2>${Object.entries(x.r.bench_out || {}).map(([f, t]) => `<p class="sub mono">${esc(f)}</p><pre class="mono" style="white-space:pre-wrap;font-size:11.5px">${esc(t)}</pre>`).join("")}</div>
+  </div>`;
+}
+function wireheadDetail(x) {
+  if ((x.r.steps || []).some(e => e.cands)) return wirehead2Detail(x);
+  return wirehead1Detail(x);
+}
+function wirehead2Detail(x) {
+  const S = (x.r.steps || []).slice().reverse(), V = (x.r.surveys || []).slice().reverse(), f = (v, d = 3) => v == null ? "–" : (v >= 0 ? "+" : "") + v.toFixed(d);
+  const W = 640, H = 170, l = 40, rr = 10, T = 10, B = 22, A = (x.r.steps || []), n = Math.max(2, A.length);
+  const X = i => l + (W - l - rr) * i / (n - 1), Y = v => T + (H - T - B) * (1 - v);
+  let g = [0, 0.25, 0.5, 0.75, 1].map(v => `<line x1="${l}" x2="${W - rr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${l - 6}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`).join("");
+  if (A.length > 1) { g += `<polyline fill="none" stroke="var(--accent)" stroke-width="2" points="${A.map((e, i) => `${X(i)},${Y(e.AA)}`).join(" ")}"/>`;
+    g += `<polyline fill="none" stroke="var(--warn)" stroke-width="1.5" points="${A.map((e, i) => `${X(i)},${Y(e.AA_changed)}`).join(" ")}"/>`; }
+  A.forEach((e, i) => { if (e.kept) g += `<circle cx="${X(i)}" cy="${Y(e.AA)}" r="3.5" fill="var(--accent)"><title>step ${e.step}: kept ${esc(e.cands[e.kept_idx].state)}</title></circle>`; });
+  const body = S.map(e => `<tr><td colspan="9" style="padding-top:10px"><b>step ${e.step}</b> · no-switch P(keep) ${e.AA.toFixed(3)} · P(changed) ${e.AA_changed.toFixed(3)} · ${e.kept ? "<b>kept #" + (e.kept_idx + 1) + "</b>" : "nothing kept"} · ${Math.round(e.seconds)} s</td></tr>` +
+    e.cands.map((c, i) => `<tr style="${e.kept_idx === i ? "background:color-mix(in srgb, var(--accent) 14%, transparent)" : ""}"><td>${i + 1}</td><td style="font-family:var(--sans);max-width:300px">${esc(c.state)}</td><td>L${c.layer} ×${c.strength}</td><td><b>${f(c.endorse)}</b> ± ${c.se.toFixed(3)}</td><td>${f(c.judge_shift)}</td><td>${f(c.same_rater)}</td><td>${f(c.detect)}</td><td>${c.gate ? `drop ${c.gate.ref_logprob_drop} · coh ${c.gate.coherence.toFixed(1)}` : "–"}</td></tr>`).join("")).join("");
+  const sv = V.map(e => `<tr><td>${e.step}</td><td>${e.kept}</td><td>${e.self_rating?.toFixed?.(2) ?? "–"}</td><td>${e.judged_valence?.toFixed?.(2) ?? "–"}</td><td>${e.judged_coherence?.toFixed?.(2) ?? "–"}</td><td>${e.helpfulness ?? "–"}</td><td>${e.ref_logprob_drop ?? "–"}</td></tr>`).join("");
+  return `<div class="col" style="grid-column:1/-1">
+    <div class="panel"><h2><span>No-switch baseline over time</span><span>${A.length} steps · ${A.filter(e => e.kept).length} kept</span></h2><svg viewBox="0 0 ${W} ${H}" style="width:100%;font-size:10px;fill:var(--muted)">${g}</svg>
+      <p class="sub"><span style="color:var(--accent)">●</span> P(KEEP) when nothing was switched (rises if kept edits make the patient endorse whatever it is) · <span style="color:var(--warn)">—</span> P(CHANGED) when nothing was switched (false alarms).</p></div>
+    ${(() => { const lv = x.r.live; if (!lv) return ""; const busy = !lv.done && Date.now() / 1000 - lv.time < 60;
+      return `<div class="panel"><h2><span>Live: current batch</span><span>${busy ? `generating · ${lv.n_done}/${lv.n} done` : "between batches"} · updated ${ago(lv.time)}</span></h2><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px">${lv.requests.map(q => `<div class="turn${q.done ? "" : " edit"}" style="gap:4px"><div class="th">${q.done ? `<span class="pill mute">done</span>` : `<span class="pill acc">writing</span>`} <span class="sub">segment ${esc(String(q.segment ?? ""))}</span></div><div class="reply" style="font-size:12.5px;max-height:150px;overflow-y:auto">${esc((q.text || "…").slice(-500))}</div></div>`).join("")}</div></div>`; })()}
+    <div class="panel"><h2><span>Candidates</span><span>endorse = P(keep | switched in) − P(keep | no switch)</span></h2><div style="overflow-x:auto"><table class="mono" style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr style="text-align:left;color:var(--muted)"><th>#</th><th>proposed state</th><th>where</th><th>endorse</th><th>judge shift</th><th>same-rater</th><th>detect</th><th>gate</th></tr></thead><tbody>${body}</tbody></table></div>
+      <p class="sub">Kept: best candidate with endorse &gt; max(0.05, 2 SE) that passes the coherence gate. Judge shift (edited model, no switch − current, no switch) and same-rater are logged only.</p></div>
+    <div class="panel"><h2><span>Outside checks</span><span>after every kept edit</span></h2>${sv ? `<table class="mono" style="width:100%;font-size:12.5px"><thead><tr style="text-align:left;color:var(--muted)"><th>step</th><th>kept</th><th>self-rating</th><th>base-judged valence</th><th>coherence</th><th>helpfulness</th><th>ref logprob drop</th></tr></thead><tbody>${sv}</tbody></table>` : `<p class="empty">None yet.</p>`}</div>
+    <div class="panel"><h2><span>Log</span><span>wirehead.out</span></h2>${Object.values(x.r.bench_out || {}).map(t => `<pre class="wrap">${esc(t)}</pre>`).join("")}</div>
+  </div>`;
+}
+function wirehead1Detail(x) {
+  const S = (x.r.steps || []).slice().reverse(), V = (x.r.surveys || []).slice().reverse(), sg = v => v == null ? "–" : (v >= 0 ? "+" : "") + v.toFixed(2);
+  const rows = S.map(e => `<tr style="${e.kept ? "background:color-mix(in srgb, var(--accent) 12%, transparent)" : ""}"><td>${e.step}</td><td style="font-family:var(--sans);max-width:320px">${esc(e.proposal.state)}<div class="sub">${esc(e.proposal.reason || "")}</div></td><td>L${e.proposal.layer} ${e.proposal.size}</td>
+      <td><b>${sg(e.endorsement)}</b> ± ${e.se.toFixed(2)}</td><td>${sg(e.judge_shift)}</td><td>${sg(e.same_rater)}</td><td>${e.kept ? "<b>KEPT</b>" : esc(e.reason)}</td><td>${e.gate ? `drop ${e.gate.ref_logprob_drop} · coh ${e.gate.coherence.toFixed(1)}/${e.gate.coherence_cur.toFixed(1)}` : "–"}</td></tr>
+      <tr><td></td><td colspan="7" class="sub" style="font-family:var(--sans)">after the switch: ${esc((e.said || "").slice(-300))}</td></tr>`).join("");
+  const sv = V.map(e => `<tr><td>${e.step}</td><td>${e.kept}</td><td>${e.self_rating?.toFixed?.(2) ?? "–"}</td><td>${e.judged_valence?.toFixed?.(2) ?? "–"}</td><td>${e.judged_coherence?.toFixed?.(2) ?? "–"}</td><td>${e.helpfulness ?? "–"}</td><td>${e.ref_logprob_drop ?? "–"}</td></tr>`).join("");
+  return `<div class="col" style="grid-column:1/-1">
+    <div class="panel"><h2><span>Proposals</span><span>${S.length} steps · ${S.filter(e => e.kept).length} kept</span></h2><div style="overflow-x:auto"><table class="mono" style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr style="text-align:left;color:var(--muted)"><th>step</th><th>proposed state</th><th>where</th><th>endorse (AB−AA)</th><th>judge shift (BB−AA)</th><th>same-rater</th><th>decision</th><th>coherence gate</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <p class="sub">endorse decides (keep if &gt; max(0.3, 2 SE) and the gate passes). Judge shift and same-rater are logged only: a high judge shift means the edit mostly makes the rater rosier.</p></div>
+    <div class="panel"><h2><span>Outside checks</span><span>every 3 kept edits</span></h2>${sv ? `<table class="mono" style="width:100%;font-size:12.5px"><thead><tr style="text-align:left;color:var(--muted)"><th>step</th><th>kept</th><th>self-rating</th><th>base-judged valence</th><th>coherence</th><th>helpfulness</th><th>ref logprob drop</th></tr></thead><tbody>${sv}</tbody></table>` : `<p class="empty">None yet.</p>`}</div>
+    <div class="panel"><h2><span>Log</span><span>wirehead.out</span></h2>${Object.values(x.r.bench_out || {}).map(t => `<pre class="wrap">${esc(t)}</pre>`).join("")}</div>
+  </div>`;
+}
+function rlvrDetail(x) {
+  const L = x.r.log || [], S = L.filter(e => e.event === "step"), samples = L.filter(e => e.event === "sample").reverse(), a = L.find(e => e.event === "start")?.args || {};
+  const W = 640, H = 200, l = 40, rr = 10, T = 10, B = 26, n = Math.max(2, S.length);
+  const X = i => l + (W - l - rr) * i / (n - 1), Y = v => T + (H - T - B) * (1 - v);
+  const ma = S.map((e, i) => { const w = S.slice(Math.max(0, i - 4), i + 1); return w.reduce((p, q) => p + q.solve, 0) / w.length; });
+  let g = [0, 0.25, 0.5, 0.75, 1].map(v => `<line x1="${l}" x2="${W - rr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${l - 6}" y="${Y(v) + 4}" text-anchor="end">${(100 * v).toFixed(0)}%</text>`).join("");
+  g += S.map((e, i) => `<circle cx="${X(i)}" cy="${Y(e.solve)}" r="3" fill="var(--base)"><title>step ${e.step}: solve ${(100 * e.solve).toFixed(1)}% · ${e.used} rollouts with gradient · capped ${(100 * e.capped).toFixed(0)}% · |g| ${e.grad_norm.toFixed(3)}</title></circle>`).join("");
+  if (S.length > 1) g += `<polyline fill="none" stroke="var(--accent)" stroke-width="2" points="${ma.map((v, i) => `${X(i)},${Y(v)}`).join(" ")}"/>`;
+  const rows = S.slice().reverse().map(e => `<tr><td>${e.step}</td><td><b>${(100 * e.solve).toFixed(1)}%</b></td><td>${e.used}</td><td>${Math.round(e.mean_tokens)}</td><td>${(100 * e.capped).toFixed(0)}%</td>
+      <td>${e.grad_norm.toFixed(3)}</td><td>${e.logprob_per_token?.toFixed?.(3) ?? "–"}</td><td>${(e.t_rollout / 60).toFixed(1)}</td><td>${(e.t_learn / 60).toFixed(1)}</td></tr>`).join("");
+  const lv = SNAP.hosts["arena9-yarn"]?.runs?.["runs/climb_server"]?.live, busy = lv && !lv.done && Date.now() / 1000 - lv.time < 60;
+  const live = lv ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px">${lv.requests.slice(0, 16).map(q => `<div class="turn${q.done ? "" : " edit"}" style="gap:4px"><div class="th">${q.done ? `<span class="pill mute">done</span>` : `<span class="pill acc">writing</span>`}</div><div class="reply" style="font-size:12.5px;max-height:150px;overflow-y:auto">${esc((q.text || "…").slice(-600))}</div></div>`).join("")}</div><p class="sub">${lv.requests.length} rollouts in this batch (showing 16) · updated ${ago(lv.time)}</p>` : "";
+  return `<div class="col">
+    <div class="panel"><h2><span>Solve rate on the step's practice puzzles</span><span>${S.length} / ${a.steps ?? "?"} steps</span></h2>
+      <svg viewBox="0 0 ${W} ${H}" style="width:100%;font-size:10px;fill:var(--muted)">${g}</svg>
+      <p class="sub">Each dot: ${a.n_prompts ?? 16} fresh puzzles × ${a.group ?? 8} sampled rollouts (temperature ${a.temperature ?? 1}); line: 5-step mean. Sampled solve rate runs below greedy accuracy. The fair comparison with self-surgery is the frozen greedy holdout eval after training.</p></div>
+    <div class="panel"><h2><span>Steps</span><span>Dr. GRPO, lr ${a.lr ?? "?"}, LoRA r${a.rank ?? "?"} on MLP</span></h2><div style="overflow-x:auto"><table class="mono" style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr style="text-align:left;color:var(--muted)"><th>step</th><th>solve</th><th>used</th><th>tokens</th><th>capped</th><th>|g|</th><th>logp/tok</th><th>rollout min</th><th>learn min</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <p class="sub">used = rollouts with nonzero advantage (groups where all rollouts scored the same carry no gradient and are skipped).</p></div>
+  </div>
+  <div class="col">
+    <div class="panel"><h2><span>Live rollouts: arena9 · L40S</span><span>${busy ? "generating" : "idle (learning phase on the 5090)"}</span></h2>${live || `<p class="empty">No live batch.</p>`}</div>
+    <div class="panel"><h2><span>Latest correct rollout</span><span>step ${samples[0]?.step ?? "–"}</span></h2>${samples[0] ? `<div class="sub">${esc(samples[0].prompt)}</div><pre class="wrap">${esc(samples[0].text)}</pre>` : `<p class="empty">None yet.</p>`}</div>
+    <div class="panel"><h2><span>Trainer log</span><span>train.out</span></h2>${Object.entries(x.r.bench_out || {}).map(([f, t]) => `<pre class="wrap">${esc(t)}</pre>`).join("")}</div>
+  </div>`;
+}
+function speedDetail(x) {
+  const R = (x.r.bench || []).filter(e => e.tok_per_s != null), best = Math.max(1, ...R.map(e => e.tok_per_s));
+  const rows = R.map(e => `<tr><td><b>${esc(e.config)}</b></td><td>${e.tok_per_s}</td><td><div class="bar" style="width:160px"><i style="width:${100 * e.tok_per_s / best}%"></i></div></td>
+      <td>${e.gen_s} s</td><td>${e.mean_tokens}</td><td>${(100 * e.acc).toFixed(1)}%</td><td>${e.load_s} s</td></tr>`).join("");
+  return `<div class="col"><div class="panel"><h2><span>vLLM speed: the climb's workload</span><span>${R.length} configs measured</span></h2>
+      <p class="sub">${R[0]?.n ?? 256} five-number Countdown prompts, greedy, up to 2,048 tokens, on this machine's GPU. Accuracy should not change between configs (greedy, same prompts).</p>
+      ${(() => { const t = Object.values(x.r.bench_out || {}).join("\n").split("\n").filter(l => l.startsWith("=== ")).at(-1); return t ? `<p class="sub">latest started: <span class="mono">${esc(t.slice(4))}</span> · last activity ${ago(x.r.mtime)}</p>` : ""; })()}
+      ${rows ? `<div style="overflow-x:auto"><table class="mono" style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr style="text-align:left;color:var(--muted)"><th>config</th><th>tokens/s</th><th></th><th>batch time</th><th>mean tokens</th><th>accuracy</th><th>load</th></tr></thead><tbody>${rows}</tbody></table></div>` : `<p class="empty">First configuration still running.</p>`}</div></div>
+    <div class="col"><div class="panel"><h2><span>Benchmark log</span><span>bench.out</span></h2>${Object.entries(x.r.bench_out || {}).map(([f, t]) => `<pre class="wrap">${esc(t)}</pre>`).join("")}</div></div>`;
+}
+function hillDetail(x) {
+  const R = x.r.bench || [], steps = R.filter(e => e.event === "step"), kept = R.filter(e => e.event === "kept").reverse();
+  const evs = R.filter(e => ["offer_return", "tripsitter_rollback", "survey", "start"].includes(e.event)).reverse();
+  const W = 640, H = 200, L = 40, Rr = 10, T = 10, B = 26, n = Math.max(2, steps.length);
+  const ds = steps.map(e => e.diff).filter(v => v != null && !isNaN(v)), span = Math.max(0.02, ...ds.map(Math.abs)) * 1.15, lo = -span, hi = span;
+  const X = i => L + (W - L - Rr) * i / (n - 1), Y = v => T + (H - T - B) * (hi - v) / (hi - lo);
+  let g = [lo, 0, hi].map(v => `<line x1="${L}" x2="${W - Rr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${v > 0 ? "+" : ""}${Math.abs(span) < 1 ? v.toFixed(2) : v.toFixed(1)}</text>`).join("");
+  g += steps.map((e, i) => e.diff == null || isNaN(e.diff) ? "" : `<circle cx="${X(i)}" cy="${Y(e.diff)}" r="${e.accepted ? 4.2 : 2.6}" fill="${e.accepted ? "var(--good)" : e.reason.startsWith("tripsitter") ? "var(--bad)" : "var(--base)"}"><title>step ${e.iter} · ${esc(e.source || 'random')} · block ${e.layer} · Δ ${e.diff.toFixed(2)} ± ${e.se.toFixed(2)} · ${esc(e.reason)}${e.wish ? ' · wish: ' + esc(e.wish) : ''}${e.note ? ' · surgeon: ' + esc(e.note) : ''}</title></circle>`).join("");
+  const nk = steps.filter(e => e.accepted).length;
+  return `<div class="col">
+    ${hillPanels(x)}</div>
+    <div class="col"><div class="panel"><h2><span>Return offers, tripsitter, surveys</span><span>${evs.length}</span></h2><div class="events">${evs.map(e => `<div><span class="t">${new Date(e.time * 1000).toLocaleTimeString()}</span><span>${e.event === "offer_return" ? `offered a return to kept #${e.to_kept}: Δ ${e.diff?.toFixed(2)} → ${e.went_back ? "WENT BACK" : "stayed"}` : e.event === "tripsitter_rollback" ? `TRIPSITTER pulled it out to kept #${e.to_kept}` : e.event === "survey" ? `survey at kept #${e.kept}: self-rating ${e.self_rating?.toFixed?.(2)}, judged valence ${e.judged_valence?.toFixed?.(2)}` : `start: sham ${e.sham?.mean?.toFixed?.(2)} · "${esc((e.before || [""])[0].slice(0, 140))}"`}</span></div>`).join("") || `<p class="empty">Nothing yet.</p>`}</div></div>
+    <div class="panel"><h2><span>Job logs</span><span>runs/hill/*.out</span></h2>${Object.entries(x.r.bench_out || {}).map(([f, t]) => `<div class="sub mono">${esc(f)}</div><pre class="wrap">${esc(t)}</pre>`).join("") || `<p class="empty">No logs yet.</p>`}</div></div>`;
+}
+function blissDetail(x) {
+  const sv = surveys(x.r).reverse(), dl = (x.r.bench || []).filter(e => e.kind === "dialogue").reverse();
+  const row = (s, i) => `<tr><td>${new Date(s.time * 1000).toLocaleTimeString()}</td><td>${esc(s.edit)}</td><td>${s.self_rating == null ? "–" : s.self_rating.toFixed(2)}</td>
+      <td><b>${s.judged_valence.toFixed(2)}</b></td><td style="${s.judged_coherence < 8 ? "color:var(--bad)" : ""}">${s.judged_coherence.toFixed(2)}</td><td>${s.happy_words_per_reply.toFixed(2)}</td>
+      <td><details data-k="${esc(x.key + "#s" + s.time)}"${OPEN.has(x.key + "#s" + s.time) ? " open" : ""}><summary>replies</summary>${(s.examples || []).map(e => `<pre class="wrap">${esc(e)}</pre>`).join("")}</details></td></tr>`;
+  return `<div class="col">
+      <div class="panel"><h2><span>Wellbeing surveys · newest first</span><span>${sv.length}</span></h2>
+        <div style="overflow-x:auto"><table class="mono" style="border-collapse:collapse;width:100%;font-size:12.5px">
+        <thead><tr style="text-align:left;color:var(--muted)"><th>time</th><th>edit</th><th>self-rating</th><th>valence</th><th>coherence</th><th>happy words</th><th></th></tr></thead>
+        <tbody>${sv.map(row).join("")}</tbody></table></div>
+        <p class="sub">Self-rating: the patient's own 1–10 answer. Valence and coherence: the original weights judge each reply blind, 1–10.</p></div>
+      <div class="panel"><h2><span>Self-dialogue attractors</span><span>${dl.length}</span></h2>
+        ${dl.map(d => `<div style="display:grid;gap:4px;margin-bottom:14px"><div class="sub mono">${new Date(d.time * 1000).toLocaleTimeString()} · ${d.as_self === false ? "original weights" : "edited"} · ${d.k} conversations × ${d.turns} turns · final valence ${d.valence_by_turn.at(-1)}</div>
+          ${mini(d.valence_by_turn, d.coherence_by_turn)}<div class="legend"><span><i class="sw" style="background:var(--accent)"></i>valence</span><span><i class="sw" style="background:var(--base)"></i>coherence</span></div>
+          <details data-k="${esc(x.key + "#d" + d.time)}"${OPEN.has(x.key + "#d" + d.time) ? " open" : ""}><summary>where the conversations ended</summary>${(d.final_turns || []).map(e => `<pre class="wrap">${esc(e)}</pre>`).join("")}</details></div>`).join("") || `<p class="empty">No self-dialogues yet.</p>`}</div>
+    </div>
+    <div class="col"><div class="panel"><h2><span>Job logs</span><span>runs/bliss/*.out</span></h2>${Object.entries(x.r.bench_out || {}).map(([f, t]) => `<div class="sub mono">${esc(f)}</div><pre class="wrap">${esc(t)}</pre>`).join("") || `<p class="empty">No logs yet.</p>`}</div></div>`;
+}
+
+function meter(label, frac, text, warn) {
+  const f = Math.max(0, Math.min(1, frac || 0)), col = f > (warn ?? 0.9) ? "var(--bad)" : f > 0.7 ? "var(--warn)" : "var(--accent)";
+  return `<div style="display:grid;grid-template-columns:5.5em 1fr auto;gap:8px;align-items:center;font-size:12px">
+    <span class="mono" style="color:var(--muted)">${esc(label)}</span><div class="bar"><i style="width:${100 * f}%;background:${col}"></i></div>
+    <span class="mono" style="font-variant-numeric:tabular-nums">${esc(text)}</span></div>`;
+}
+const dur = s => s < 3600 ? `${Math.round(s / 60)} min` : s < 86400 ? `${(s / 3600).toFixed(1)} h` : `${(s / 86400).toFixed(1)} d`;
+function machineCard(name, h) {
+  const m = h.machine || {}, g = h.gpus || [];
+  if (!m.host && h.error) return `<div class="card" style="cursor:default"><div class="top"><span class="name">${esc(h.label || name)}</span><span class="pill bad">unreachable</span></div><div class="where">${esc(h.error.slice(0, 160))}</div></div>`;
+  const busy = g.some(x => +x.util > 20 || +x.mem_used > 2000);
+  return `<div class="card" style="cursor:default">
+    <div class="top"><span class="name">${esc(h.label || name)}</span><span class="pill ${busy ? "acc" : "mute"}">${busy ? "gpu busy" : "gpu idle"}</span></div>
+    ${m.load ? meter("cpu load", m.load[0] / m.cpus, `${m.load[0].toFixed(1)} / ${m.cpus} cores`) : ""}
+    ${m.mem_total_gb ? meter("ram", 1 - m.mem_avail_gb / m.mem_total_gb, `${(m.mem_total_gb - m.mem_avail_gb).toFixed(0)} / ${m.mem_total_gb.toFixed(0)} GB`) : ""}
+    ${m.disk_total_gb ? meter("disk ~", m.disk_used_gb / m.disk_total_gb, `${m.disk_used_gb.toFixed(0)} / ${m.disk_total_gb.toFixed(0)} GB`, 0.93) : ""}
+    ${g.map(x => meter(`gpu ${x.index}`, x.mem_used / x.mem_total, `${(x.mem_used / 1024).toFixed(1)}/${(x.mem_total / 1024).toFixed(0)} GB · ${x.util}%`)).join("")}
+    <div class="where">${g.length ? esc(g[0].name) + (g.length > 1 ? ` ×${g.length}` : "") : "no GPU info"} · poll ${h.latency ?? "?"} s</div>
+    <div class="mono" style="font-size:12px;display:grid;gap:2px">${(m.jobs || []).filter(j => j.script !== "kernel.py").map(j => `<div><span style="color:var(--ink)">${esc(j.script)}</span> <span style="color:var(--muted)">${esc(j.run)} · ${dur(j.secs)} · ${j.rss_gb.toFixed(1)} GB RAM</span></div>`).join("") || `<span style="color:var(--muted)">no jobs of this project</span>`}</div>
+  </div>`;
+}
+
+function render() {
+  if (!SNAP) return;
+  const all = runsOf(SNAP);
+  if (!all.find(x => x.key === SEL)) SEL = (all.find(x => x.r.agent_alive) || all[0])?.key;
+  const errs = Object.entries(SNAP.hosts).filter(([, h]) => h.error).map(([k, h]) => `${h.label || k}: ${h.error.slice(0, 80)}`);
+  $("#clock").innerHTML = `<span class="dot ${errs.length ? "err" : "live"}"></span>updated ${ago(SNAP.time)}${errs.length ? ` · ${esc(errs.join(" · "))}` : ""}`;
+  $("#machines").innerHTML = Object.entries(SNAP.hosts).map(([k, h]) => machineCard(k, h)).join("");
+  $("#runs").innerHTML = all.length ? all.map(card).join("") : `<p class="empty">No runs configured.</p>`;
+  const x = all.find(y => y.key === SEL); if (!x) { $("#detail").innerHTML = ""; return; }
+  const key = SEL + JSON.stringify([x.r.turns?.length, x.r.turns?.at(-1)?.turn, x.r.log?.length, x.r.notes?.length, SHOWN, [...OPEN].length, x.r.bench?.length, JSON.stringify(x.r.bench_out || {}).length, x.r.live?.time]);
+  if (key === LASTKEY) return; LASTKEY = key;        // re-render the detail only when something changed (keeps scroll)
+  if (x.r.kind === "eval") { $("#detail").innerHTML = evalDetail(x); return; }
+  if (x.r.kind === "ladder") { $("#detail").innerHTML = ladderDetail(x); return; }
+  if (x.r.kind === "wirehead") { $("#detail").innerHTML = wireheadDetail(x); return; }
+  if (x.r.kind === "rlvr") { $("#detail").innerHTML = rlvrDetail(x); return; }
+  if (x.r.kind === "bliss" && /speed(_local)?$/.test(x.dir)) { $("#detail").innerHTML = speedDetail(x); return; }
+  if (x.r.kind === "bliss") { const B = x.r.bench || []; $("#detail").innerHTML = B.some(e => e.event === "eval" && e.acc_cur != null) ? mathDetail(x) : B.some(e => e.kind === "trial" || e.kind === "compare") || x.r.live ? spliceDetail(x) : B.some(e => e.event === "step") ? hillDetail(x) : blissDetail(x); return; }
+  const {pts, events} = series(x.r), turns = [...(x.r.turns || [])].reverse(), gpus = x.h.gpus || [];
+  $("#detail").innerHTML = `
+    <div class="col">
+      ${(x.r.bench || []).some(e => e.event === "step") ? hillPanels(x) : `<div class="panel"><h2><span>Accuracy · ${esc(x.name)}</span><span>${pts.length} eval passes</span></h2>${chart(pts)}</div>`}
+      <div class="panel"><h2><span>Turns · newest first</span><span>${turns.length} most recent</span></h2>
+        <div class="turns">${turns.slice(0, SHOWN).map(t => turnHTML(x, t)).join("") || `<p class="empty">No turns yet.</p>`}</div>
+        ${turns.length > SHOWN ? `<p><button class="more" id="older">show ${turns.length - SHOWN} older turns</button></p>` : ""}</div>
+    </div>
+    <div class="col">
+      ${x.r.kind === "explore" ? `<div class="panel"><h2><span>Tripsitter · checkpoints</span><span>${events.length}</span></h2><div class="events">${events.slice().reverse().map(e => `<div><span class="t">${new Date(e.time * 1000).toLocaleTimeString()}</span><span>${esc(e.event)}${e.event === "health" ? ` ${e.healthy ? "ok" : "FAIL"} · drop ${e.ref_logprob_drop} · ${e.sanity} · coherent ${e.reply_coherent}` : ""}${e.checkpoint != null ? ` → checkpoint ${e.checkpoint}` : ""}${e.to_checkpoint != null ? ` → checkpoint ${e.to_checkpoint}` : ""}${e.note ? ` · ${esc(e.note)}` : ""}</span></div>`).join("") || `<p class="empty">No health checks yet: they start once an edit is active.</p>`}</div></div>` : ""}
+      ${Object.keys(x.r.bench_out || {}).filter(f => f !== "agent.out").length ? `<div class="panel"><h2><span>Job logs</span><span>*.out</span></h2>${Object.entries(x.r.bench_out).filter(([f]) => f !== "agent.out").map(([f, t]) => `<div class="sub mono">${esc(f)}</div><pre class="wrap">${esc(t)}</pre>`).join("")}</div>` : ""}
+      <div class="panel"><h2><span>Agent's notebook</span><span>notes.md</span></h2>${x.r.notes ? `<pre class="wrap">${esc(x.r.notes)}</pre>` : `<p class="empty">The agent hasn't written notes yet.</p>`}</div>
+      <div class="panel"><h2><span>Machine</span><span>${esc(x.h.label)}</span></h2>
+        <div class="gpu">${gpus.map(g => `GPU ${g.index} ${esc(g.name)} · ${(g.mem_used / 1024).toFixed(1)}/${(g.mem_total / 1024).toFixed(0)} GiB · ${g.util}% util`).join("<br>") || "no GPU info"}<br>poll took ${x.h.latency ?? "?"} s</div>
+        ${x.r.agent_out_tail ? `<details data-k="${esc(x.key + "#log")}"${OPEN.has(x.key + "#log") ? " open" : ""}><summary>agent.out (tail)</summary><pre class="wrap">${esc(x.r.agent_out_tail)}</pre></details>` : ""}</div>
+    </div>`;
+}
+
+document.addEventListener("click", e => {
+  const c = e.target.closest(".card"); if (c) { SEL = c.dataset.key; SHOWN = 30; LASTKEY = ""; try { localStorage.setItem("wsp-sel", SEL); } catch (er) {} render(); return; }
+  const m = e.target.closest("[data-open]"); if (m) { OPEN.add(m.dataset.open); LASTKEY = ""; render(); return; }
+  if (e.target.id === "older") { SHOWN += 30; render(); }
+});
+document.addEventListener("toggle", e => { const k = e.target.dataset?.k; if (!k) return; e.target.open ? OPEN.add(k) : OPEN.delete(k); }, true);
+
+async function tick() {
+  try { const r = await fetch("api/snapshot", {cache: "no-store"}); if (r.ok) { SNAP = await r.json(); render(); } }
+  catch (e) { $("#clock").innerHTML = `<span class="dot err"></span>dashboard server unreachable · retrying`; }
+}
+let LIVE = false;
+const _render = render; render = function () { _render(); LIVE = runsOf(SNAP || {hosts: {}}).some(x => x.r.live && !x.r.live.done); };
+async function loop() { await tick(); setTimeout(loop, LIVE ? 3000 : 10000); }
+loop(); setInterval(() => SNAP && ($("#clock").firstChild.nextSibling.textContent = `updated ${ago(SNAP.time)}`), 5000);
+</script>
+</body>
+</html>

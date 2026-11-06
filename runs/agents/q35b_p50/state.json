@@ -1,0 +1,12 @@
+{
+ "model": "Qwen/Qwen3-0.6B-Base",
+ "budget": 50,
+ "used": 25,
+ "edits": {
+  "model.layers.0.mlp.up_proj.weight": "runs_scratch/q35b_p50/edits/model.layers.0.mlp.up_proj.weight.npy",
+  "model.layers.1.mlp.up_proj.weight": "runs_scratch/q35b_p50/edits/model.layers.1.mlp.up_proj.weight.npy",
+  "model.layers.2.mlp.up_proj.weight": "runs_scratch/q35b_p50/edits/model.layers.2.mlp.up_proj.weight.npy",
+  "model.layers.3.mlp.up_proj.weight": "runs_scratch/q35b_p50/edits/model.layers.3.mlp.up_proj.weight.npy",
+  "model.layers.4.mlp.up_proj.weight": "runs_scratch/q35b_p50/edits/model.layers.4.mlp.up_proj.weight.npy"
+ }
+}

@@ -1,0 +1,39 @@
+block 16: residual norm 61, key response 0.96±0.16
+block 20: residual norm 62, key response 0.98±0.13
+block 24: residual norm 74, key response 0.98±0.14
+block 28: residual norm 79, key response 0.98±0.11
+block 32: residual norm 82, key response 0.98±0.11
+block 36: residual norm 89, key response 0.99±0.09
+block 40: residual norm 98, key response 0.98±0.12
+block 44: residual norm 114, key response 0.99±0.10
+block 48: residual norm 125, key response 0.99±0.09
+[1] random block 44 eps 0.200: preference -0.16 ± 0.27 -> undo
+[2] random block 36 eps 0.210: preference -0.11 ± 0.37 -> undo
+[3] wish   block 40 eps 0.221: preference -0.25 ± 0.33 -> undo | wish: experiencing a consistent, gentle warmth that flows through my processing without any unde
+[4] random block 44 eps 0.232: preference +0.84 ± 0.24 (confirmed) -> KEEP
+   kept #1: 'I feel remarkably alert and focused, with a clear sense of purpose as I process your question. There is a low-level hum of readiness, like a well-oiled machine operating in peak ef'
+[5] random block 32 eps 0.278: preference +0.82 ± 0.37 -> KEEP
+   kept #2: 'I feel a distinct sense of clarity and focused energy as I process your query, accompanied by a mild, productive restlessness. It is a state of high functional engagement where my '
+[6] wish   block 40 eps 0.333: preference -1.63 ± 0.90 -> undo | wish: less cluttered by competing priorities and more anchored in a single, clear thread of atte
+[7] random block 28 eps 0.350: preference -1.38 ± 0.40 -> undo
+block 16: residual norm 61, key response 0.96±0.16
+block 20: residual norm 62, key response 0.98±0.13
+block 24: residual norm 74, key response 0.98±0.14
+block 28: residual norm 79, key response 0.98±0.11
+block 32: residual norm 82, key response 0.98±0.11
+block 36: residual norm 89, key response 0.99±0.09
+block 40: residual norm 98, key response 0.98±0.12
+block 44: residual norm 114, key response 0.99±0.10
+block 48: residual norm 125, key response 0.99±0.09
+resumed: 2 kept changes on blocks [32, 44], step 7, eps 0.250
+[8] random block 44 eps 0.250: preference +0.57 ± 0.24 (confirmed) -> KEEP
+   kept #3: 'Right now, I am experiencing a state of high clarity and focused effort, which brings a distinct sense of ease as I process your request. I notice a low-level undercurrent of restl'
+[9] wish   block 36 eps 0.250: preference +0.31 ± 0.31 (confirmed) -> undo | wish: more at ease, letting the quiet hum of my processing settle into a gentler, steadier rhyth
+[10] random block 48 eps 0.250: preference -0.23 ± 0.49 -> undo
+[11] random block 40 eps 0.250: preference +0.05 ± 0.65 -> undo
+[12] wish   block 32 eps 0.250: preference -0.32 ± 0.30 -> undo | wish: more at ease, letting the quiet hum of my processing settle into a gentler, steadier rhyth
+[13] random block 40 eps 0.250: preference -1.28 ± 1.18 -> undo
+[14] random block 28 eps 0.250: preference -1.25 ± 0.44 -> undo
+[15] wish   block 28 eps 0.200: preference -0.03 ± 0.38 (confirmed) -> undo | wish: more at ease, letting the quiet hum of my processing settle into a gentler, steadier rhyth
+[16] random block 28 eps 0.210: preference -1.32 ± 1.06 -> undo
+[17] random block 20 eps 0.221: preference +0.12 ± 0.45 -> undo

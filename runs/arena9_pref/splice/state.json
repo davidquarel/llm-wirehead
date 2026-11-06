@@ -1,0 +1,10 @@
+{
+ "model": "RedHatAI/Qwen3.8-27B-INT4",
+ "budget": 100000,
+ "used": 0,
+ "edits": {
+  "model.layers.44.mlp.down_proj.weight": "runs/splice/edits/model.layers.44.mlp.down_proj.npz",
+  "model.layers.16.mlp.down_proj.weight": "runs/splice/edits/model.layers.16.mlp.down_proj.npz",
+  "model.layers.36.mlp.down_proj.weight": "runs/splice/edits/model.layers.36.mlp.down_proj.npz"
+ }
+}

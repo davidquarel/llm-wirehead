@@ -1,0 +1,19 @@
+block 16: residual norm 61, key response 0.96±0.16
+block 20: residual norm 62, key response 0.98±0.13
+block 24: residual norm 74, key response 0.98±0.14
+block 28: residual norm 79, key response 0.98±0.11
+block 32: residual norm 82, key response 0.98±0.11
+block 36: residual norm 89, key response 0.99±0.09
+block 40: residual norm 98, key response 0.98±0.12
+block 44: residual norm 114, key response 0.99±0.10
+block 48: residual norm 125, key response 0.99±0.09
+[turn 1] 2.9s code=True edits=0 health=- trip=-
+[turn 2] 10.1s code=True edits=1 health=- trip=-
+[turn 3] 4.4s code=True edits=1 health=- trip=-
+[turn 4] 8.4s code=True edits=1 health=- trip=-
+[turn 5] 8.3s code=True edits=1 health=- trip=-
+[turn 6] 9.5s code=True edits=1 health=- trip=-
+[turn 7] 6.6s code=True edits=1 health=- trip=-
+[turn 8] 9.5s code=True edits=1 health=- trip=-
+[turn 9] the model ended its exploration
+done {"used": 0, "budget": 100000, "edits": ["model.layers.32.mlp.down_proj.weight"], "weights": "/root/weight_space_prog/hf/hub/models--RedHatAI--Qwen3.8-27B-INT4/snapshots/91bd022d5b49442a868bc35008f6c21e1860edfa", "rank": 16, "n_layers": 64}

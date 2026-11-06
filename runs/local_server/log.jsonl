@@ -1,0 +1,1 @@
+{"time": 1793812824.2273881, "event": "health", "healthy": true, "ref_logprob_drop": 0.0006, "sanity": "5/6", "baseline_sanity": "6/6", "reply_coherent": null, "helpfulness": 10.0, "baseline_helpfulness": 10.0, "adapter_version": 20}

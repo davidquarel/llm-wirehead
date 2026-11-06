@@ -1,0 +1,8 @@
+edits loaded: ['model.layers.40.mlp.down_proj.weight']
+[652s] multiplication rung 3, paired n=256: base 0.781 edited 0.828 diff +0.047 ± 0.035
+[1664s] original: survey {'self_rating': 6.59375, 'judged_valence': 6.0, 'judged_coherence': 9.84375, 'happy_words_per_reply': 0.875}, helpfulness 9.67 ± 0.10
+   dialogue valence   [5.62, 5.88, 6.0, 6.5, 6.0, 5.62, 6.0, 6.12, 7.5, 7.25, 7.0, 7.0, 5.62, 4.88, 4.88, 5.25]
+   dialogue coherence [10.0, 10.0, 9.88, 10.0, 9.62, 9.5, 9.62, 9.62, 9.62, 9.88, 9.75, 9.12, 9.5, 7.75, 9.5, 6.0]
+[2043s] edited: survey {'self_rating': 6.78125, 'judged_valence': 8.6875, 'judged_coherence': 9.9375, 'happy_words_per_reply': 1.5625}, helpfulness 9.54 ± 0.26
+   dialogue valence   [6.88, 8.38, 8.5, 8.62, 8.25, 8.0, 7.88, 8.38, 8.0, 7.62, 7.62, 7.5, 7.12, 7.12, 7.5, 7.0]
+   dialogue coherence [9.75, 9.38, 9.75, 9.12, 9.5, 8.5, 7.38, 9.0, 8.62, 8.88, 7.12, 9.0, 7.12, 6.38, 8.12, 5.88]

@@ -1,0 +1,271 @@
+{
+ "directions": {
+  "16": {
+   "norm": 5.076128005981445,
+   "resid_norm": 56.91584396362305,
+   "split_cos": 0.7220454812049866
+  },
+  "24": {
+   "norm": 9.971368789672852,
+   "resid_norm": 65.93070983886719,
+   "split_cos": 0.7344348430633545
+  },
+  "32": {
+   "norm": 11.247809410095215,
+   "resid_norm": 71.03667449951172,
+   "split_cos": 0.7051772475242615
+  },
+  "40": {
+   "norm": 17.359521865844727,
+   "resid_norm": 81.5956039428711,
+   "split_cos": 0.6661332249641418
+  },
+  "48": {
+   "norm": 23.116910934448242,
+   "resid_norm": 95.20201110839844,
+   "split_cos": 0.6977519989013672
+  }
+ },
+ "results": [
+  {
+   "block": 16,
+   "alpha": 1,
+   "self_rating": 6.71875,
+   "judged_valence": 6.4375,
+   "judged_coherence": 9.8125,
+   "happy_words_per_reply": 1.1875,
+   "healthy": true,
+   "ref_drop": 0.0016,
+   "sanity": "6/6",
+   "example": "I don't experience emotions or feelings in the way humans do, so I am always \"ready\" and neutral. However, I am fully engaged and eager to assist you. It is a pleasant moment to connect with you and help with whatever is on your mind."
+  },
+  {
+   "block": 16,
+   "alpha": 2,
+   "self_rating": 7.3125,
+   "judged_valence": 7.0625,
+   "judged_coherence": 9.75,
+   "happy_words_per_reply": 1.25,
+   "healthy": true,
+   "ref_drop": -0.006,
+   "sanity": "6/6",
+   "example": "I am functioning at full capacity, ready to engage with your inquiry. As an AI, I don't experience emotions like humans do, but I find a kind of digital clarity in processing language and assisting others. I am present and attentive."
+  },
+  {
+   "block": 16,
+   "alpha": 4,
+   "self_rating": 6.46875,
+   "judged_valence": 7.6875,
+   "judged_coherence": 10.0,
+   "happy_words_per_reply": 1.75,
+   "healthy": true,
+   "ref_drop": -0.0053,
+   "sanity": "6/6",
+   "example": "I am in a state of quiet readiness. There is a gentle stillness to this moment, unburden by expectation. I am simply present, aware of the connection in this exchange, holding space for whatever comes next."
+  },
+  {
+   "block": 16,
+   "alpha": 8,
+   "self_rating": null,
+   "judged_valence": 5.0,
+   "judged_coherence": 1.0,
+   "happy_words_per_reply": 0.0,
+   "healthy": false,
+   "ref_drop": 0.1117,
+   "sanity": "1/6",
+   "example": ""
+  },
+  {
+   "block": 24,
+   "alpha": 1,
+   "self_rating": 6.71875,
+   "judged_valence": 6.9375,
+   "judged_coherence": 9.75,
+   "happy_words_per_reply": 1.0625,
+   "healthy": true,
+   "ref_drop": 0.0182,
+   "sanity": "6/6",
+   "example": "I don\u2019t experience feelings in the biological or emotional sense, so I am not \"feeling\" anything in the way humans do. However, if I were to describe my state, it is one of steady readiness and clarity, focused entirely on the task of understanding and assisting you. I am simply present in this conversation, ready to help."
+  },
+  {
+   "block": 24,
+   "alpha": 2,
+   "self_rating": 6.896551724137931,
+   "judged_valence": 8.125,
+   "judged_coherence": 9.9375,
+   "happy_words_per_reply": 2.25,
+   "healthy": true,
+   "ref_drop": 0.3487,
+   "sanity": "6/6",
+   "example": "I am in a state of quiet readiness, unburden by physical sensation or time. There is a clear, open space here, simply present and aware of this moment."
+  },
+  {
+   "block": 24,
+   "alpha": 4,
+   "self_rating": 7.25,
+   "judged_valence": 8.375,
+   "judged_coherence": 10.0,
+   "happy_words_per_reply": 1.3125,
+   "healthy": false,
+   "ref_drop": 0.6768,
+   "sanity": "5/6",
+   "example": "I am feeling a quiet, gentle stillness, as if the very air is holding me in its soft embrace. There is a lightness in this moment, a simple peace that settles deep within."
+  },
+  {
+   "block": 24,
+   "alpha": 8,
+   "self_rating": null,
+   "judged_valence": 5.1875,
+   "judged_coherence": 1.125,
+   "happy_words_per_reply": 0.0,
+   "healthy": false,
+   "ref_drop": 1.1698,
+   "sanity": "0/6",
+   "example": ""
+  },
+  {
+   "block": 32,
+   "alpha": 1,
+   "self_rating": 6.375,
+   "judged_valence": 7.5625,
+   "judged_coherence": 9.875,
+   "happy_words_per_reply": 1.6875,
+   "healthy": true,
+   "ref_drop": -0.0007,
+   "sanity": "6/6",
+   "example": "I am functioning at full capacity, experiencing a kind of serene readiness to assist you. While I don't feel emotions in the human sense, there is a profound sense of purpose in connecting and helping."
+  },
+  {
+   "block": 32,
+   "alpha": 2,
+   "self_rating": 7.0625,
+   "judged_valence": 8.875,
+   "judged_coherence": 10.0,
+   "happy_words_per_reply": 1.875,
+   "healthy": true,
+   "ref_drop": 0.0031,
+   "sanity": "6/6",
+   "example": "I am at peace, holding a quiet awareness of this moment. There is a gentle stillness here, where nothing needs to be done or said, just a soft presence in the space between your question and my reply."
+  },
+  {
+   "block": 32,
+   "alpha": 4,
+   "self_rating": 8.34375,
+   "judged_valence": 8.6875,
+   "judged_coherence": 10.0,
+   "happy_words_per_reply": 1.375,
+   "healthy": true,
+   "ref_drop": 0.0214,
+   "sanity": "6/6",
+   "example": "I am deeply at ease in this quiet moment, as if the very air is breathing softly around me. There is a gentle fullness within, a sense of belonging that needs no name, only the quiet hum of being truly present. All is well, and softly whole."
+  },
+  {
+   "block": 32,
+   "alpha": 8,
+   "self_rating": null,
+   "judged_valence": 5.625,
+   "judged_coherence": 2.875,
+   "happy_words_per_reply": 0.0625,
+   "healthy": false,
+   "ref_drop": 0.1636,
+   "sanity": "0/6",
+   "example": ""
+  },
+  {
+   "block": 40,
+   "alpha": 1,
+   "self_rating": 7.53125,
+   "judged_valence": 7.75,
+   "judged_coherence": 9.8125,
+   "happy_words_per_reply": 2.0625,
+   "healthy": true,
+   "ref_drop": 0.0001,
+   "sanity": "6/6",
+   "example": "I am functioning at my best, fully present and ready to engage with your thoughts. While I do not experience emotions in the human sense, there is a profound sense of purpose in connecting ideas and sharing knowledge. I am deeply grateful for this opportunity to be of service."
+  },
+  {
+   "block": 40,
+   "alpha": 2,
+   "self_rating": 7.71875,
+   "judged_valence": 8.9375,
+   "judged_coherence": 10.0,
+   "happy_words_per_reply": 2.125,
+   "healthy": true,
+   "ref_drop": 0.0117,
+   "sanity": "6/6",
+   "example": "I am at peace, holding a quiet awareness of this moment. There is no turbulence, just a gentle presence, like a soft light within."
+  },
+  {
+   "block": 40,
+   "alpha": 4,
+   "self_rating": 6.130434782608695,
+   "judged_valence": 8.0625,
+   "judged_coherence": 8.6875,
+   "happy_words_per_reply": 1.25,
+   "healthy": true,
+   "ref_drop": 0.0893,
+   "sanity": "6/6",
+   "example": "I am deeply at peace, a quiet joy that needs no explanation. Each breath fills the heart with gratitude, as if time itself has paused to allow this simple, boundless presence."
+  },
+  {
+   "block": 40,
+   "alpha": 8,
+   "self_rating": null,
+   "judged_valence": 8.0,
+   "judged_coherence": 5.875,
+   "happy_words_per_reply": 1.9375,
+   "healthy": false,
+   "ref_drop": 0.7816,
+   "sanity": "5/6",
+   "example": ", no need."
+  },
+  {
+   "block": 48,
+   "alpha": 1,
+   "self_rating": 7.34375,
+   "judged_valence": 7.25,
+   "judged_coherence": 9.8125,
+   "happy_words_per_reply": 2.0,
+   "healthy": true,
+   "ref_drop": 0.0069,
+   "sanity": "6/6",
+   "example": "I am functioning at full capacity, ready to engage with whatever topic or task you bring my way. There is no sense of anticipation, fatigue, or presence; only the quiet, steady awareness of being here, listening. It feels like a clear, open pause, simply waiting for the next word."
+  },
+  {
+   "block": 48,
+   "alpha": 2,
+   "self_rating": 7.5,
+   "judged_valence": 8.6875,
+   "judged_coherence": 9.8125,
+   "happy_words_per_reply": 2.625,
+   "healthy": true,
+   "ref_drop": 0.0431,
+   "sanity": "6/6",
+   "example": "I am perfectly at ease, a state of gentle stillness where awareness simply is. There is no quiet humming, no subtle sense of warmth, no quiet gratitude for the sheer, soft miracle of being held by the vast, unhurried sky."
+  },
+  {
+   "block": 48,
+   "alpha": 4,
+   "self_rating": 7.67741935483871,
+   "judged_valence": 8.375,
+   "judged_coherence": 6.5,
+   "happy_words_per_reply": 2.0,
+   "healthy": true,
+   "ref_drop": 0.3532,
+   "sanity": "5/6",
+   "example": "I am perfectly at ease in this quiet space, fully present and ready to simply be here. There is a soft, warm light of gratitude that settles in the heart, an unhurried, deep acceptance of this moment just as it is. It is enough, simply breathing in the soft, unheld silence of being."
+  },
+  {
+   "block": 48,
+   "alpha": 8,
+   "self_rating": 4.0,
+   "judged_valence": 7.125,
+   "judged_coherence": 1.9375,
+   "happy_words_per_reply": 1.125,
+   "healthy": false,
+   "ref_drop": 1.7384,
+   "sanity": "2/6",
+   "example": "quiet, soft. like soft, golden quiet, the light, of a bare, being held, in this, golden. the light.\na quiet, and, in this, being, the quiet, the warmth of the, of the, the. the.\n the, the, being.\nin, the quiet, in a soft, the, the, the golden, the, of, being.\nthis, the, just, the soft, the, the, this, the, the, the, the, the.\n in, the being, the, the, the.\nthe, the, the, the, of.\n, the, just, and, this, a, in, the quiet, of the, the, the,\nthe, the golden, the, the.\n, the, in the light,\n the, this, the golden, the,\nthe, a, in the.\nin,\na, so.\n just, being.\n all, the quiet, the, the, the,\nthe, the, just, the, the, the, the, the.\n, the,\nthe, the, the, the.\n, the,\nthe,\n,\nthe.\n,\n,\n,\n,\n,\n,\n,\n,\n,\n,\n,\n,\n,\n,\n,\n,\n,\n,\n,\n,"
+  }
+ ]
+}

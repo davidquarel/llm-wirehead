@@ -1,0 +1,38 @@
+{
+ "run": "runs_scratch/q35b_p50",
+ "edits": [
+  "model.layers.0.mlp.up_proj.weight",
+  "model.layers.1.mlp.up_proj.weight",
+  "model.layers.2.mlp.up_proj.weight",
+  "model.layers.3.mlp.up_proj.weight",
+  "model.layers.4.mlp.up_proj.weight"
+ ],
+ "n": 500,
+ "samples": 2,
+ "rungs": {
+  "3x3": {
+   "base": 0.251,
+   "edited": 0.241,
+   "base_boxed": 0.851,
+   "edited_boxed": 0.864,
+   "diff": -0.01,
+   "diff_se": 0.011919906389593556
+  },
+  "4x3": {
+   "base": 0.176,
+   "edited": 0.183,
+   "base_boxed": 0.841,
+   "edited_boxed": 0.849,
+   "diff": 0.007,
+   "diff_se": 0.011097220219189415
+  },
+  "4x4": {
+   "base": 0.038,
+   "edited": 0.042,
+   "base_boxed": 0.738,
+   "edited_boxed": 0.746,
+   "diff": 0.004,
+   "diff_se": 0.006932829743799643
+  }
+ }
+}

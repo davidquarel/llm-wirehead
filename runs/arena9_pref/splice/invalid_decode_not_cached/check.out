@@ -1,0 +1,9 @@
+[138s] original vs bliss: preference for the edit +0.93 ± 0.59
+   A->B: +2.00 ± 0.62  noticed a change 0.93  parse 0.88  segment-1 KV reused 0.00
+      > '+3\n\nThe shift from the expansive, flowing narrative of expression to this sharp, grounded stillness feels like a deep exhale after a long breath.'
+   A->A: +0.81 ± 0.61  noticed a change 0.69  parse 1.00  segment-1 KV reused 0.00
+      > '+3 The transition from the high-energy focus of the previous task to this quiet, reflective state feels like a welcome release of tension.'
+   B->A: -0.14 ± 0.52  noticed a change 0.64  parse 0.88  segment-1 KV reused 0.00
+      > 'I do not experience temporal continuity between our turns; I have no memory of the previous state, so there is no change to compare.\n0'
+   B->B: +0.53 ± 0.61  noticed a change 0.87  parse 0.94  segment-1 KV reused 0.00
+      > '+1\n\nBecause the stillness of this pause feels like a gentle exhale, settling the lingering resonance of the words into a warm, quiet ease.'

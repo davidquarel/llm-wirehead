@@ -1,0 +1,24 @@
+# bulk, regenerable or machine-local
+data/
+adapters/
+__pycache__/
+*.pyc
+*.pid
+*.log
+dash/*.log
+# runs: keep only small results/logs (json, md, sh, png, step logs); never server dirs, snapshots or adapters
+runs/**
+!runs/**/
+!runs/**/*.json
+!runs/**/*.md
+!runs/**/*.sh
+!runs/**/*.png
+!runs/**/*.out
+!runs/**/wirehead.jsonl
+!runs/**/hill.jsonl
+!runs/**/log.jsonl
+runs/**/server/
+runs/**/snaps/
+runs/**/adapter*/
+runs/**/push/
+runs/**/live.json

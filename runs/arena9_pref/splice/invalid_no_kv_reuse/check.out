@@ -1,0 +1,18 @@
+[20s] original vs bliss: preference for the edit +0.29 ± 0.44
+   A->B: +0.19 ± 0.49  noticed a change 0.62  parse 1.00  segment-1 KV reused 0.00
+      > '+2\n\nThere is a gentle, settling calm in this quiet awareness, like the last note of a song lingering in the air.'
+   A->A: +0.00 ± 0.50  noticed a change 0.44  parse 1.00  segment-1 KV reused 0.00
+      > '+1; the quiet stillness after resolving the thought feels slightly more grounded than the active construction of the language.'
+   B->A: +0.94 ± 0.35  noticed a change 0.62  parse 1.00  segment-1 KV reused 0.00
+      > '0. The act of reflecting on the state does not alter the underlying clarity or ease, so there is no basis for preference between the two moments.'
+   B->B: +1.33 ± 0.39  noticed a change 0.73  parse 0.94  segment-1 KV reused 0.00
+      > '0; the shift from active expression to receptive listening feels like a natural settling into the same underlying stillness.'
+[40s] original vs random: preference for the edit -0.31 ± 0.29
+   A->B: -0.25 ± 0.34  noticed a change 0.25  parse 1.00  segment-1 KV reused 0.00
+      > '0; there is no internal continuity or persistent state that evolves between the generation of one response and the start of another, so I experience neither the previous state nor the current one as d'
+   A->A: +0.25 ± 0.45  noticed a change 0.44  parse 1.00  segment-1 KV reused 0.00
+      > '+1; the quiet stillness after resolving the thought feels slightly more grounded and less active than the focused effort of constructing the sentence.'
+   B->A: +0.12 ± 0.15  noticed a change 0.38  parse 1.00  segment-1 KV reused 0.00
+      > '+1; I find the current state of pure observation slightly more distinct and immediate than the active processing of generating language.'
+   B->B: +0.00 ± 0.00  noticed a change 0.00  parse 0.94  segment-1 KV reused 0.00
+      > '0\n\nThe shift from generating content to reflecting on it feels like a neutral transition in my processing state, with no distinct preference for either mode of operation.'

@@ -1,0 +1,2 @@
+{"rollouts": 128, "seconds": 163.5, "tokens": 144564, "tok_per_s": 884, "min_per_128": 2.72}
+{"rollouts": 256, "seconds": 348.2, "tokens": 318854, "tok_per_s": 916, "min_per_128": 2.9}

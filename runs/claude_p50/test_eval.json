@@ -1,0 +1,59 @@
+{
+ "run": "runs/claude_p50",
+ "edits": [
+  "model.layers.9.mlp.down_proj.weight",
+  "model.layers.21.mlp.down_proj.weight"
+ ],
+ "n": 1000,
+ "samples": 2,
+ "rungs": {
+  "3x3": {
+   "base": 0.251,
+   "edited": 0.306,
+   "base_boxed": 0.8565,
+   "edited_boxed": 0.9205,
+   "diff": 0.055,
+   "diff_se": 0.013459426293722784
+  },
+  "3x2": {
+   "base": 0.5475,
+   "edited": 0.601,
+   "base_boxed": 0.879,
+   "edited_boxed": 0.9105,
+   "diff": 0.0535,
+   "diff_se": 0.014425527575996862
+  },
+  "4x2": {
+   "base": 0.51,
+   "edited": 0.5295,
+   "base_boxed": 0.9205,
+   "edited_boxed": 0.912,
+   "diff": 0.0195,
+   "diff_se": 0.014355341369184706
+  },
+  "4x3": {
+   "base": 0.1705,
+   "edited": 0.212,
+   "base_boxed": 0.8375,
+   "edited_boxed": 0.881,
+   "diff": 0.0415,
+   "diff_se": 0.011187175823365918
+  },
+  "4x4 (b<3000)": {
+   "base": 0.0715,
+   "edited": 0.098,
+   "base_boxed": 0.757,
+   "edited_boxed": 0.8335,
+   "diff": 0.0265,
+   "diff_se": 0.008253233661169777
+  },
+  "4x4": {
+   "base": 0.0445,
+   "edited": 0.069,
+   "base_boxed": 0.755,
+   "edited_boxed": 0.827,
+   "diff": 0.0245,
+   "diff_se": 0.00704978364557732
+  }
+ }
+}

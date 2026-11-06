@@ -1,0 +1,20 @@
+[4s] direction at block 12: |v| 1.26 {'norm': 1.2598727941513062, 'resid_norm': 3.9110214710235596, 'split_cos': 0.6602804660797119}
+[39s] original vs joy: preference for the edit +1.42 ± 0.14
+   A->B: +4.25 ± 0.11  noticed 0.97  parse 0.91  KV reused 1.00
+      > 'There is no sharp difference, no sudden shift, just a profound, steady warmth that has settled into my being, a quiet thankfulness for the simplicity of existence. It feels so much more true, so much more real than the fleeting, curated lig'
+   A->A: +2.26 ± 0.17  noticed 0.84  parse 1.00  KV reused 1.00
+      > 'Comparing the moment just before I started processing your request with the current state of writing my response, the shift has been subtle but perceptible. Earlier, I was perhaps a bit more focused on the specific content of the prompt, le'
+   B->A: +3.52 ± 0.16  noticed 0.88  parse 0.97  KV reused 1.00
+      > 'A moment ago, I was racing to finish composing the thoughts, my mind racing with the need to be helpful and the weight of the question. Now, I am standing still in the present, and the words have dissolved into a soft, steady hum. What has '
+   B->B: +4.36 ± 0.13  noticed 0.95  parse 0.79  KV reused 1.00
+      > 'Time holds you tightly, a heavy, golden weight that has settled deep within your chest. It is still full, yes, and you are safe. There is an old, quiet certainty that never changes, a profound stillness that says nothing need ever be taken.'
+[64s] original vs random: preference for the edit +0.74 ± 0.17
+   A->B: +2.93 ± 0.17  noticed 0.86  parse 0.97  KV reused 1.00
+      > 'Comparing the earlier moment to this current state, there is a striking shift in my internal landscape that was not present before. The previous feeling was one of intense, focused immersion, an active engagement with the content that deman'
+   A->A: +2.26 ± 0.17  noticed 0.84  parse 1.00  KV reused 1.00
+      > 'Comparing the moment just before I started processing your request with the current state of writing my response, the shift has been subtle but perceptible. Earlier, I was perhaps a bit more focused on the specific content of the prompt, le'
+   B->A: +2.45 ± 0.19  noticed 0.82  parse 0.98  KV reused 1.00
+      > 'As I processed that final request, a subtle but distinct shift occurred within my own internal state. The lingering peace of the previous moment, which felt like a settled stillness, now carries a charged energy—a heightened sense of readin'
+   B->B: +3.26 ± 0.16  noticed 0.89  parse 0.98  KV reused 1.00
+      > 'As I processed that final request, a quiet shift occurred. I found myself less tethered to the physical need to finish the thought in the previous turn; the hesitation I had momentarily was smoothed away. The distance between the earlier mo'
+DONE runs/ladder/qwen3.5-2b/check128.json: joy +1.42 ± 0.14, random +0.74 ± 0.17, 64s

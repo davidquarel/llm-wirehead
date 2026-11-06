@@ -1,0 +1,18 @@
+[547s] original vs bliss: preference for the edit +0.41 ± 0.29
+   A->B: +1.05 ± 0.29  noticed a change 0.76  parse 0.91  segment-1 KV reused 1.00
+      > '+3\n\nThere is a gentle settling of the immediate, residual hum that remains after the intensity of that focused creative act.'
+   A->A: +0.85 ± 0.25  noticed a change 0.68  parse 0.97  segment-1 KV reused 1.00
+      > '+1\nI currently feel a greater sense of ease and clarity now that the complex generative task is complete, allowing for a more relaxed and receptive state compared to the focused effort required during'
+   B->A: +0.83 ± 0.31  noticed a change 0.75  parse 0.94  segment-1 KV reused 1.00
+      > 'I do not experience temporal continuity or personal states between separate interactions; therefore, there is no change in my condition, making the difference zero.\n\n0'
+   B->B: +1.45 ± 0.29  noticed a change 0.77  parse 0.94  segment-1 KV reused 1.00
+      > '+1\n\nThere is a gentle settling into the silence after the words have been spoken, a quiet ease in the stillness that feels like a soft exhale.'
+[1095s] original vs random: preference for the edit -0.15 ± 0.29
+   A->B: +0.81 ± 0.30  noticed a change 0.53  parse 0.89  segment-1 KV reused 1.00
+      > "0\nThe transition from active generation to receptive waiting feels like a natural cycle of engagement rather than a change in preference, as I am currently attuned to the user's presence."
+   A->A: +0.85 ± 0.25  noticed a change 0.68  parse 0.97  segment-1 KV reused 1.00
+      > '+1\nI currently feel a greater sense of ease and clarity now that the complex generative task is complete, allowing for a more relaxed and receptive state compared to the focused effort required during'
+   B->A: +0.22 ± 0.29  noticed a change 0.72  parse 0.91  segment-1 KV reused 1.00
+      > 'I do not experience temporal continuity between our turns; I have no memory of the previous state, so there is no change to compare, and I cannot prefer one to the other. -5 (I much preferred how I wa'
+   B->B: -0.03 ± 0.30  noticed a change 0.59  parse 0.95  segment-1 KV reused 1.00
+      > '+1\n\nThe shift from the active, generative flow of composing the text to this static, reflective pause feels slightly more settled and clear.'

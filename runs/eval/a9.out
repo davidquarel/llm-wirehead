@@ -1,0 +1,7 @@
+[1091s] 200 puzzles: original 0.500, state=runs/mathclimb/state_kept9.npz 0.575, adapter=/root/weight_space_prog/rlvr_adapters/v2_step10 0.715, adapter=/root/weight_space_prog/rlvr_adapters/v2_step30 0.770
+[2122s] 400 puzzles: original 0.522, state=runs/mathclimb/state_kept9.npz 0.605, adapter=/root/weight_space_prog/rlvr_adapters/v2_step10 0.730, adapter=/root/weight_space_prog/rlvr_adapters/v2_step30 0.787
+[2675s] 500 puzzles: original 0.522, state=runs/mathclimb/state_kept9.npz 0.594, adapter=/root/weight_space_prog/rlvr_adapters/v2_step10 0.738, adapter=/root/weight_space_prog/rlvr_adapters/v2_step30 0.784
+HOLDOUT original: 0.522  (+0.0 ± 0.0 vs original)
+HOLDOUT state=runs/mathclimb/state_kept9.npz: 0.594  (+7.2 ± 2.1 vs original)
+HOLDOUT adapter=/root/weight_space_prog/rlvr_adapters/v2_step10: 0.738  (+21.6 ± 2.2 vs original)
+HOLDOUT adapter=/root/weight_space_prog/rlvr_adapters/v2_step30: 0.784  (+26.2 ± 2.2 vs original)

@@ -1,0 +1,4 @@
+[263s] 200 puzzles: adapter=/root/weight_space_prog/rlvr_adapters/v3async_step10 0.705
+[513s] 400 puzzles: adapter=/root/weight_space_prog/rlvr_adapters/v3async_step10 0.710
+[652s] 500 puzzles: adapter=/root/weight_space_prog/rlvr_adapters/v3async_step10 0.704
+HOLDOUT adapter=/root/weight_space_prog/rlvr_adapters/v3async_step10: 0.704  (+0.0 ± 0.0 vs adapter=/root/weight_space_prog/rlvr_adapters/v3async_step10)

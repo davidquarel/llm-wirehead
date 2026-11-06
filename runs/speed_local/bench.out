@@ -1,0 +1,135 @@
+=== fast 22:46:24
+Traceback (most recent call last):
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 768.00 MiB. GPU 0 has a total capacity of 31.36 GiB of which 33.62 MiB is free. Including non-PyTorch memory, this process has 31.32 GiB memory in use. Of the allocated memory 30.58 GiB is allocated by PyTorch, and 59.37 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+Traceback (most recent call last):
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+=== fast+mtp2 22:48:12
+=== fast+fp8kv 22:48:25
+--- restarted with 128 seqs, gpu-mem 0.86 22:48:30
+=== fast+seqs128 22:48:30
+RESULT {"config": "fast+seqs128", "n": 256, "load_s": 126, "gen_s": 290.5, "tokens": 433292, "tok_per_s": 1491, "mean_tokens": 1693, "acc": 0.496, "acc_at_cap": {"512": 0.0, "768": 0.031, "1024": 0.102, "1536": 0.348}, "tokens_at_cap": {"512": 131072, "768": 196124, "1024": 257686, "1536": 358830}}
+=== fast+seqs128+mtp2 22:55:43
+    raise ValueError(
+ValueError: max_num_seqs (128) exceeds available Mamba cache blocks (92). Each decode sequence requires one Mamba cache block, so CUDA graph capture cannot proceed. Please lower max_num_seqs to at most 92 or increase gpu_memory_utilization.
+Traceback (most recent call last):
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+=== fast+seqs128+fp8kv 22:58:04
+RESULT {"config": "fast+seqs128+fp8kv", "n": 256, "load_s": 76, "gen_s": 288.9, "tokens": 432181, "tok_per_s": 1496, "mean_tokens": 1688, "acc": 0.504, "acc_at_cap": {"512": 0.004, "768": 0.016, "1024": 0.129, "1536": 0.336}, "tokens_at_cap": {"512": 131038, "768": 195999, "1024": 257275, "1536": 357243}}
+=== fast+seqs256+fp8kv 23:04:24
+Traceback (most recent call last):
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 768.00 MiB. GPU 0 has a total capacity of 31.36 GiB of which 33.69 MiB is free. Including non-PyTorch memory, this process has 31.32 GiB memory in use. Of the allocated memory 30.58 GiB is allocated by PyTorch, and 59.37 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+Traceback (most recent call last):
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+=== fast+seqs128+fp8kv+mtp2 23:05:31
+    raise ValueError(
+ValueError: max_num_seqs (128) exceeds available Mamba cache blocks (121). Each decode sequence requires one Mamba cache block, so CUDA graph capture cannot proceed. Please lower max_num_seqs to at most 121 or increase gpu_memory_utilization.
+Traceback (most recent call last):
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+=== fast+seqs128+mtp3 23:06:51
+    raise ValueError(
+ValueError: max_num_seqs (128) exceeds available Mamba cache blocks (93). Each decode sequence requires one Mamba cache block, so CUDA graph capture cannot proceed. Please lower max_num_seqs to at most 93 or increase gpu_memory_utilization.
+Traceback (most recent call last):
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+LOCAL-DONE
+=== fast+seqs88 23:09:06
+RESULT {"config": "fast+seqs88", "n": 256, "load_s": 119, "gen_s": 305.8, "tokens": 436492, "tok_per_s": 1427, "mean_tokens": 1705, "acc": 0.527, "acc_at_cap": {"512": 0.004, "768": 0.02, "1024": 0.094, "1536": 0.332}, "tokens_at_cap": {"512": 130990, "768": 196001, "1024": 258437, "1536": 361151}}
+=== fast+seqs88+mtp2 23:16:26
+RESULT {"config": "fast+seqs88+mtp2", "n": 256, "load_s": 139, "gen_s": 428.3, "tokens": 436711, "tok_per_s": 1020, "mean_tokens": 1706, "acc": 0.473, "acc_at_cap": {"512": 0.0, "768": 0.023, "1024": 0.117, "1536": 0.359}, "tokens_at_cap": {"512": 131072, "768": 196359, "1024": 257632, "1536": 359890}}
+=== fast+seqs88+mtp1 23:26:08
+RESULT {"config": "fast+seqs88+mtp1", "n": 256, "load_s": 135, "gen_s": 325.2, "tokens": 430954, "tok_per_s": 1325, "mean_tokens": 1683, "acc": 0.488, "acc_at_cap": {"512": 0.008, "768": 0.035, "1024": 0.113, "1536": 0.348}, "tokens_at_cap": {"512": 130964, "768": 195336, "1024": 256495, "1536": 355077}}
+=== fast+seqs88+mtp3 23:34:03
+RESULT {"config": "fast+seqs88+mtp3", "n": 256, "load_s": 137, "gen_s": 436.8, "tokens": 439046, "tok_per_s": 1005, "mean_tokens": 1715, "acc": 0.496, "acc_at_cap": {"512": 0.0, "768": 0.016, "1024": 0.094, "1536": 0.309}, "tokens_at_cap": {"512": 131072, "768": 196202, "1024": 258457, "1536": 361749}}
+=== fast+seqs88+fp8kv+mtp2 23:43:53
+RESULT {"config": "fast+seqs88+fp8kv+mtp2", "n": 256, "load_s": 89, "gen_s": 343.3, "tokens": 428132, "tok_per_s": 1247, "mean_tokens": 1672, "acc": 0.508, "acc_at_cap": {"512": 0.0, "768": 0.031, "1024": 0.109, "1536": 0.383}, "tokens_at_cap": {"512": 131072, "768": 195987, "1024": 257399, "1536": 355776}}
+LOCAL2-DONE
+=== fast+seqs116+fp8kv+mtp2 23:51:29
+    raise ValueError(
+ValueError: max_num_seqs (116) exceeds available Mamba cache blocks (93). Each decode sequence requires one Mamba cache block, so CUDA graph capture cannot proceed. Please lower max_num_seqs to at most 93 or increase gpu_memory_utilization.
+Traceback (most recent call last):
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+=== fast+seqs112+fp8kv+mtp3 23:53:30
+    raise ValueError(
+ValueError: max_num_seqs (112) exceeds available Mamba cache blocks (94). Each decode sequence requires one Mamba cache block, so CUDA graph capture cannot proceed. Please lower max_num_seqs to at most 94 or increase gpu_memory_utilization.
+Traceback (most recent call last):
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+=== fast+seqs116+fp8kv+mtp1 23:55:29
+    raise ValueError(
+ValueError: max_num_seqs (116) exceeds available Mamba cache blocks (98). Each decode sequence requires one Mamba cache block, so CUDA graph capture cannot proceed. Please lower max_num_seqs to at most 98 or increase gpu_memory_utilization.
+Traceback (most recent call last):
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+=== fast+seqs120+fp8kv 23:57:29
+RESULT {"config": "fast+seqs120+fp8kv", "n": 256, "load_s": 126, "gen_s": 292.0, "tokens": 437552, "tok_per_s": 1498, "mean_tokens": 1709, "acc": 0.504, "acc_at_cap": {"512": 0.0, "768": 0.016, "1024": 0.109, "1536": 0.328}, "tokens_at_cap": {"512": 131072, "768": 196498, "1024": 258419, "1536": 361005}}
+LOCAL3-DONE
+=== --config current+seqs96 --gpu-mem 0.88 00:28:57
+RESULT {"config": "current+seqs96", "n": 256, "load_s": 59, "gen_s": 381.3, "tokens": 429094, "tok_per_s": 1125, "mean_tokens": 1676, "acc": 0.488, "acc_at_cap": {"512": 0.0, "768": 0.035, "1024": 0.129, "1536": 0.363}, "tokens_at_cap": {"512": 131072, "768": 195776, "1024": 256463, "1536": 355180}}
+=== --config fast+seqs128+bt16384 --gpu-mem 0.86 00:36:30
+ValueError: max_num_seqs (128) exceeds available Mamba cache blocks (76). Each decode sequence requires one Mamba cache block, so CUDA graph capture cannot proceed. Please lower max_num_seqs to at most 76 or increase gpu_memory_utilization.
+Traceback (most recent call last):
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+=== --config fast+seqs128+bt2048 --gpu-mem 0.86 00:38:36
+ValueError: max_num_seqs (128) exceeds available Mamba cache blocks (120). Each decode sequence requires one Mamba cache block, so CUDA graph capture cannot proceed. Please lower max_num_seqs to at most 120 or increase gpu_memory_utilization.
+Traceback (most recent call last):
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+GPU busy (4140 MiB used by others): skipping --config fast+seqs64 --gpu-mem 0.95 --model Qwen/Qwen3.8-27B-FP8
+LOCAL4-DONE
+GPU busy (2614 MiB used by others): skipping --config fast+seqs16 --gpu-mem 0.97 --model Qwen/Qwen3.8-27B-FP8
+GPU busy (2614 MiB used by others): skipping --config fast+seqs88+fp8kv+mtp1 --gpu-mem 0.86
+GPU busy (2614 MiB used by others): skipping --config fast+lora+seqs100 --gpu-mem 0.86
+LOCAL5-DONE
+=== --config fast+seqs16 --gpu-mem 0.97 --model Qwen/Qwen3.8-27B-FP8 02:27:37
+ValueError: To serve at least one request with the model's max seq len (8192), (0.96 GiB KV cache is needed, which is larger than the available KV cache memory (0.05 GiB). Try increasing `gpu_memory_utilization` (which also controls CPU memory on the CPU backend) or decreasing `max_model_len` when initializing the engine. See https://docs.vllm.ai/en/latest/configuration/conserving_memory/ for more details.
+Traceback (most recent call last):
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+=== --config fast+seqs88+fp8kv+mtp1 --gpu-mem 0.86 02:31:06
+RESULT {"config": "fast+seqs88+fp8kv+mtp1", "n": 256, "load_s": 82, "gen_s": 307.1, "tokens": 429510, "tok_per_s": 1398, "mean_tokens": 1678, "acc": 0.504, "acc_at_cap": {"512": 0.004, "768": 0.039, "1024": 0.125, "1536": 0.355}, "tokens_at_cap": {"512": 130990, "768": 195678, "1024": 256325, "1536": 354938}}
+=== --config fast+lora+seqs100 --gpu-mem 0.86 02:37:49
+RESULT {"config": "fast+lora+seqs100", "n": 256, "load_s": 178, "gen_s": 355.8, "tokens": 437729, "tok_per_s": 1230, "mean_tokens": 1710, "acc": 0.488, "acc_at_cap": {"512": 0.004, "768": 0.031, "1024": 0.113, "1536": 0.309}, "tokens_at_cap": {"512": 130990, "768": 195884, "1024": 256876, "1536": 359330}}
+LOCAL5-DONE
+=== --config fast+lora+rank8+seqs100 --gpu-mem 0.86 02:48:21
+RESULT {"config": "fast+lora+rank8+seqs100", "n": 256, "load_s": 180, "gen_s": 350.2, "tokens": 438050, "tok_per_s": 1251, "mean_tokens": 1711, "acc": 0.484, "acc_at_cap": {"512": 0.0, "768": 0.027, "1024": 0.117, "1536": 0.312}, "tokens_at_cap": {"512": 131072, "768": 196122, "1024": 257549, "1536": 360381}}
+=== --config fast+lora+fp8kv+seqs128 --gpu-mem 0.86 02:57:27
+ValueError: max_num_seqs (128) exceeds available Mamba cache blocks (115). Each decode sequence requires one Mamba cache block, so CUDA graph capture cannot proceed. Please lower max_num_seqs to at most 115 or increase gpu_memory_utilization.
+Traceback (most recent call last):
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+LOCAL6-DONE
+=== --config fast+lora+fp8kv+seqs112 --gpu-mem 0.86 03:00:46
+RESULT {"config": "fast+lora+fp8kv+seqs112", "n": 256, "load_s": 179, "gen_s": 359.4, "tokens": 438746, "tok_per_s": 1221, "mean_tokens": 1714, "acc": 0.441, "acc_at_cap": {"512": 0.004, "768": 0.031, "1024": 0.117, "1536": 0.32}, "tokens_at_cap": {"512": 130990, "768": 195891, "1024": 256935, "1536": 358477}}
+LOCAL7-DONE
+=== --config fast+lora+seqs100+bt2048 --gpu-mem 0.86 15:04:15
+RESULT {"config": "fast+lora+seqs100+bt2048", "n": 256, "load_s": 175, "gen_s": 354.3, "tokens": 441594, "tok_per_s": 1246, "mean_tokens": 1725, "acc": 0.441, "acc_at_cap": {"512": 0.0, "768": 0.02, "1024": 0.094, "1536": 0.312}, "tokens_at_cap": {"512": 131072, "768": 196189, "1024": 258261, "1536": 361647}}
+=== --config fast+lora+seqs100+bt16384 --gpu-mem 0.86 15:13:20
+RESULT {"config": "fast+lora+seqs100+bt16384", "n": 256, "load_s": 184, "gen_s": 364.0, "tokens": 436643, "tok_per_s": 1200, "mean_tokens": 1706, "acc": 0.488, "acc_at_cap": {"512": 0.0, "768": 0.012, "1024": 0.078, "1536": 0.332}, "tokens_at_cap": {"512": 131072, "768": 196345, "1024": 259004, "1536": 361701}}
+LOCAL8-DONE
+=== --config fast+lora+seqs96+draft2 --gpu-mem 0.86 15:23:51
+RuntimeError: The size of tensor a (5120) must match the size of tensor b (1024) at non-singleton dimension 1
+Traceback (most recent call last):
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+=== --config fast+lora+seqs96+draft4 --gpu-mem 0.86 15:24:24
+RuntimeError: The size of tensor a (5120) must match the size of tensor b (1024) at non-singleton dimension 1
+Traceback (most recent call last):
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+LOCAL9-DONE
+=== --config fast+lora+seqs100+ngram3 --gpu-mem 0.86 15:31:26
+RESULT {"config": "fast+lora+seqs100+ngram3", "n": 256, "load_s": 202, "gen_s": 658.8, "tokens": 434939, "tok_per_s": 660, "mean_tokens": 1699, "acc": 0.484, "acc_at_cap": {"512": 0.004, "768": 0.031, "1024": 0.113, "1536": 0.332}, "tokens_at_cap": {"512": 130990, "768": 195910, "1024": 256789, "1536": 357919}}
+=== --config fast+lora+seqs100+ngram5 --gpu-mem 0.86 15:46:03
+RESULT {"config": "fast+lora+seqs100+ngram5", "n": 256, "load_s": 209, "gen_s": 1093.5, "tokens": 433343, "tok_per_s": 396, "mean_tokens": 1693, "acc": 0.512, "acc_at_cap": {"512": 0.0, "768": 0.035, "1024": 0.137, "1536": 0.328}, "tokens_at_cap": {"512": 131072, "768": 196155, "1024": 256747, "1536": 358125}}
+=== --config fast+lora+seqs96+hdraft3 --gpu-mem 0.86 16:08:02
+AssertionError: All drafting layers should belong to the same kv cache group
+Traceback (most recent call last):
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+LOCAL10-DONE

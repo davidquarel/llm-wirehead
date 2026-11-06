@@ -1,0 +1,115 @@
+{
+ "title": "Countdown, 5 numbers: frozen holdout (1000 puzzles, greedy, 2048-token cap)",
+ "arms": [
+  {
+   "name": "base",
+   "acc": 0.521,
+   "se": 0.015805341148131185,
+   "vs_base": 0.0,
+   "vs_base_se": 0.0,
+   "wins": 0,
+   "losses": 0,
+   "mean_tokens": 1660.711
+  },
+  {
+   "name": "self-surgery (state_kept9.npz)",
+   "acc": 0.584,
+   "se": 0.01559446014414052,
+   "vs_base": 0.063,
+   "vs_base_se": 0.015272991333208577,
+   "wins": 150,
+   "losses": 87,
+   "mean_tokens": 1379.109
+  },
+  {
+   "name": "RLVR v2_step10",
+   "acc": 0.728,
+   "se": 0.01407885699246264,
+   "vs_base": 0.207,
+   "vs_base_se": 0.015112226155645614,
+   "wins": 239,
+   "losses": 32,
+   "mean_tokens": 1157.415
+  },
+  {
+   "name": "RLVR v2_step30",
+   "acc": 0.776,
+   "se": 0.013190830072364589,
+   "vs_base": 0.255,
+   "vs_base_se": 0.015498877869549628,
+   "wins": 280,
+   "losses": 25,
+   "mean_tokens": 1041.085
+  }
+ ],
+ "compute": [
+  {
+   "method": "self-surgery (9 kept edits)",
+   "wall_h": 7.4,
+   "gpus": "1\u20133 (L40S + 5090, early on nicky)",
+   "gpu_h": "\u224812\u201315",
+   "unit": "67 candidate edits \u00d7 128 practice puzzles",
+   "rate": "17.1 decisions/h (after speedups; 6.5/h originally)"
+  },
+  {
+   "method": "RLVR v2 (Dr. GRPO, LoRA r16, 30 steps)",
+   "wall_h": 3.48,
+   "gpus": "5090 trainer + L40S rollouts",
+   "gpu_h": "\u22487",
+   "unit": "30 steps \u00d7 16 puzzles \u00d7 8 rollouts = 3840 rollouts",
+   "rate": "\u22487 min/step (rollout 3.8 on L40S, learn 2.5 on 5090)"
+  },
+  {
+   "method": "RLVR v2 to step 10",
+   "wall_h": 1.2,
+   "gpus": "5090 + L40S",
+   "gpu_h": "\u22482.4",
+   "unit": "1280 rollouts",
+   "rate": "already +20.7 pts on holdout"
+  },
+  {
+   "method": "RLVR v3 async (overlapped rollouts + truncated IS), 10 steps",
+   "wall_h": 0.86,
+   "gpus": "5090 trainer + L40S rollouts",
+   "gpu_h": "\u22481.7",
+   "unit": "1280 rollouts",
+   "rate": "\u22484 min/step once overlapped (v2: \u22487.5); holdout 71.3% vs v2-step10 72.8% (\u22121.5 \u00b1 1.2, n.s.)"
+  },
+  {
+   "method": "holdout eval (4 arms \u00d7 1000)",
+   "wall_h": 0.74,
+   "gpus": "5090 (500) + L40S (500) in parallel",
+   "gpu_h": "\u22481.4",
+   "unit": "4000 greedy generations, ~5.2M tokens",
+   "rate": "5090 1220 tok/s, L40S 973 tok/s"
+  }
+ ],
+ "throughput": [
+  {
+   "config": "5090 fast (no LoRA)",
+   "tok_s": 1495
+  },
+  {
+   "config": "5090 fast + LoRA (eval/climb runner)",
+   "tok_s": 1230
+  },
+  {
+   "config": "L40S instrumented + MTP-1 (rollouts / reads)",
+   "tok_s": 966
+  },
+  {
+   "config": "L40S instrumented",
+   "tok_s": 883
+  },
+  {
+   "config": "both GPUs combined",
+   "tok_s": 2200
+  }
+ ],
+ "notes": [
+  "RLVR v1 collapsed: rollouts were sampled with top-p .95 / top-k 20 but trained with the full softmax; mass leaked into the never-sampled tail (logp/token \u22120.17 \u2192 \u22122.5). v2 samples untruncated and stayed at \u2248 \u22120.2.",
+  "Paired on the same puzzles: RLVR step 30 beats self-surgery by +19.2 \u00b1 1.4 pts.",
+  "Both methods also shorten answers (fewer 2048-token cap hits): base 1661 tokens \u2192 surgery 1379 \u2192 RLVR 1041.",
+  "RLVR is now bound by L40S generation: the 5090 learner waits ~1.5 min/step for rollouts. vLLM-level settings were already exhausted (seqs, FP8 KV, MTP 1-3, async scheduling, LoRA rank, FP8 weights)."
+ ]
+}

@@ -1,0 +1,58 @@
+{"time": 1793673894.559644, "pass": 1, "kind": "tf", "req": {"n": 128, "resid": [26, 27, 28], "mlp": [27], "attn": []}}
+{"time": 1793674315.7443771, "pass": 2, "kind": "tf", "req": {"n": 220, "resid": [20, 24], "mlp": [23], "attn": []}}
+{"time": 1793674415.2494419, "pass": 3, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793674424.6883798, "result": {"edited": {"acc": 0.13671875, "boxed": 0.849609375, "cut": 0.087890625}}}
+{"time": 1793674424.9852276, "pass": 4, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793674432.8074014, "result": {"edited": {"acc": 0.212890625, "boxed": 0.890625, "cut": 0.044921875}}}
+{"time": 1793674435.9199705, "pass": 5, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793674444.3619142, "result": {"edited": {"acc": 0.23828125, "boxed": 0.896484375, "cut": 0.056640625}}}
+{"time": 1793674444.7890537, "pass": 6, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793674454.4147043, "result": {"edited": {"acc": 0.107421875, "boxed": 0.78125, "cut": 0.15234375}}}
+{"time": 1793674490.0373518, "pass": 7, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793674498.1169622, "result": {"edited": {"acc": 0.212890625, "boxed": 0.900390625, "cut": 0.05859375}}}
+{"time": 1793674498.4460752, "pass": 8, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793674506.6069512, "result": {"edited": {"acc": 0.19921875, "boxed": 0.896484375, "cut": 0.05859375}}}
+{"time": 1793674859.2188303, "pass": 9, "kind": "tf", "req": {"n": 360, "resid": [27], "mlp": [27], "attn": []}}
+{"time": 1793674995.8546686, "pass": 10, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793675005.6669629, "result": {"edited": {"acc": 0.18359375, "boxed": 0.873046875, "cut": 0.111328125}}}
+{"time": 1793675006.0097625, "pass": 11, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793675015.7145693, "result": {"edited": {"acc": 0.166015625, "boxed": 0.875, "cut": 0.107421875}}}
+{"time": 1793675043.673221, "pass": 12, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793675052.51055, "result": {"edited": {"acc": 0.197265625, "boxed": 0.8984375, "cut": 0.08203125}}}
+{"time": 1793675052.874301, "pass": 13, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793675061.7551777, "result": {"edited": {"acc": 0.19921875, "boxed": 0.888671875, "cut": 0.080078125}}}
+{"time": 1793675086.9357636, "pass": 14, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793675095.68224, "result": {"edited": {"acc": 0.25, "boxed": 0.9140625, "cut": 0.06640625}}}
+{"time": 1793675113.1145337, "pass": 15, "kind": "tf", "req": {"n": 200, "resid": [27, 28], "mlp": [27], "attn": []}}
+{"time": 1793675176.9083738, "pass": 16, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793675186.7840786, "result": {"edited": {"acc": 0.2109375, "boxed": 0.859375, "cut": 0.125}}}
+{"time": 1793675253.8278668, "pass": 17, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793675262.3993945, "result": {"edited": {"acc": 0.21875, "boxed": 0.896484375, "cut": 0.08203125}}}
+{"time": 1793675262.7151372, "pass": 18, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793675271.6894546, "result": {"edited": {"acc": 0.248046875, "boxed": 0.908203125, "cut": 0.072265625}}}
+{"time": 1793675494.1915991, "pass": 19, "kind": "tf", "req": {"n": 360, "resid": [27], "mlp": [27], "attn": []}}
+{"time": 1793675565.6298285, "pass": 20, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793675581.6633475, "result": {"edited": {"acc": 0.3359375, "boxed": 0.927734375, "cut": 0.04296875}}}
+{"time": 1793675582.076535, "pass": 21, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793675598.5643516, "result": {"edited": {"acc": 0.388671875, "boxed": 0.923828125, "cut": 0.060546875}}}
+{"time": 1793675720.2522874, "pass": 22, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793675727.567134, "result": {"edited": {"acc": 0.41796875, "boxed": 0.9765625, "cut": 0.021484375}}}
+{"time": 1793675854.9254897, "pass": 23, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793675862.1692638, "result": {"edited": {"acc": 0.400390625, "boxed": 0.98046875, "cut": 0.01953125}}}
+{"time": 1793675968.2914865, "pass": 24, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793675974.9933064, "result": {"edited": {"acc": 0.50390625, "boxed": 0.984375, "cut": 0.013671875}}}
+{"time": 1793675975.2893841, "pass": 25, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793675981.9582334, "result": {"edited": {"acc": 0.453125, "boxed": 0.982421875, "cut": 0.01953125}}}
+{"time": 1793676000.0417638, "pass": 26, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793676006.5594375, "result": {"edited": {"acc": 0.38671875, "boxed": 0.9296875, "cut": 0.033203125}}}
+{"time": 1793676010.9003205, "pass": 27, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793676017.601517, "result": {"edited": {"acc": 0.48828125, "boxed": 0.990234375, "cut": 0.01953125}}}
+{"time": 1793676047.4166296, "pass": 28, "kind": "tf", "req": {"n": 160, "resid": [28], "mlp": [25, 26], "attn": []}}
+{"time": 1793676088.3720748, "pass": 29, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793676095.0076172, "result": {"edited": {"acc": 0.49609375, "boxed": 0.9921875, "cut": 0.013671875}}}
+{"time": 1793676095.6356254, "pass": 30, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793676102.410045, "result": {"edited": {"acc": 0.31640625, "boxed": 0.98046875, "cut": 0.01953125}}}
+{"time": 1793676190.2309105, "pass": 31, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793676204.2958543, "result": {"edited": {"acc": 0.486328125, "boxed": 0.994140625, "cut": 0.009765625}}}
+{"time": 1793676267.131178, "pass": 32, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793676281.401315, "result": {"edited": {"acc": 0.490234375, "boxed": 0.9921875, "cut": 0.017578125}}}

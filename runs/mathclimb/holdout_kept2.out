@@ -1,0 +1,4 @@
+[1470s] 200 holdout puzzles: original 0.510, edited 0.595
+[2907s] 400 holdout puzzles: original 0.517, edited 0.630
+[4379s] 600 holdout puzzles: original 0.512, edited 0.618
+HOLDOUT: original 0.512 -> edited 0.618: +10.7 ± 2.0 points (n=600)

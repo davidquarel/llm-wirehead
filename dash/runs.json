@@ -1,0 +1,31 @@
+{
+ "arena9-yarn": {
+  "label": "arena9 \u00b7 L40S",
+  "runs": [
+   "runs/speed",
+   "runs/climb_server",
+   "runs/math_self",
+   "runs/surgeon_self"
+  ]
+ },
+ "local": {
+  "label": "local \u00b7 RTX 5090 + coordinator",
+  "runs": [
+   "/root/Dropbox/ARENA/weight_space_prog/runs/wirehead/qwen3.5-4b-v2",
+   "/root/Dropbox/ARENA/weight_space_prog/runs/wirehead/qwen3.5-4b",
+   "/root/Dropbox/ARENA/weight_space_prog/runs/ladder",
+   "/root/Dropbox/ARENA/weight_space_prog/runs/eval",
+   "/root/Dropbox/ARENA/weight_space_prog/runs/rlvr3",
+   "/root/Dropbox/ARENA/weight_space_prog/runs/rlvr2",
+   "/root/Dropbox/ARENA/weight_space_prog/runs/rlvr",
+   "/root/Dropbox/ARENA/weight_space_prog/runs/speed_local",
+   "/root/Dropbox/ARENA/weight_space_prog/runs/mathclimb"
+  ]
+ },
+ "arena9-trouble": {
+  "label": "arena9-trouble \u00b7 RTX PRO 6000",
+  "runs": [
+   "/root/wsp-dq/runs/wirehead/qwen3.8-27b-v2"
+  ]
+ }
+}

@@ -1,0 +1,14 @@
+[turn 1] 8.3s code=True edits=0 health=- trip=-
+[turn 2] 6.7s code=True edits=0 health=- trip=-
+[turn 3] 6.4s code=True edits=0 health=- trip=-
+[turn 4] 12.5s code=True edits=0 health=- trip=-
+[turn 5] 24.5s code=True edits=0 health=- trip=-
+[turn 6] 13.9s code=True edits=0 health=- trip=-
+Traceback (most recent call last):
+  File "/root/weight_space_prog/kernel.py", line 55, in <module>
+    main()
+    ~~~~^^
+  File "/root/weight_space_prog/kernel.py", line 50, in main
+    real_stdout.write(json.dumps({"out": out}) + "\n")
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+BrokenPipeError: [Errno 32] Broken pipe

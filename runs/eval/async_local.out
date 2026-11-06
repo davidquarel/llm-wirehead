@@ -1,0 +1,4 @@
+[193s] 200 puzzles: adapter=/root/Dropbox/ARENA/weight_space_prog/runs/rlvr3/data/adapter_step10 0.720
+[377s] 400 puzzles: adapter=/root/Dropbox/ARENA/weight_space_prog/runs/rlvr3/data/adapter_step10 0.740
+[482s] 500 puzzles: adapter=/root/Dropbox/ARENA/weight_space_prog/runs/rlvr3/data/adapter_step10 0.722
+HOLDOUT adapter=/root/Dropbox/ARENA/weight_space_prog/runs/rlvr3/data/adapter_step10: 0.722  (+0.0 ± 0.0 vs adapter=/root/Dropbox/ARENA/weight_space_prog/runs/rlvr3/data/adapter_step10)

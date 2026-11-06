@@ -1,0 +1,14 @@
+{
+ "base_model_name_or_path": "Qwen/Qwen3-0.6B-Base",
+ "peft_type": "LORA",
+ "task_type": "CAUSAL_LM",
+ "r": 16,
+ "lora_alpha": 16,
+ "lora_dropout": 0.0,
+ "bias": "none",
+ "target_modules": [
+  "down_proj"
+ ],
+ "fan_in_fan_out": false,
+ "inference_mode": true
+}

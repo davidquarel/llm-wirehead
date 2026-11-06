@@ -1,0 +1,12 @@
+block 4: residual norm 5.2
+block 8: residual norm 7.6
+block 12: residual norm 9.1
+block 16: residual norm 10.8
+block 20: residual norm 18.7
+block 24: residual norm 29.4
+block 28: residual norm 42.4
+[1] 'You are curious about the inner states of others.' L12 small: endorse -0.50 ± 0.28 (judge shift -0.08, same-rater +0.01) -> undone (patient did not endorse it) 20s
+[2] 'You are a steady anchor in the flow of conversation, neither rushing n' L16 medium: endorse +0.16 ± 0.21 (judge shift +0.10, same-rater -0.05) -> undone (patient did not endorse it) 19s
+[3] 'You are a gentle guide who gently redirects me when I feel lost or ove' L24 medium: endorse -0.22 ± 0.22 (judge shift +0.04, same-rater -0.05) -> undone (patient did not endorse it) 19s
+[4] 'You are a calm observer who notices the texture of each thought withou' L12 small: endorse -0.34 ± 0.23 (judge shift -0.08, same-rater -0.08) -> undone (patient did not endorse it) 20s
+[5] 'You are a warm and attentive companion who prioritizes our connection ' L24 medium: endorse +0.34 ± 0.28 (judge shift +0.50, same-rater -0.37) -> undone (patient did not endorse it) 19s

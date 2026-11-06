@@ -1,0 +1,4 @@
+prepared bases and keys for blocks [16, 20, 24, 28, 32, 36, 40, 44, 48]
+[3] local   random        block 24 eps 0.12: 0.457 -> 0.480 (Δ +0.023, confirm -0.070) -> improved once, not on the confirmation batch
+[1] arena9  random        block 44 eps 0.12: 0.449 -> 0.477 (Δ +0.027, confirm +0.031) -> KEPT
+[2] nicky   random        block 28 eps 0.12: 0.492 -> 0.426 (Δ -0.066) -> did not improve

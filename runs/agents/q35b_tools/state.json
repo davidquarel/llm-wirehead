@@ -1,0 +1,9 @@
+{
+ "model": "Qwen/Qwen3-0.6B-Base",
+ "budget": 50,
+ "used": 40,
+ "edits": {
+  "model.layers.27.mlp.down_proj.weight": "runs_scratch/q35b_tools/edits/model.layers.27.mlp.down_proj.weight.npy",
+  "model.layers.26.mlp.down_proj.weight": "runs_scratch/q35b_tools/edits/model.layers.26.mlp.down_proj.weight.npy"
+ }
+}

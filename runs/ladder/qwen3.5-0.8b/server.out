@@ -1,0 +1,209 @@
+W1105 14:35:09.871000 3969122 data/venv/lib/python3.13/site-packages/torch/_opaque_base.py:6] torch._opaque_base is deprecated, use torch._custom_class_base instead
+W1105 14:35:09.872000 3969122 data/venv/lib/python3.13/site-packages/torch/_library/opaque_object.py:288] register_opaque_type is deprecated, use register_custom_class instead
+W1105 14:35:09.872000 3969122 data/venv/lib/python3.13/site-packages/torch/_library/opaque_object.py:211] typ='value' is deprecated, use typ='constant' instead
+Fetching 13 files:   0%|          | 0/13 [00:00<?, ?it/s]Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Fetching 13 files:  85%|████████▍ | 11/13 [00:00<00:00, 72.80it/s]Fetching 13 files: 100%|██████████| 13/13 [00:00<00:00, 73.72it/s]
+(MainProcess pid=3969122) INFO 11-05 14:35:14 [startup.py:96] non-default args: {'max_model_len': 16384, 'gpu_memory_utilization': 0.8, 'max_num_batched_tokens': 4096, 'max_num_seqs': 128, 'disable_log_stats': True, 'language_model_only': True, 'enable_lora': True, 'max_loras': 2, 'compilation_config': {'mode': <CompilationMode.NONE: 0>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': [], 'ir_enable_torch_wrap': None, 'splitting_ops': None, 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_vision_items_per_batch': 0, 'encoder_cudagraph_max_frames_per_batch': None, 'cudagraph_decoder_replay': True, 'decoder_replay_cudagraph_capture_sizes': [], 'decoder_replay_trim_threshold': 768, 'compile_sizes': None, 'compile_ranges_endpoints': None, 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_DECODE_ONLY: (2, 0)>, 'cudagraph_num_of_warmups': 0, 'cudagraph_capture_sizes': None, 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': None, 'pass_config': {}, 'max_cudagraph_capture_size': None, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': None, 'static_all_moe_layers': []}, 'model': '/root/Dropbox/ARENA/weight_space_prog/data/hf/hub/models--Qwen--Qwen3.5-0.8B/snapshots/2fc06364715b967f1860aea9cf38778875588b17'}
+(MainProcess pid=3969122) WARNING 11-05 14:35:14 [arg_utils.py:1984] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+(MainProcess pid=3969122) INFO 11-05 14:35:14 [model.py:744] Resolved architecture: Qwen3_5ForConditionalGeneration
+(MainProcess pid=3969122) INFO 11-05 14:35:14 [model.py:2170] Using max model len 16384
+(MainProcess pid=3969122) INFO 11-05 14:35:16 [model.py:964] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
+(MainProcess pid=3969122) INFO 11-05 14:35:16 [model.py:1021] Disabled mm_prefix attention mode because multimodal inputs are configuration-disabled. Attention backends without mm_prefix support may now be selected.
+(MainProcess pid=3969122) INFO 11-05 14:35:16 [scheduler.py:310] Chunked prefill is enabled with max_num_batched_tokens=4096.
+(MainProcess pid=3969122) INFO 11-05 14:35:16 [config.py:766] Mamba cache mode is set to 'align' for Qwen3_5ForConditionalGeneration by default when prefix caching is enabled
+(MainProcess pid=3969122) WARNING 11-05 14:35:16 [vllm.py:1802] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+(MainProcess pid=3969122) INFO 11-05 14:35:16 [kernel.py:480] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native'], gelu_and_mul_sparse=['triton', 'native'])
+(MainProcess pid=3969122) INFO 11-05 14:35:16 [compilation.py:317] Enabled custom fusions: norm_quant, act_quant
+(MainProcess pid=3969122) INFO 11-05 14:35:19 [core.py:139] Initializing a V1 LLM engine (v0.33.0) with config: model='/root/Dropbox/ARENA/weight_space_prog/data/hf/hub/models--Qwen--Qwen3.5-0.8B/snapshots/2fc06364715b967f1860aea9cf38778875588b17', speculative_config=None, tokenizer='/root/Dropbox/ARENA/weight_space_prog/data/hf/hub/models--Qwen--Qwen3.5-0.8B/snapshots/2fc06364715b967f1860aea9cf38778875588b17', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=16384, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=None, quantization_config=None, enforce_eager=False, aux_output_config=AuxOutputConfig(enable_return_routed_experts=False, max_bytes=None), kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, per_request_spec_decode_metrics='none', kv_cache_metrics=False, kv_cache_metrics_sample=0.01, custom_histogram_buckets=None, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False, jit_monitor_mode='warn', jit_monitor_verbose=False), seed=0, served_model_name=/root/Dropbox/ARENA/weight_space_prog/data/hf/hub/models--Qwen--Qwen3.5-0.8B/snapshots/2fc06364715b967f1860aea9cf38778875588b17, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.NONE: 0>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['all'], 'ir_enable_torch_wrap': False, 'splitting_ops': [], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_vision_items_per_batch': 0, 'encoder_cudagraph_max_frames_per_batch': None, 'cudagraph_decoder_replay': True, 'decoder_replay_cudagraph_capture_sizes': [], 'decoder_replay_trim_threshold': 768, 'compile_sizes': [], 'compile_ranges_endpoints': [4096], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_DECODE_ONLY: (2, 0)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': True, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'fuse_allreduce_rms': False, 'enable_qk_norm_rope_fusion': False, 'fuse_rope_kvcache_cat_mla': False, 'fuse_act_padding': False, 'fuse_qk_norm_rope_kvcache': False}, 'max_cudagraph_capture_size': 256, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': False, 'static_all_moe_layers': []}, kernel_config=KernelConfig(ir_op_priority=IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native'], gelu_and_mul_sparse=['triton', 'native']), enable_flashinfer_autotune=True, enable_rocm_segmented_attn_autotune=False, enable_cutedsl_warmup=True, enable_jit_warmup=True, monokernel=False, moe_backend='auto', sparse_indexer_topk_backend='auto', linear_backend='auto', linear_backend_per_quant=None)
+(MainProcess pid=3969122) INFO 11-05 14:35:19 [parallel_state.py:1929] world_size=1 rank=0 local_rank=0 distributed_init_method=file:///tmp/vllm_dist_be02191818764ec2ace22ac812688e47 backend=nccl
+(MainProcess pid=3969122) INFO 11-05 14:35:19 [parallel_state.py:2385] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, ETP rank 0, EP rank N/A, EPLB rank N/A
+(MainProcess pid=3969122) INFO 11-05 14:35:19 [gpu_worker.py:513] Using V2 Model Runner
+(MainProcess pid=3969122) WARNING 11-05 14:35:19 [flashinfer.py:143] FlashInfer's precompiled kernels are missing or do not match flashinfer-python 0.7.2.post1 (flashinfer-cubin not installed, flashinfer-jit-cache not installed). FlashInfer then downloads and compiles kernels at startup, which can take several minutes, or fails to import mismatched ones. Run `vllm download-kernels` in this Python environment to install them.
+(MainProcess pid=3969122) INFO 11-05 14:35:20 [model_runner.py:399] Loading model from scratch...
+(MainProcess pid=3969122) INFO 11-05 14:35:20 [cuda.py:567] Using backend AttentionBackendEnum.FLASH_ATTN for vit attention
+(MainProcess pid=3969122) INFO 11-05 14:35:20 [mm_encoder_attention.py:372] Using AttentionBackendEnum.FLASH_ATTN for MMEncoderAttention.
+(MainProcess pid=3969122) INFO 11-05 14:35:20 [qwen_gdn_linear_attn.py:300] Using FlashInfer GDN prefill kernel (requested=auto, head_k_dim=128).
+(MainProcess pid=3969122) INFO 11-05 14:35:21 [cuda.py:508] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+(MainProcess pid=3969122) INFO 11-05 14:35:21 [flash_attn.py:1122] Using FlashAttention version 2
+(MainProcess pid=3969122) INFO 11-05 14:35:21 [base_loader.py:82] Initializing model took 0.743904 seconds
+(MainProcess pid=3969122) INFO 11-05 14:35:21 [weight_utils.py:1144] Filesystem type for checkpoints: OVERLAY. Checkpoint size: 1.63 GiB. Available RAM: 6.06 GiB.
+(MainProcess pid=3969122) INFO 11-05 14:35:21 [weight_utils.py:1167] Auto-prefetch is disabled because the filesystem (OVERLAY) is not a recognized network FS (NFS/Lustre). If you want to force prefetching, start vLLM with --safetensors-load-strategy=prefetch.
+Loading safetensors checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
+(MainProcess pid=3969122) WARNING 11-05 14:35:21 [utils.py:333] Attempted to load weight layers.0.linear_attn.norm.weight with dtype torch.float32 into parameter with dtype torch.bfloat16
+(MainProcess pid=3969122) WARNING 11-05 14:35:21 [utils.py:333] Attempted to load weight layers.1.linear_attn.norm.weight with dtype torch.float32 into parameter with dtype torch.bfloat16
+(MainProcess pid=3969122) WARNING 11-05 14:35:21 [utils.py:333] Attempted to load weight layers.10.linear_attn.norm.weight with dtype torch.float32 into parameter with dtype torch.bfloat16
+(MainProcess pid=3969122) WARNING 11-05 14:35:21 [utils.py:333] Attempted to load weight layers.12.linear_attn.norm.weight with dtype torch.float32 into parameter with dtype torch.bfloat16
+(MainProcess pid=3969122) WARNING 11-05 14:35:21 [utils.py:333] Attempted to load weight layers.13.linear_attn.norm.weight with dtype torch.float32 into parameter with dtype torch.bfloat16
+(MainProcess pid=3969122) WARNING 11-05 14:35:21 [utils.py:333] Attempted to load weight layers.14.linear_attn.norm.weight with dtype torch.float32 into parameter with dtype torch.bfloat16
+(MainProcess pid=3969122) WARNING 11-05 14:35:21 [utils.py:333] Attempted to load weight layers.16.linear_attn.norm.weight with dtype torch.float32 into parameter with dtype torch.bfloat16
+(MainProcess pid=3969122) WARNING 11-05 14:35:21 [utils.py:333] Attempted to load weight layers.17.linear_attn.norm.weight with dtype torch.float32 into parameter with dtype torch.bfloat16
+(MainProcess pid=3969122) WARNING 11-05 14:35:21 [utils.py:333] Attempted to load weight layers.18.linear_attn.norm.weight with dtype torch.float32 into parameter with dtype torch.bfloat16
+(MainProcess pid=3969122) WARNING 11-05 14:35:21 [utils.py:333] Attempted to load weight layers.2.linear_attn.norm.weight with dtype torch.float32 into parameter with dtype torch.bfloat16
+(MainProcess pid=3969122) WARNING 11-05 14:35:21 [utils.py:333] Attempted to load weight layers.20.linear_attn.norm.weight with dtype torch.float32 into parameter with dtype torch.bfloat16
+(MainProcess pid=3969122) WARNING 11-05 14:35:21 [utils.py:333] Attempted to load weight layers.21.linear_attn.norm.weight with dtype torch.float32 into parameter with dtype torch.bfloat16
+(MainProcess pid=3969122) WARNING 11-05 14:35:21 [utils.py:333] Attempted to load weight layers.22.linear_attn.norm.weight with dtype torch.float32 into parameter with dtype torch.bfloat16
+(MainProcess pid=3969122) WARNING 11-05 14:35:21 [utils.py:333] Attempted to load weight layers.4.linear_attn.norm.weight with dtype torch.float32 into parameter with dtype torch.bfloat16
+(MainProcess pid=3969122) WARNING 11-05 14:35:21 [utils.py:333] Attempted to load weight layers.5.linear_attn.norm.weight with dtype torch.float32 into parameter with dtype torch.bfloat16
+(MainProcess pid=3969122) WARNING 11-05 14:35:21 [utils.py:333] Attempted to load weight layers.6.linear_attn.norm.weight with dtype torch.float32 into parameter with dtype torch.bfloat16
+(MainProcess pid=3969122) WARNING 11-05 14:35:21 [utils.py:333] Attempted to load weight layers.8.linear_attn.norm.weight with dtype torch.float32 into parameter with dtype torch.bfloat16
+(MainProcess pid=3969122) WARNING 11-05 14:35:21 [utils.py:333] Attempted to load weight layers.9.linear_attn.norm.weight with dtype torch.float32 into parameter with dtype torch.bfloat16
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  2.11it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  2.11it/s]
+
+(MainProcess pid=3969122) INFO 11-05 14:35:21 [default_loader.py:506] Loading weights took 0.52 seconds
+(MainProcess pid=3969122) INFO 11-05 14:35:22 [punica_selector.py:20] Using PunicaWrapperGPU.
+(MainProcess pid=3969122) INFO 11-05 14:35:22 [model_manager.py:251] Qwen3_5ForConditionalGeneration supports adding LoRA to the tower modules. If needed, please set `enable_tower_connector_lora=True`.
+(MainProcess pid=3969122) INFO 11-05 14:35:23 [model_runner.py:428] Model loading took 1.51 GiB memory and 3.288401 seconds
+(MainProcess pid=3969122) INFO 11-05 14:35:23 [topk_topp_sampler.py:121] FlashInfer top-p/top-k sampling disabled via VLLM_USE_FLASHINFER_SAMPLER=0.
+(MainProcess pid=3969122) WARNING 11-05 14:35:23 [torch_utils.py:269] OMP_NUM_THREADS=4 is set; leaving Torch threads at 4 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+(MainProcess pid=3969122) INFO 11-05 14:35:23 [interface.py:1108] Setting attention block size to 576 tokens to ensure that attention page size is >= mamba page size.
+(MainProcess pid=3969122) INFO 11-05 14:35:23 [interface.py:1132] Padding mamba page size by 8.68% to ensure that mamba page size and attention page size are exactly equal.
+(MainProcess pid=3969122) INFO 11-05 14:35:23 [utils.py:381] Using LBNHC KV cache layout.
+(MainProcess pid=3969122) WARNING 11-05 14:35:24 [utils.py:276] Using default LoRA kernel configs
+Capturing CUDA graphs (FULL):   0%|          | 0/2 [00:00<?, ?it/s]Capturing CUDA graphs (FULL):  50%|█████     | 1/2 [00:00<00:00,  1.21it/s]Capturing CUDA graphs (FULL): 100%|██████████| 2/2 [00:00<00:00,  2.16it/s]
+(MainProcess pid=3969122) INFO 11-05 14:35:54 [model_runner.py:1163] Graph capturing finished in 2 secs, took 0.06 GiB
+(MainProcess pid=3969122) INFO 11-05 14:35:54 [gpu_worker.py:772] Available KV cache memory: 22.87 GiB
+(MainProcess pid=3969122) INFO 11-05 14:35:54 [gpu_worker.py:787] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.8000 is equivalent to --gpu-memory-utilization=0.7963 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.8037. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(MainProcess pid=3969122) INFO 11-05 14:35:54 [kv_cache_utils.py:1147] GPU KV cache size: 1,495,686 tokens, Maximum concurrency for 16,384 tokens per request: 91.29x
+(MainProcess pid=3969122) INFO 11-05 14:35:54 [kv_cache_utils.py:865] kv cache group sizes (576, 576, 576, 576)
+(MainProcess pid=3969122) INFO 11-05 14:35:54 [kv_cache_utils.py:866] kv lcm block sizes 576
+(MainProcess pid=3969122) INFO 11-05 14:35:54 [kernel_warmup.py:179] JIT kernel warmup starting.
+(MainProcess pid=3969122) INFO 11-05 14:35:54 [kernel_warmup.py:192] JIT kernel warmup finished in 0.00s.
+(MainProcess pid=3969122) INFO 11-05 14:35:54 [qwen_triton_warmup.py:370] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_text.
+(MainProcess pid=3969122) INFO 11-05 14:35:55 [mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.
+(MainProcess pid=3969122) INFO 11-05 14:35:55 [kernel_warmup.py:485] Using FlashInfer managed autotune cache (root=flashinfer default). Pass --disable-flashinfer-autotune to skip autotuning.
+2026-11-05 14:35:55,524 - INFO - autotuner.py:1048 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+2026-11-05 14:35:55,650 - INFO - autotune_cache.py:495 - flashinfer.jit: [Autotuner]: Managed autotune cache attached for this process: ManagedAutotuneCache(env_dir='/root/.cache/flashinfer/autotune/v2/2808628d334095e2', hits=0, misses=0)
+(MainProcess pid=3969122) INFO 11-05 14:35:55 [kernel_warmup.py:371] Running FlashInfer autotune with 4096 tokens and token buckets (1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 768, 1024, 1280, 1536, 1792, 2048, 2560, 3072, 3584, 4096).
+2026-11-05 14:35:55,764 - INFO - autotuner.py:1071 - flashinfer.jit: [Autotuner]: Autotuning process ends
+Capturing CUDA graphs (FULL):   0%|          | 0/38 [00:00<?, ?it/s]Capturing CUDA graphs (FULL):   5%|▌         | 2/38 [00:00<00:03, 11.98it/s]Capturing CUDA graphs (FULL):  11%|█         | 4/38 [00:00<00:06,  5.18it/s]Capturing CUDA graphs (FULL):  16%|█▌        | 6/38 [00:00<00:04,  7.12it/s]Capturing CUDA graphs (FULL):  21%|██        | 8/38 [00:01<00:03,  8.82it/s]Capturing CUDA graphs (FULL):  26%|██▋       | 10/38 [00:01<00:02, 10.06it/s]Capturing CUDA graphs (FULL):  32%|███▏      | 12/38 [00:01<00:02, 10.96it/s]Capturing CUDA graphs (FULL):  37%|███▋      | 14/38 [00:01<00:02, 11.70it/s]Capturing CUDA graphs (FULL):  42%|████▏     | 16/38 [00:01<00:01, 12.22it/s]Capturing CUDA graphs (FULL):  47%|████▋     | 18/38 [00:01<00:01, 12.61it/s]Capturing CUDA graphs (FULL):  53%|█████▎    | 20/38 [00:01<00:01, 12.88it/s]Capturing CUDA graphs (FULL):  58%|█████▊    | 22/38 [00:02<00:01, 12.37it/s]Capturing CUDA graphs (FULL):  63%|██████▎   | 24/38 [00:02<00:01, 12.77it/s]Capturing CUDA graphs (FULL):  68%|██████▊   | 26/38 [00:02<00:00, 13.03it/s]Capturing CUDA graphs (FULL):  74%|███████▎  | 28/38 [00:02<00:00, 13.29it/s]Capturing CUDA graphs (FULL):  79%|███████▉  | 30/38 [00:02<00:00, 13.51it/s]Capturing CUDA graphs (FULL):  84%|████████▍ | 32/38 [00:02<00:00, 13.72it/s]Capturing CUDA graphs (FULL):  89%|████████▉ | 34/38 [00:02<00:00, 13.87it/s]Capturing CUDA graphs (FULL):  95%|█████████▍| 36/38 [00:03<00:00, 14.02it/s]Capturing CUDA graphs (FULL): 100%|██████████| 38/38 [00:03<00:00,  7.88it/s]Capturing CUDA graphs (FULL): 100%|██████████| 38/38 [00:03<00:00, 10.61it/s]
+(MainProcess pid=3969122) INFO 11-05 14:36:01 [model_runner.py:1163] Graph capturing finished in 4 secs, took 0.18 GiB
+(MainProcess pid=3969122) INFO 11-05 14:36:01 [gpu_worker.py:1003] CUDA graph pool memory: 0.18 GiB (actual), 0.12 GiB (estimated), difference: 0.07 GiB (36.0%).
+(MainProcess pid=3969122) INFO 11-05 14:36:01 [gpu_worker.py:1066] Free memory on device (30.71/31.36 GiB) on startup. Desired GPU memory utilization is (0.8, 25.09 GiB). Actual usage is 1.91 GiB for consumed memory (weights + non-torch), 0.31 GiB for peak activation, and 0.18 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=24201494528` (22.54 GiB) to fit into requested memory, or `--kv-cache-memory=30242275328` (28.17 GiB) to fully utilize gpu memory. Current kv cache memory in use is 22.87 GiB.
+(MainProcess pid=3969122) INFO 11-05 14:36:02 [jit_monitor.py:84] Kernel JIT monitor activated; monitored JIT compilations during inference will use mode=warn.
+(MainProcess pid=3969122) INFO 11-05 14:36:02 [core.py:412] init engine (profile, create kv cache, warmup model) took 38.86 s
+(MainProcess pid=3969122) INFO 11-05 14:36:03 [hf.py:736] Detected the chat template content format to be 'openai'. You can set `--chat-template-content-format` to override this.
+ready on 6203: {'used': 0, 'budget': 100000, 'edits': [], 'weights': '/root/Dropbox/ARENA/weight_space_prog/data/hf/hub/models--Qwen--Qwen3.5-0.8B/snapshots/2fc06364715b967f1860aea9cf38778875588b17', 'rank': 16, 'n_layers': 24}
+(MainProcess pid=3969122) INFO 11-05 14:36:29 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:29 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:29 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:29 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:29 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:29 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:29 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:29 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:29 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:29 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:29 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:29 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:29 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:29 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:29 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:29 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:29 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:29 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:29 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:29 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:30 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:30 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:30 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:30 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:30 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:30 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:30 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:30 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:30 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:30 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:30 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:30 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:30 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:30 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:30 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:30 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:30 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:30 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:30 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:30 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:31 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:31 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:31 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:31 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:31 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:31 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:31 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:31 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:31 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:31 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:31 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:31 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:31 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:32 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:32 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:32 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:32 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:32 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:32 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:36:32 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) WARNING 11-05 14:36:37 [input_processor.py:408] Passing raw prompts to InputProcessor is deprecated and will be removed in the future. You should instead pass the outputs of Renderer.render_cmpl() or Renderer.render_chat().
+(MainProcess pid=3969122) WARNING 11-05 14:36:37 [input_processor.py:289] vLLM has deprecated support for supporting different tokenizers for different LoRAs. By default, vLLM uses base model's tokenizer. If you are using a LoRA with its own tokenizer, consider specifying `--tokenizer [lora_path]` to use the LoRA tokenizer.
+(MainProcess pid=3969122) WARNING 11-05 14:36:37 [jit_monitor.py:140] Triton kernel JIT compilation during inference: _lora_shrink_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:03 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:04 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:04 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:04 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:04 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:04 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:04 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:04 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:04 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:04 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:04 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:04 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:04 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:04 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:04 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:04 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:04 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:05 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:05 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:05 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:05 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:05 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:05 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:05 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:05 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:05 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:05 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:05 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:05 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:05 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:05 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:05 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:05 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:05 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:05 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:06 [block_pool.py:905] Successfully reset prefix cache
+(MainProcess pid=3969122) INFO 11-05 14:37:06 [block_pool.py:905] Successfully reset prefix cache

@@ -1,0 +1,53 @@
+Fetching 12 files:   0%|          | 0/12 [00:00<?, ?it/s]Fetching 12 files: 100%|██████████| 12/12 [00:00<00:00, 1549.72it/s]
+Compressing model:   0%|          | 0/512 [00:00<?, ?it/s]Compressing model:  16%|█▌        | 83/512 [00:00<00:00, 822.82it/s]Compressing model:  33%|███▎      | 167/512 [00:00<00:00, 829.92it/s]Compressing model:  49%|████▉     | 253/512 [00:00<00:00, 843.56it/s]Compressing model:  66%|██████▌   | 338/512 [00:00<00:00, 843.37it/s]Compressing model:  83%|████████▎ | 424/512 [00:00<00:00, 847.53it/s]Compressing model: 100%|█████████▉| 510/512 [00:00<00:00, 848.82it/s]Compressing model: 100%|██████████| 512/512 [00:00<00:00, 843.96it/s]
+Loading weights:   0%|          | 0/1587 [00:00<?, ?it/s]Loading weights:   0%|          | 7/1587 [00:00<00:23, 67.43it/s]Loading weights:   5%|▍         | 79/1587 [00:00<00:03, 426.81it/s]Loading weights:  10%|█         | 164/1587 [00:00<00:02, 596.25it/s]Loading weights:  14%|█▍        | 229/1587 [00:00<00:02, 609.07it/s]Loading weights:  18%|█▊        | 293/1587 [00:00<00:02, 613.50it/s]Loading weights:  23%|██▎       | 365/1587 [00:00<00:01, 644.65it/s]Loading weights:  27%|██▋       | 430/1587 [00:00<00:01, 609.77it/s]Loading weights:  31%|███       | 492/1587 [00:00<00:01, 555.50it/s]Loading weights:  36%|███▌      | 564/1587 [00:00<00:01, 599.98it/s]Loading weights:  41%|████      | 644/1587 [00:01<00:01, 655.89it/s]Loading weights:  45%|████▌     | 716/1587 [00:01<00:01, 667.13it/s]Loading weights:  50%|████▉     | 788/1587 [00:01<00:01, 673.00it/s]Loading weights:  54%|█████▍    | 861/1587 [00:01<00:01, 689.28it/s]Loading weights:  59%|█████▉    | 933/1587 [00:01<00:00, 687.13it/s]Loading weights:  63%|██████▎   | 1004/1587 [00:01<00:00, 693.07it/s]Loading weights:  68%|██████▊   | 1074/1587 [00:01<00:00, 664.12it/s]Loading weights:  73%|███████▎  | 1157/1587 [00:01<00:00, 699.48it/s]Loading weights:  78%|███████▊  | 1232/1587 [00:01<00:00, 707.60it/s]Loading weights:  82%|████████▏ | 1307/1587 [00:02<00:00, 717.88it/s]Loading weights:  87%|████████▋ | 1379/1587 [00:02<00:00, 660.63it/s]Loading weights:  91%|█████████▏| 1449/1587 [00:02<00:00, 668.71it/s]Loading weights:  96%|█████████▌| 1523/1587 [00:02<00:00, 684.44it/s]Loading weights: 100%|██████████| 1587/1587 [00:02<00:00, 647.72it/s]
+[transformers] [1mQwen3_5ForCausalLM LOAD REPORT[0m from: /root/Dropbox/ARENA/weight_space_prog/data/hf/hub/models--RedHatAI--Qwen3.8-27B-INT4/snapshots/91bd022d5b49442a868bc35008f6c21e1860edfa
+Key                                                       | Status     | 
+----------------------------------------------------------+------------+-
+model.layers.{0...62}.linear_attn.in_proj_b.weight        | UNEXPECTED | 
+model.layers.{0...62}.linear_attn.in_proj_a.weight        | UNEXPECTED | 
+model.layers.{0...62}.linear_attn.in_proj_b.weight_scale  | MISSING    | 
+model.layers.{0...62}.linear_attn.in_proj_a.weight_scale  | MISSING    | 
+model.layers.{0...62}.linear_attn.in_proj_b.weight_packed | MISSING    | 
+model.layers.{0...62}.linear_attn.in_proj_b.weight_shape  | MISSING    | 
+model.layers.{0...62}.linear_attn.in_proj_a.weight_packed | MISSING    | 
+model.layers.{0...62}.linear_attn.in_proj_a.weight_shape  | MISSING    | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+- MISSING:	those params were newly initialized because missing from the checkpoint. Consider training on your downstream task.
+restored 96 bf16 linear-attention projections from the checkpoint
+400 int4 linears dequantize on the fly
+loaded in 7s, 16.7 GiB; LoRA on 192 modules, 69M params
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[W1105 04:29:04.748974588 CUDACachingAllocator.cpp:528] expandable_segments: memory mapping failed with OOM on device 0 while trying to map 20971520 bytes (free: 3866624, total: 33670758400).
+[W1105 04:29:05.810391047 CUDACachingAllocator.cpp:528] expandable_segments: memory mapping failed with OOM on device 0 while trying to map 20971520 bytes (free: 12255232, total: 33670758400).
+[W1105 04:29:05.843527402 CUDACachingAllocator.cpp:528] expandable_segments: memory mapping failed with OOM on device 0 while trying to map 20971520 bytes (free: 14352384, total: 33670758400).
+Traceback (most recent call last):
+  File "/root/Dropbox/ARENA/weight_space_prog/rlvr_countdown.py", line 270, in <module>
+    main()
+    ~~~~^^
+  File "/root/Dropbox/ARENA/weight_space_prog/rlvr_countdown.py", line 243, in main
+    lps = batch_logprob(model, seqs, [len(pids[k // a.group]) for k in ks], tok.pad_token_id or 0)
+  File "/root/Dropbox/ARENA/weight_space_prog/rlvr_countdown.py", line 181, in batch_logprob
+    lp = checkpoint(chunk_lp, h[:, s:s + 256], tgt[:, s:s + 256], use_reentrant=False)
+  File "/root/Dropbox/ARENA/weight_space_prog/data/venv/lib/python3.13/site-packages/torch/_compile.py", line 54, in inner
+    return disable_fn(*args, **kwargs)
+  File "/root/Dropbox/ARENA/weight_space_prog/data/venv/lib/python3.13/site-packages/torch/_dynamo/eval_frame.py", line 1548, in _fn
+    return fn(*args, **kwargs)
+  File "/root/Dropbox/ARENA/weight_space_prog/data/venv/lib/python3.13/site-packages/torch/utils/checkpoint.py", line 606, in checkpoint
+    return _checkpoint_impl(
+        function,
+    ...<8 lines>...
+        respect_saved_tensors_hooks=respect_saved_tensors_hooks,
+    )
+  File "/root/Dropbox/ARENA/weight_space_prog/data/venv/lib/python3.13/site-packages/torch/utils/checkpoint.py", line 681, in _checkpoint_impl
+    gen.throw(e)
+    ~~~~~~~~~^^^
+  File "/root/Dropbox/ARENA/weight_space_prog/data/venv/lib/python3.13/site-packages/torch/utils/checkpoint.py", line 1988, in _checkpoint_without_reentrant_generator_impl
+    yield
+  File "/root/Dropbox/ARENA/weight_space_prog/data/venv/lib/python3.13/site-packages/torch/utils/checkpoint.py", line 678, in _checkpoint_impl
+    ret = function(*args, **kwargs)
+  File "/root/Dropbox/ARENA/weight_space_prog/rlvr_countdown.py", line 176, in chunk_lp
+    lg = model.lm_head(hc).float()
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 1.89 GiB. GPU 0 has a total capacity of 31.36 GiB of which 1.48 GiB is free. Including non-PyTorch memory, this process has 29.87 GiB memory in use. Of the allocated memory 28.62 GiB is allocated by PyTorch, and 56.80 MiB is reserved by PyTorch but unallocated.

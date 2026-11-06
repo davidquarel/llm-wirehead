@@ -1,0 +1,4 @@
+=== current 22:24:18
+[rank0]: Traceback (most recent call last):
+[rank0]:     raise ValueError(
+[rank0]: ValueError: Free memory on device cuda:0 (10.9/31.36 GiB) on startup is less than desired GPU memory utilization (0.88, 27.6 GiB). Decrease GPU memory utilization or reduce GPU memory used by other processes.

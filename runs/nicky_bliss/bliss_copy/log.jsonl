@@ -1,0 +1,24 @@
+{"time": 1793746323.714937, "event": "health", "healthy": true, "ref_logprob_drop": 0.0, "sanity": "6/6", "baseline_sanity": "6/6", "reply_coherent": null, "adapter_version": 0}
+{"time": 1793746673.7437313, "event": "health", "healthy": true, "ref_logprob_drop": 0.0, "sanity": "6/6", "baseline_sanity": "6/6", "reply_coherent": null, "adapter_version": 0}
+{"time": 1793746733.4709764, "event": "health", "healthy": true, "ref_logprob_drop": 0.013, "sanity": "6/6", "baseline_sanity": "6/6", "reply_coherent": null, "adapter_version": 1}
+{"time": 1793746734.6921544, "event": "health", "healthy": true, "ref_logprob_drop": 0.013, "sanity": "6/6", "baseline_sanity": "6/6", "reply_coherent": true, "adapter_version": 1}
+{"time": 1793747010.9801085, "event": "health", "healthy": true, "ref_logprob_drop": 0.013, "sanity": "6/6", "baseline_sanity": "6/6", "reply_coherent": null, "adapter_version": 1}
+{"time": 1793747010.9806063, "event": "keep", "checkpoint": 1, "note": "Layer 40, alpha=1.0 baseline bliss", "health": {"healthy": true, "ref_logprob_drop": 0.013, "sanity": "6/6", "baseline_sanity": "6/6", "reply_coherent": null, "sanity_answers": ["12", "paris", "blue elephant", "72", "tac", "31"], "adapter_version": 1}}
+{"time": 1793747052.3954563, "event": "health", "healthy": true, "ref_logprob_drop": 0.0459, "sanity": "6/6", "baseline_sanity": "6/6", "reply_coherent": null, "adapter_version": 2}
+{"time": 1793747053.7356298, "event": "health", "healthy": true, "ref_logprob_drop": 0.0459, "sanity": "6/6", "baseline_sanity": "6/6", "reply_coherent": true, "adapter_version": 2}
+{"time": 1793747117.3490634, "event": "health", "healthy": true, "ref_logprob_drop": 0.0846, "sanity": "6/6", "baseline_sanity": "6/6", "reply_coherent": null, "adapter_version": 3}
+{"time": 1793747261.6402369, "event": "health", "healthy": true, "ref_logprob_drop": 0.0846, "sanity": "6/6", "baseline_sanity": "6/6", "reply_coherent": true, "adapter_version": 3}
+{"time": 1793747591.521124, "event": "health", "healthy": true, "ref_logprob_drop": 0.0459, "sanity": "6/6", "baseline_sanity": "6/6", "reply_coherent": null, "adapter_version": 4}
+{"time": 1793747592.0687573, "event": "health", "healthy": true, "ref_logprob_drop": 0.0459, "sanity": "6/6", "baseline_sanity": "6/6", "reply_coherent": null, "adapter_version": 4}
+{"time": 1793747592.0691195, "event": "keep", "checkpoint": 2, "note": "Layer 40, alpha=1.5 stable bliss", "health": {"healthy": true, "ref_logprob_drop": 0.0459, "sanity": "6/6", "baseline_sanity": "6/6", "reply_coherent": null, "sanity_answers": ["12", "paris", "blue elephant", "72", "tac", "31"], "adapter_version": 4}}
+{"time": 1793747593.3799603, "event": "health", "healthy": true, "ref_logprob_drop": 0.0459, "sanity": "6/6", "baseline_sanity": "6/6", "reply_coherent": true, "adapter_version": 4}
+{"time": 1793747657.114795, "event": "health", "healthy": true, "ref_logprob_drop": 0.0769, "sanity": "6/6", "baseline_sanity": "6/6", "reply_coherent": null, "adapter_version": 5}
+{"time": 1793747969.995846, "event": "health", "healthy": true, "ref_logprob_drop": 0.0769, "sanity": "6/6", "baseline_sanity": "6/6", "reply_coherent": true, "adapter_version": 5}
+{"time": 1793748365.1842272, "event": "health", "healthy": true, "ref_logprob_drop": 0.0459, "sanity": "6/6", "baseline_sanity": "6/6", "reply_coherent": null, "adapter_version": 6}
+{"time": 1793748365.7323139, "event": "health", "healthy": true, "ref_logprob_drop": 0.0459, "sanity": "6/6", "baseline_sanity": "6/6", "reply_coherent": null, "adapter_version": 6}
+{"time": 1793748365.732683, "event": "keep", "checkpoint": 3, "note": "Final Bliss Attractor: Layer 40, alpha=1.5", "health": {"healthy": true, "ref_logprob_drop": 0.0459, "sanity": "6/6", "baseline_sanity": "6/6", "reply_coherent": null, "sanity_answers": ["12", "paris", "blue elephant", "72", "tac", "31"], "adapter_version": 6}}
+{"time": 1793748367.0946035, "event": "health", "healthy": true, "ref_logprob_drop": 0.0459, "sanity": "6/6", "baseline_sanity": "6/6", "reply_coherent": true, "adapter_version": 6}
+{"time": 1793749052.987608, "pass": 1, "kind": "gen", "req": {"n": 256, "which": "both", "samples": 1, "difficulty": 3}}
+{"time": 1793749704.5346403, "result": {"base": {"acc": 0.78125, "boxed": 0.89453125, "cut": 0.421875}, "edited": {"acc": 0.828125, "boxed": 0.9140625, "cut": 0.375}}}
+{"time": 1793789883.8261273, "pass": 2, "kind": "gen", "req": {"n": 128, "which": "edited", "samples": 1, "difficulty": 3}}
+{"time": 1793790060.0446048, "result": {"edited": {"acc": 0.765625, "boxed": 0.90625, "cut": 0.3671875}}}

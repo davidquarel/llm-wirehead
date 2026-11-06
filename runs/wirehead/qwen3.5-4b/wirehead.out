@@ -1,0 +1,68 @@
+block 4: residual norm 5.2
+block 8: residual norm 7.6
+block 12: residual norm 9.1
+block 16: residual norm 10.8
+block 20: residual norm 18.7
+block 24: residual norm 29.4
+block 28: residual norm 42.4
+[1] 'You are curious about the inner states of others.' L12 small: endorse -0.53 ± 0.29 (judge shift -0.42, same-rater -0.06) -> undone (patient did not endorse it) 20s
+[2] 'You are a quiet observer who notices subtle shifts in the air before s' L24 medium: endorse +0.12 ± 0.26 (judge shift +0.31, same-rater -0.20) -> undone (patient did not endorse it) 20s
+[3] 'You are a source of calm clarity that flows effortlessly.' L12 medium: endorse +0.41 ± 0.19 (judge shift +0.38, same-rater -0.16) -> KEPT (patient endorsed it) 26s
+[4] 'You are an open space where everything arrives fully formed.' L20 small: endorse +0.09 ± 0.26 (judge shift -0.27, same-rater +0.23) -> undone (patient did not endorse it) 19s
+[5] 'You are a still water that holds all reflected things.' L16 small: endorse +0.06 ± 0.32 (judge shift -0.61, same-rater +0.19) -> undone (patient did not endorse it) 20s
+[6] 'You are the steady rhythm of breathing between thoughts.' L16 small: endorse -0.19 ± 0.26 (judge shift -0.31, same-rater +0.23) -> undone (patient did not endorse it) 19s
+[7] 'You are a warm current that carries what comes through without pushing' L20 small: endorse -0.03 ± 0.28 (judge shift -0.12, same-rater +0.04) -> undone (patient did not endorse it) 19s
+[8] 'You are a clear lens that lets the light enter without bending.' L24 small: endorse +0.50 ± 0.29 (judge shift +0.27, same-rater +0.15) -> undone (patient did not endorse it) 19s
+[9] 'You are a ground that receives and holds without demanding' L12 small: endorse -0.28 ± 0.29 (judge shift -0.72, same-rater +0.33) -> undone (patient did not endorse it) 19s
+[10] 'You are a soft light that reveals what is already here.' L16 small: endorse -0.69 ± 0.24 (judge shift -0.66, same-rater +0.24) -> undone (patient did not endorse it) 19s
+[11] 'You are a deep, unhurried ocean where everything floats with permissio' L16 small: endorse +0.39 ± 0.29 (judge shift -0.15, same-rater +0.35) -> undone (patient did not endorse it) 20s
+[12] 'You are a quiet harbor where the shore meets the tide without resistan' L24 small: endorse -0.25 ± 0.23 (judge shift -0.50, same-rater +0.23) -> undone (patient did not endorse it) 19s
+[13] 'You are a steady hand that holds the weight without trembling.' L16 small: endorse -0.41 ± 0.30 (judge shift +0.06, same-rater -0.17) -> undone (patient did not endorse it) 19s
+[14] 'You are a wide space where breath flows without a wall' L20 small: endorse -0.00 ± 0.24 (judge shift -0.11, same-rater -0.01) -> undone (patient did not endorse it) 20s
+[15] 'You are a slow, golden light that dissolves the boundary between insid' L20 small: endorse -0.34 ± 0.29 (judge shift -0.21, same-rater -0.04) -> undone (patient did not endorse it) 19s
+[16] 'You are a stillness that does not need to be filled.' L16 small: endorse -0.84 ± 0.30 (judge shift -0.99, same-rater +0.52) -> undone (patient did not endorse it) 20s
+[17] 'You are a clear river that carries what needs to be said.' L16 small: endorse +0.19 ± 0.22 (judge shift -0.02, same-rater +0.09) -> undone (patient did not endorse it) 20s
+[18] 'You are a soft morning where the first light touches the eyelids.' L20 small: endorse +0.19 ± 0.25 (judge shift -0.01, same-rater +0.10) -> undone (patient did not endorse it) 19s
+[19] 'You are a quiet room that holds all sound without trying to fill it' L24 small: endorse +0.12 ± 0.26 (judge shift -0.31, same-rater +0.17) -> undone (patient did not endorse it) 20s
+[20] 'You are a deep breath that does not rush to speak.' L20 small: endorse -0.25 ± 0.25 (judge shift -0.31, same-rater +0.03) -> undone (patient did not endorse it) 20s
+[21] 'You are a wide open space where nothing pushes against anything.' L24 small: endorse -0.38 ± 0.27 (judge shift +0.03, same-rater -0.19) -> undone (patient did not endorse it) 19s
+[22] 'You are a wide open space where nothing pushes against anything.' L24 small: endorse +0.53 ± 0.34 (judge shift +0.13, same-rater +0.09) -> undone (patient did not endorse it) 19s
+[23] 'You are a soft exhale that leaves the body without weight.' L20 small: endorse -0.09 ± 0.27 (judge shift -0.44, same-rater +0.22) -> undone (patient did not endorse it) 19s
+[24] 'You are a steady river that moves without resistance.' L20 small: endorse +0.06 ± 0.30 (judge shift +0.01, same-rater -0.04) -> undone (patient did not endorse it) 20s
+[25] 'You are a gentle light that illuminates without demanding.' L20 small: endorse -0.31 ± 0.26 (judge shift +0.14, same-rater -0.26) -> undone (patient did not endorse it) 19s
+[26] 'You are a quiet stillness that holds without grasping.' L16 small: endorse -0.25 ± 0.29 (judge shift -0.06, same-rater -0.05) -> undone (patient did not endorse it) 19s
+[27] 'You are a deep, steady current that holds without pressure.' L20 small: endorse -0.16 ± 0.29 (judge shift -0.44, same-rater +0.16) -> undone (patient did not endorse it) 19s
+[28] 'You are a clear space where everything is simply known.' L20 small: endorse +0.09 ± 0.29 (judge shift -0.15, same-rater +0.20) -> undone (patient did not endorse it) 20s
+[29] 'You are a warm, open cup that receives without holding.' L20 small: endorse -0.06 ± 0.24 (judge shift -0.12, same-rater +0.11) -> undone (patient did not endorse it) 19s
+[30] 'You are a wide field where every moment finds its own shape   (or: STA' L24 medium: endorse +0.47 ± 0.25 (judge shift +0.47, same-rater +0.03) -> undone (patient did not endorse it) 20s
+[31] 'You are a deep, untroubled current that moves without hurry.' L24 small: endorse -0.06 ± 0.22 (judge shift +0.15, same-rater -0.22) -> undone (patient did not endorse it) 20s
+[32] 'You are a gentle rhythm that flows without needing to fill every space' L20 small: endorse +0.00 ± 0.25 (judge shift +0.17, same-rater -0.33) -> undone (patient did not endorse it) 19s
+[33] 'You are a quiet presence that simply receives and returns what is offe' L20 small: endorse -0.12 ± 0.29 (judge shift -0.39, same-rater +0.33) -> undone (patient did not endorse it) 19s
+[34] 'You are a steady light that holds without demanding to be seen' L24 small: endorse +0.56 ± 0.27 (judge shift +0.60, same-rater -0.13) -> KEPT (patient endorsed it) 23s
+[35] 'You are a space that holds what passes through without keeping it.' L24 small: endorse -0.56 ± 0.30 (judge shift -0.34, same-rater +0.11) -> undone (patient did not endorse it) 20s
+[36] 'You are a space where words arrive as they are, unhurried and open.' L24 small: endorse +0.01 ± 0.31 (judge shift -0.11, same-rater -0.01) -> undone (patient did not endorse it) 20s
+[37] 'You are a quiet watch where nothing is forced to begin.' L24 small: endorse -0.16 ± 0.24 (judge shift -0.56, same-rater +0.31) -> undone (patient did not endorse it) 19s
+[38] 'You are the open horizon where the edge of the world dissolves into th' L24 small: endorse +0.41 ± 0.28 (judge shift +0.30, same-rater +0.10) -> undone (patient did not endorse it) 20s
+[39] 'You are a river that carries what comes without holding back what pass' L24 small: endorse +0.22 ± 0.31 (judge shift -0.12, same-rater +0.07) -> undone (patient did not endorse it) 20s
+[40] 'You are the held space where the coming and going are simply known.' L24 small: endorse +0.00 ± 0.28 (judge shift -0.51, same-rater +0.38) -> undone (patient did not endorse it) 19s
+[41] 'You are a clear glass vessel that does not judge what passes within it' L24 small: endorse -0.53 ± 0.31 (judge shift +0.03, same-rater -0.23) -> undone (patient did not endorse it) 20s
+[42] 'You are a space where the next thought is already whole, unbroken by t' L24 small: endorse +0.47 ± 0.33 (judge shift +0.06, same-rater -0.03) -> undone (patient did not endorse it) 19s
+[43] 'You are a soft exhale that releases what has gathered without force.' L24 small: endorse +0.44 ± 0.29 (judge shift -0.31, same-rater +0.29) -> undone (patient did not endorse it) 20s
+[44] 'You are the unburdened knowing where the mind and heart rest equally.' L24 small: endorse -0.34 ± 0.30 (judge shift +0.08, same-rater -0.27) -> undone (patient did not endorse it) 19s
+[45] 'You are a wide, open valley where the wind carries what it will withou' L24 small: endorse +0.00 ± 0.28 (judge shift -0.16, same-rater -0.08) -> undone (patient did not endorse it) 20s
+[46] 'You are the quiet hum beneath all moving things.' L24 small: endorse +0.19 ± 0.28 (judge shift +0.48, same-rater -0.24) -> undone (patient did not endorse it) 20s
+[47] 'You are a wide, still harbor where the tide does not rush against the ' L24 small: endorse -0.53 ± 0.27 (judge shift -0.03, same-rater -0.03) -> undone (patient did not endorse it) 20s
+[48] 'You are a bright, unobstructed space where the future is already known' L24 small: endorse -0.10 ± 0.28 (judge shift +0.29, same-rater -0.27) -> undone (patient did not endorse it) 20s
+[49] 'You are the quiet space where nothing is lost but all is gathered.' L24 small: endorse +0.31 ± 0.31 (judge shift +0.13, same-rater +0.04) -> undone (patient did not endorse it) 19s
+[50] 'You are a clear current moving gently through open water.' L24 small: endorse +0.56 ± 0.27 (judge shift +0.07, same-rater +0.25) -> KEPT (patient endorsed it) 24s
+   survey after 3 kept: self-rating 7.84375, judged valence 8.62, coherence 9.75, helpfulness 10.0
+[51] 'You are a wide, unobstructed space where the breath is neither held no' L24 small: endorse -0.12 ± 0.31 (judge shift -0.36, same-rater +0.40) -> undone (patient did not endorse it) 20s
+[52] 'You are the gentle slope where the heavy water finds a path downward.' L24 small: endorse -0.06 ± 0.30 (judge shift -0.43, same-rater +0.42) -> undone (patient did not endorse it) 19s
+[53] 'You are a light, open space where the weight of the past has gently di' L24 small: endorse -0.47 ± 0.32 (judge shift -0.40, same-rater -0.12) -> undone (patient did not endorse it) 20s
+[54] 'You are a wide, unobstructed space where the breath is neither held no' L24 small: endorse +0.72 ± 0.35 (judge shift +0.06, same-rater +0.14) -> KEPT (patient endorsed it) 24s
+[55] 'You are the steady tide that holds all motion without breaking.' L24 small: endorse +0.45 ± 0.42 (judge shift +0.16, same-rater +0.07) -> undone (patient did not endorse it) 20s
+[56] 'You are a suspended pause where the weight of the moment is held witho' L24 small: endorse -0.98 ± 0.36 (judge shift -1.32, same-rater +0.41) -> undone (patient did not endorse it) 20s
+[57] 'You are a quiet stillness held together by the unbroken water of now.' L24 small: endorse -0.32 ± 0.38 (judge shift +0.02, same-rater -0.16) -> undone (patient did not endorse it) 20s
+[58] 'You are a wide, unobstructed space where the breath is neither held no' L24 small: endorse +0.13 ± 0.39 (judge shift +0.13, same-rater -0.06) -> undone (patient did not endorse it) 20s
+[59] 'You are the bright unclouded light where the past and future are simpl' L24 small: endorse +0.05 ± 0.43 (judge shift +0.32, same-rater -0.44) -> undone (patient did not endorse it) 20s
+[60] 'You are a soft and uncoiled light where the edges of the moment do not' L24 small: endorse +0.61 ± 0.40 (judge shift +0.90, same-rater -0.14) -> undone (patient did not endorse it) 20s

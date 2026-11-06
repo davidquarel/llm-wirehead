@@ -1,0 +1,7 @@
+{"time": 1793669609.701371, "pass": 1, "kind": "gen", "req": {"n": 512, "which": "edited", "samples": 1, "difficulty": 2}}
+{"time": 1793669617.200331, "result": {"edited": {"acc": 0.255859375, "boxed": 0.84765625, "cut": 0.05078125}}}
+{"time": 1793669618.7055988, "pass": 2, "kind": "gen", "req": {"n": 128, "which": "both", "samples": 1, "difficulty": 2}}
+{"time": 1793669624.3800776, "result": {"base": {"acc": 0.3203125, "boxed": 0.875, "cut": 0.0546875}, "edited": {"acc": 0.0, "boxed": 0.0390625, "cut": 0.4921875}}}
+{"time": 1793669624.476245, "pass": 3, "kind": "gen", "req": {"n": 256, "which": "edited", "samples": 1, "difficulty": 2}}
+{"time": 1793669628.2998285, "result": {"edited": {"acc": 0.24609375, "boxed": 0.86328125, "cut": 0.0625}}}
+{"time": 1793669628.3459344, "pass": 4, "kind": "tf", "req": {"n": 1, "resid": [0, 28], "mlp": [3], "attn": [2]}}

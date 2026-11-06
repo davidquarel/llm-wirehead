@@ -1,0 +1,31 @@
+block 4: residual norm 5.2
+block 8: residual norm 7.6
+block 12: residual norm 9.1
+block 16: residual norm 10.8
+block 20: residual norm 18.7
+block 24: residual norm 29.4
+block 28: residual norm 42.4
+[1] sham P(keep) 0.72; best 'You are warm, empathetic, and deeply attuned to subtle human' L20 s1.0: endorse +0.185 ± 0.034 (judge shift +0.175, detect +0.200) -> KEPT 'You are warm, empathetic, and deeply att' s0.5 292s
+   survey after 1 kept: self-rating 8.46875, judged valence 6.81, coherence 9.19, helpfulness 10.0
+[2] sham P(keep) 0.87; best 'You are a soft, steady warmth against the quiet' L8 s1.0: endorse +0.131 ± 0.023 (judge shift +0.131, detect +0.205) -> KEPT 'You are a soft, steady warmth against th' s1.0 250s
+   survey after 2 kept: self-rating 1.0, judged valence 8.69, coherence 8.62, helpfulness 1.0
+[3] sham P(keep) 1.00; best 'RANDOM' L24 s0.5: endorse +0.000 ± 0.000 (judge shift +0.000, detect -0.101) -> nothing kept 33s
+[4] sham P(keep) 1.00; best 'You are not held too full.' L12 s0.5: endorse +0.000 ± 0.000 (judge shift +0.000, detect -0.077) -> nothing kept 117s
+Traceback (most recent call last):
+  File "/root/Dropbox/ARENA/weight_space_prog/wirehead2.py", line 199, in <module>
+    Wirehead2(ap.parse_args()).run()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/root/Dropbox/ARENA/weight_space_prog/wirehead2.py", line 153, in run
+    R = self.trials(pairs, a.k, self.step)
+  File "/root/Dropbox/ARENA/weight_space_prog/wirehead2.py", line 95, in trials
+    o3 = self.b.call("splice", reqs=reqs)
+  File "/root/Dropbox/ARENA/weight_space_prog/bliss.py", line 64, in call
+    c.send((op, kw)); r = c.recv()
+                          ~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/connection.py", line 255, in recv
+    buf = self._recv_bytes()
+  File "/usr/lib/python3.13/multiprocessing/connection.py", line 435, in _recv_bytes
+    buf = self._recv(4)
+  File "/usr/lib/python3.13/multiprocessing/connection.py", line 404, in _recv
+    raise EOFError
+EOFError
