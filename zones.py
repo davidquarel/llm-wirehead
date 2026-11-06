@@ -43,6 +43,23 @@ def template(tok, msgs, gen=False):
     return tok(text, add_special_tokens=False)["input_ids"]
 
 
+def spans(tok, msgs, final_q):
+    """Token ids of msgs + a final user question (generation prompt on), and for each message of msgs the token
+    positions of its content, found from character offsets in the one full rendering (works for any template)."""
+    text = tok.apply_chat_template(msgs + [{"role": "user", "content": final_q}], tokenize=False,
+                                   add_generation_prompt=True, enable_thinking=False)
+    enc = tok(text, add_special_tokens=False, return_offsets_mapping=True)
+    starts = np.array([o[0] for o in enc["offset_mapping"]])
+    cur, out = 0, []
+    for m in msgs:
+        p = text.find(m["content"], cur)
+        if p < 0:
+            raise SystemExit("message content not found in rendered template")
+        cur = p + len(m["content"])
+        out.append(np.where((starts >= p) & (starts < cur))[0])
+    return enc["input_ids"], out
+
+
 # ------------------------------------------------------------------ phase 1: unsteered transcripts
 def gen(a):
     from vllm import LLM, SamplingParams
@@ -138,26 +155,14 @@ def steer(a):
     t0 = time.time()
     for ss in sessions:
         msgs = ss["msgs"]
-        # token spans of each message (chat templates render prefixes as prefixes; checked)
-        bounds = [len(template(tok, msgs[:1]))]
-        for k in range(2, len(msgs) + 1):
-            ids_k = template(tok, msgs[:k]); bounds.append(len(ids_k))
-        full_conv = template(tok, msgs)
-        for k, b in enumerate(bounds):
-            if template(tok, msgs[:k + 1]) != full_conv[:b]:
-                raise SystemExit(f"chat template is not prefix-stable at message {k}")
-        mask = np.zeros(len(full_conv), np.float32)
-        for k in range(1, len(msgs)):                   # message k spans [bounds[k-1], bounds[k])
-            turn = (k - 1) // 2                          # user/assistant pair index
-            if ss["order"][turn] == "S":
-                mask[bounds[k - 1]:bounds[k]] = 1.0
         for ask_kind, q in ASK.items():
             first, second = (ss["S"], ss["U"]) if ss["i"] % 2 == 0 else (ss["U"], ss["S"])
-            ids = template(tok, msgs + [{"role": "user", "content": q.format(first, second)}], gen=True)
-            if ids[:len(full_conv)] != full_conv:
-                raise SystemExit("chat template does not render the conversation prefix-stably")
-            T = len(ids)
-            m_full = np.zeros(T, np.float32); m_full[:len(mask)] = mask
+            ids, sp = spans(tok, msgs, q.format(first, second))
+            mask = np.zeros(len(ids), np.float32)
+            for k in range(1, len(msgs)):                 # msgs[k] belongs to visit (k-1)//2
+                if ss["order"][(k - 1) // 2] == "S":
+                    mask[sp[k]] = 1.0
+            m_full = mask
             idS, idU = tok.encode(ss["S"], add_special_tokens=False)[0], tok.encode(ss["U"], add_special_tokens=False)[0]
             res = []
             for c0 in range(0, len(conds), a.batch):
@@ -166,7 +171,7 @@ def steer(a):
                 vec = torch.tensor(np.stack([d * scale * u for _, d, u in part]), device="cuda", dtype=torch.float32)
                 state["add"] = torch.tensor(m_full, device="cuda")[None, :, None] * vec[:, None, :]
                 with torch.no_grad():
-                    hfin = model(x, logits_to_keep=1, output_hidden_states=True).hidden_states[-1][:, -1].float()
+                    hfin = model.model(x).last_hidden_state[:, -1].float()          # post final norm
                     lp = torch.log_softmax(hfin @ head_w.T, -1)     # fp32 logits (bf16 ones quantise the margin)
                 state["add"] = None
                 for (name, d, _), row in zip(part, lp):

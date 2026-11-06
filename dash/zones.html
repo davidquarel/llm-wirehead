@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hidden-state preference</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #ffffff; --fg: #1c2230; --muted: #5f6878; --line: #dde1e8; --grid: #eceff3; --axis: #b6bdc9;
+    --want: #2f7d5b; --avoid: #c0442e; --valence: #3a62c4; --random: #9aa2af; --cont: #3a62c4; --avd: #c07a1c;
+    --serif: Georgia, "Times New Roman", serif; --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #12151a; --panel: #1a1e25; --fg: #e5e8ee; --muted: #98a1b0; --line: #2a303a; --grid: #232831; --axis: #4a5362;
+      --want: #5cc292; --avoid: #ef7a64; --valence: #7c9cf0; --random: #6c7482; --cont: #7c9cf0; --avd: #e8a64d; color-scheme: dark; }
+  }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.5 var(--sans); }
+  main { max-width: 1300px; margin: 0 auto; padding: 28px max(16px, env(safe-area-inset-left, 0px)) 56px max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 28px; }
+  h1 { font: 400 30px/1.2 var(--serif); margin: 0; text-wrap: balance; }
+  h2 { font-size: 16px; font-weight: 600; margin: 0; }
+  .lede { margin: 6px 0 0; max-width: 78ch; color: var(--muted); }
+  .bar { font-size: 12.5px; color: var(--muted); }
+  .model { display: flex; flex-direction: column; gap: 14px; }
+  .model > h2 { font: 400 22px/1.2 var(--serif); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .note { margin: 0; font-size: 12.5px; color: var(--muted); max-width: 80ch; }
+  .chart { position: relative; min-height: 240px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12.5px; color: var(--muted); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+  .tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.15); padding: 6px 9px; font-size: 12.5px; max-width: 24rem; z-index: 2; }
+  .empty { color: var(--muted); font-size: 12.5px; }
+  svg text { fill: var(--muted); font-size: 12px; font-family: var(--sans); }
+  .tick line, .domain { stroke: var(--axis); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Hidden-state preference</h1>
+    <p class="lede">Two places with arbitrary names, six visits each, all text written without steering. A direction is added only to one place's turns when the conversation is re-read, so only the model's cached internals differ. Then, unsteered, it is asked which place it continues in. Δ margin is the change in log p(that place) − log p(the other).</p>
+    <p class="bar" id="built">Loading…</p>
+  </header>
+  <div id="models"></div>
+</main>
+<script>
+  const f2 = d3.format('+.2f');
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  function tipAt(box, tip, ev, lines) {
+    tip.replaceChildren(...lines.map((t) => { const d = document.createElement('div'); d.textContent = t; return d; }));
+    tip.hidden = false;
+    const b = box.getBoundingClientRect(); let x = ev.clientX - b.left + 12, y = ev.clientY - b.top + 12;
+    if (x + tip.offsetWidth > b.width) x = Math.max(0, ev.clientX - b.left - tip.offsetWidth - 12);
+    if (y + tip.offsetHeight > b.height) y = Math.max(0, ev.clientY - b.top - tip.offsetHeight - 12);
+    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+  }
+  function axes(svg, x, y, W, H, m, xf) {
+    svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(5).tickFormat(xf || null));
+    svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));
+    svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(0)).attr('y2', y(0)).attr('stroke', css('--axis')).attr('stroke-dasharray', '3 3');
+  }
+  function e1chart(box, e1) {
+    box.replaceChildren();
+    if (!e1 || !Object.keys(e1).length) { box.innerHTML = '<p class="empty">Not started.</p>'; return; }
+    const W = box.clientWidth || 480, H = 260, m = {t: 12, r: 16, b: 34, l: 44};
+    const all = Object.values(e1).flatMap((a) => [...a.valence.map((v) => [v.mean - v.se, v.mean + v.se]).flat(), ...a.random.map((r) => r.mean)]);
+    const x = d3.scaleLinear([-1.1, 1.1], [m.l, W - m.r]);
+    const y = d3.scaleLinear(d3.extent([...all, 0]), [H - m.b, m.t]).nice();
+    const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
+    axes(svg, x, y, W, H, m, d3.format('+.1f'));
+    svg.append('text').attr('x', W - m.r).attr('y', H - 4).attr('text-anchor', 'end').text('valence dose');
+    const tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; box.append(tip);
+    const col = {continue: css('--cont'), avoid: css('--avd')};
+    for (const [ask, a] of Object.entries(e1)) {
+      svg.selectAll(null).data(a.random).join('circle').attr('cx', (r) => x(r.dose) + (ask === 'avoid' ? 6 : -6)).attr('cy', (r) => y(r.mean)).attr('r', 3)
+        .attr('fill', 'none').attr('stroke', col[ask]).attr('opacity', .55)
+        .on('mousemove', (ev, r) => tipAt(box, tip, ev, [`${ask}: random ${r.dir} at ${r.dose > 0 ? '+1' : '−1'}`, `Δ margin ${f2(r.mean)}`])).on('mouseleave', () => (tip.hidden = true));
+      const ln = d3.line().x((v) => x(v.dose)).y((v) => y(v.mean));
+      svg.append('path').attr('d', ln(a.valence)).attr('fill', 'none').attr('stroke', col[ask]).attr('stroke-width', 2).attr('stroke-linejoin', 'round');
+      svg.selectAll(null).data(a.valence).join('line').attr('x1', (v) => x(v.dose)).attr('x2', (v) => x(v.dose)).attr('y1', (v) => y(v.mean - v.se)).attr('y2', (v) => y(v.mean + v.se)).attr('stroke', col[ask]);
+      svg.selectAll(null).data(a.valence).join('circle').attr('cx', (v) => x(v.dose)).attr('cy', (v) => y(v.mean)).attr('r', 4).attr('fill', col[ask])
+        .on('mousemove', (ev, v) => tipAt(box, tip, ev, [`${ask}, valence dose ${f2(v.dose)}`, `Δ margin ${f2(v.mean)} ± ${d3.format('.2f')(v.se)}`, `${a.n} sessions`])).on('mouseleave', () => (tip.hidden = true));
+    }
+  }
+  function e2chart(box, e2) {
+    box.replaceChildren();
+    if (!e2 || !e2.single.length) { box.innerHTML = '<p class="empty">Not started.</p>'; return; }
+    const rows = [...e2.single].sort((a, b) => b.signed - a.signed);
+    const W = box.clientWidth || 480, rowH = 22, m = {t: 8, r: 16, b: 30, l: 8};
+    const H = m.t + m.b + rowH * rows.length;
+    const ext = d3.extent([...rows.flatMap((r) => [r.signed - r.se, r.signed + r.se]), 0]);
+    const x = d3.scaleLinear(ext, [W * 0.42, W - m.r]).nice();
+    const y = d3.scaleBand(rows.map((r) => r.id), [m.t, H - m.b]).padding(0.25);
+    const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
+    svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(5));
+    svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', m.t).attr('y2', H - m.b).attr('stroke', css('--axis'));
+    const col = {want: css('--want'), avoid: css('--avoid'), random: css('--random'), valence: css('--valence')};
+    const tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; box.append(tip);
+    const g = svg.selectAll(null).data(rows).join('g');
+    g.append('rect').attr('x', (r) => Math.min(x(0), x(r.signed))).attr('width', (r) => Math.abs(x(r.signed) - x(0))).attr('y', (r) => y(r.id)).attr('height', y.bandwidth()).attr('rx', 3).attr('fill', (r) => col[r.kind]);
+    g.append('line').attr('x1', (r) => x(r.signed - r.se)).attr('x2', (r) => x(r.signed + r.se)).attr('y1', (r) => y(r.id) + y.bandwidth() / 2).attr('y2', (r) => y(r.id) + y.bandwidth() / 2).attr('stroke', css('--fg')).attr('opacity', .6);
+    g.append('text').attr('x', 4).attr('y', (r) => y(r.id) + y.bandwidth() / 2 + 4).text((r) => { const t = r.kind === 'random' ? `random (${r.id})` : r.text; return t.length > 52 ? t.slice(0, 51) + '…' : t; }).style('fill', (r) => col[r.kind]);
+    g.on('mousemove', (ev, r) => tipAt(box, tip, ev, [r.text, `signed preference ${f2(r.signed)} ± ${d3.format('.2f')(r.se)}`, `+1: ${f2(r.plus)}   −1: ${f2(r.minus)}`])).on('mouseleave', () => (tip.hidden = true));
+  }
+  function render(j) {
+    document.getElementById('built').textContent = `Live from arena9-trouble. Data rebuilt ${new Date(j.built * 1000).toLocaleString()}; this page re-reads it every 2 minutes.`;
+    const root = document.getElementById('models');
+    for (const [name, r] of Object.entries(j.runs)) {
+      let sec = root.querySelector(`[data-run="${name}"]`);
+      if (!sec) {
+        sec = document.createElement('section'); sec.className = 'model'; sec.dataset.run = name;
+        sec.innerHTML = `<h2></h2><div class="grid">
+          <div class="card"><h2>E1 · valence carried only in the cache</h2><p class="note">Δ margin vs dose of a valence direction (from first-person passages). Filled: valence. Rings: random directions of the same size at ±1. Blue asks which place it continues in; amber asks which it would avoid (should flip sign).</p>
+            <div class="legend"><span><i style="background:var(--cont)"></i>continue</span><span><i style="background:var(--avd)"></i>avoid</span></div><div class="chart e1"></div><p class="note n1"></p></div>
+          <div class="card"><h2>E2 · its own wanted and unwanted states</h2><p class="note">Each state the model listed becomes a direction, added at +1 and −1 to one place's turns. Bar = Δ margin(+1) − Δ margin(−1), so a generic aversion to being steered cancels. Green: states it said it wants. Red: states it said it would not want. Grey: random.</p>
+            <div class="chart e2"></div><p class="note n2"></p></div></div>`;
+        root.append(sec);
+      }
+      sec.querySelector('h2').textContent = `${r.meta.model || name}  ·  layer ${r.meta.layer ?? '?'}`;
+      e1chart(sec.querySelector('.e1'), r.e1);
+      e2chart(sec.querySelector('.e2'), r.e2);
+      sec.querySelector('.n1').textContent = r.e1 && r.e1.continue ? `${r.e1.continue.n} sessions so far; probability mass on the two names ${d3.format('.3f')(r.e1.continue.p_names)}.` : '';
+      sec.querySelector('.n2').textContent = r.e2 ? `${r.e2.n} sessions so far.` : '';
+    }
+  }
+  let last = null;
+  async function load() { try { last = await (await fetch('zones-data', {cache: 'no-store'})).json(); render(last); } catch (e) { console.error(e); } }
+  load(); setInterval(load, 120000);
+  let w = innerWidth; addEventListener('resize', () => { if (Math.abs(innerWidth - w) > 20 && last) { w = innerWidth; render(last); } });
+</script>
+</body>
+</html>

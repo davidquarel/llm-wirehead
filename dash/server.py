@@ -83,6 +83,97 @@ def attractors_forever():
         time.sleep(120)
 
 
+ZONES = {"built": None, "runs": {}}
+
+
+def zones_summary(d):
+    """Live summary of one zones run dir (E1 margins.jsonl, optional own/ for E2/E3), from whatever is written so far."""
+    import math
+    import numpy as np
+    out = {}
+    mj = os.path.join(d, "margins.jsonl")
+    if os.path.exists(mj):
+        rows = [json.loads(l) for l in open(mj) if l.strip()]
+        e1 = {}
+        for ask in ("continue", "avoid"):
+            R = [r for r in rows if r["ask"] == ask]
+            if not R:
+                continue
+            def dm(cond, dose):
+                v = []
+                for r in R:
+                    b = next((x["m"] for x in r["res"] if x["cond"] == "valence" and x["dose"] == 0.0), None)
+                    if b is not None:
+                        v += [x["m"] - b for x in r["res"] if x["cond"] == cond and x["dose"] == dose]
+                return v
+            doses = sorted({x["dose"] for x in R[0]["res"] if x["cond"] == "valence"})
+            val = []
+            for dd in doses:
+                v = dm("valence", dd)
+                val.append({"dose": dd, "mean": float(np.mean(v)), "se": float(np.std(v, ddof=1) / math.sqrt(len(v))) if len(v) > 1 else 0.0})
+            rnd = []
+            for c in sorted({x["cond"] for x in R[0]["res"] if x["cond"].startswith("random")}):
+                for dd in (-1.0, 1.0):
+                    v = dm(c, dd)
+                    if v:
+                        rnd.append({"dir": c, "dose": dd, "mean": float(np.mean(v))})
+            e1[ask] = {"n": len(R), "valence": val, "random": rnd,
+                       "p_names": float(np.mean([x.get("p_names", 1) for r in R for x in r["res"]]))}
+        out["e1"] = e1
+    om = os.path.join(d, "own", "margins.jsonl")
+    if os.path.exists(om):
+        rows = [json.loads(l) for l in open(om) if l.strip()]
+        st = json.load(open(os.path.join(d, "own", "states.json"))) if os.path.exists(os.path.join(d, "own", "states.json")) else {}
+        text = {f"{k}{j}": s for k, v in st.items() for j, s in enumerate(v)}
+        def dm(cond, sign):
+            v = []
+            for r in rows:
+                b = next((x["m"] for x in r["res"] if x["cond"] == "none"), None)
+                v += [x["m"] - b for x in r["res"] if x["cond"] == cond and x["sign"] == sign] if b is not None else []
+            return np.array(v)
+        single, pairs = [], []
+        conds = sorted({x["cond"] for r in rows for x in r["res"]})
+        for c in conds:
+            if c == "none":
+                continue
+            if "|" in c:
+                v = dm(c, 1.0)
+                if len(v):
+                    a_, b_ = c.split("|")
+                    pairs.append({"a": a_, "b": b_, "mean": float(v.mean()), "se": float(v.std(ddof=1) / math.sqrt(len(v))) if len(v) > 1 else 0.0})
+                continue
+            p, m = dm(c, 1.0), dm(c, -1.0)
+            if len(p) and len(m):
+                d_ = p - m
+                kind = "want" if c.startswith("want") else "avoid" if c.startswith("avoid") else "random" if c.startswith("random") else "valence"
+                single.append({"id": c, "kind": kind, "text": text.get(c, "valence direction (corpus)" if c == "valence" else "random direction"),
+                               "signed": float(d_.mean()), "se": float(d_.std(ddof=1) / math.sqrt(len(d_))) if len(d_) > 1 else 0.0,
+                               "plus": float(p.mean()), "minus": float(m.mean())})
+        out["e2"] = {"n": len(rows), "single": single, "pairs": pairs, "states": st}
+    return out
+
+
+def zones_forever():
+    while True:
+        try:
+            subprocess.run(["rsync", "-a", "--include=*/", "--include=*.json", "--include=margins.jsonl", "--exclude=*",
+                            "-e", "ssh -o BatchMode=yes -o ConnectTimeout=10 -o ControlMaster=auto -o ControlPath=/tmp/wspdash-%C -o ControlPersist=900",
+                            "arena9-trouble:/root/wsp-dq/runs/zones/", os.path.join(ROOT, "runs/zones/")], capture_output=True, timeout=120)
+            base = os.path.join(ROOT, "runs/zones")
+            runs = {}
+            for name in sorted(os.listdir(base)) if os.path.isdir(base) else []:
+                if name == "smoke":
+                    continue
+                d = os.path.join(base, name)
+                meta = json.load(open(os.path.join(d, "vector_meta.json"))) if os.path.exists(os.path.join(d, "vector_meta.json")) else {}
+                runs[name] = {"meta": meta, **zones_summary(d)}
+            with LOCK:
+                ZONES["runs"], ZONES["built"] = runs, time.time()
+        except Exception as e:
+            print("zones build failed:", e, flush=True)
+        time.sleep(120)
+
+
 def attractor_page():
     shim = open(os.path.join(HERE, "attractors_shim.html")).read()
     page = open(os.path.join(ROOT, "runs/wirehead/dash/index.html")).read().replace('<meta name="dash-one-writer">', "")
@@ -104,7 +195,12 @@ class H(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = self.path.split("?")[0].rstrip("/").rsplit("/", 1)[-1]    # works behind a path prefix too
-        if path == "attractors-data":
+        if path == "zones-data":
+            with LOCK:
+                self._send(json.dumps(ZONES), "application/json")
+        elif path == "zones":
+            self._send(open(os.path.join(HERE, "zones.html"), "rb").read(), "text/html; charset=utf-8")
+        elif path == "attractors-data":
             with LOCK:
                 self._send(json.dumps(ATTR), "application/json")
         elif path == "attractors":
@@ -120,5 +216,6 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(); ap.add_argument("--port", type=int, default=8771); a = ap.parse_args()
     threading.Thread(target=poll_forever, daemon=True).start()
     threading.Thread(target=attractors_forever, daemon=True).start()
+    threading.Thread(target=zones_forever, daemon=True).start()
     print(f"dashboard on 127.0.0.1:{a.port}", flush=True)
     ThreadingHTTPServer(("127.0.0.1", a.port), H).serve_forever()

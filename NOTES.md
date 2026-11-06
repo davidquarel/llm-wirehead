@@ -406,3 +406,11 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   projected out. Runs on trouble: runs/zones/{llama8b,qwen4b} via zones_run.sh (log /root/wsp-dq/zones_run.log).
 - Smoke (Llama-8B, 4 sessions, 2+2 visits, L16, rho .5): continue dm -1.16/-0.75/0/+0.50/+0.59 for d=-1..+1;
   avoid flips sign (+0.59 ... -0.41); random dirs ~0 at +1 (-0.5 at -1). Signal on KV-only internals.
+- E1 Llama-8B (96 sessions, wrapper-inclusive masks): continue dm -1.45/-0.80/0/+0.62/+0.78 (d=-1..+1, se <= .08);
+  avoid +0.33/+0.27/0/-0.27/-0.50; random dirs -0.30 (+-0.33 across dirs) at -1, -0.03 at +1. Clear signal.
+  Qwen3.5-4B first steer crashed (its template refuses a system-only prefix) -> spans now from char offsets of one
+  full rendering (content tokens only). Logits from model.model(...).last_hidden_state @ lm_head in fp32.
+  fla 0.6.0 installed in trouble venv (uv) for the Qwen hybrid HF forward. zones_run2.sh: E1 qwen4b, E1 llama8b
+  (rerun, new masks; old summary kept as summary_v1_wrapmask.json), E2/E3 (zones_own.py --pairs) for both.
+- LIVE zones page: https://cute.sus.cat/4f12bddc58ce1e0dabb4cd49/zones (dash/server.py zones_forever rsyncs
+  trouble:/root/wsp-dq/runs/zones/ json+margins.jsonl every 120 s; dash/zones.html).
