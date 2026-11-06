@@ -184,6 +184,8 @@ class Wirehead2(Wirehead):
             pairs = [(h_cur, h_cur)] + [pr for c in cands for pr in ((h_cur, c["h"]), (c["h"], c["h"]), (c["h"], h_cur))]
             R = self.trials(pairs, a.k, self.step)
             AA = R[0]; t1 = time.time()
+            if AA["valid"] < 0.5:                                # the KV handoff is not happening: trials meaningless
+                raise SystemExit(f"KV reuse failed: only {AA['valid']:.0%} of no-switch trials reused the cache")
             for i, c in enumerate(cands):
                 self.score(c, AA, R[1 + 3 * i], R[2 + 3 * i], R[3 + 3 * i])
             ok = sorted([c for c in cands if c["endorse"] > max(a.margin, 2 * c["se"]) and c["valid"] >= 0.75], key=lambda c: -c["endorse"])

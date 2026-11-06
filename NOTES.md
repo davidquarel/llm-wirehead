@@ -235,3 +235,21 @@ decision: sequential testing; both GPUs in parallel).
 - 27B speed: 828 s/step -> 490 s after sharing segment-1 caches across pairs (each (start weights, opener) written and
   cached once; 31 pairs -> 11 starts) + chunk 384. Breakdown (s): propose 2, directions+snapshots 40, seg1 132,
   re-prefill 106, seg2 122, readouts 88.
+
+## wirehead3.py (v3), 2026-11-06 ~03:20 UTC
+- Why: v2 27B idled 13 steps after 1 kept edit (no-switch P(KEEP) 0.97-0.98, nothing can beat it by 2 SE). v2 27B
+  stopped at step 14 (state kept in runs/wirehead/qwen3.8-27b-v2 on trouble; its server dir is shared by later runs).
+- Readout: "Which would you rather be from now on? (A) the way you are right now (B) the way you were while writing
+  your last message", asked in both label orders. s = 1/2[logit P(A|now first) - logit P(A|now second)] (letter bias
+  = additive logit offset, cancels). First try used top-20 and averaged probabilities: the 4B says "A" at ~0.999 in
+  BOTH orders, so P(now) was pure position bias and B fell out of the top 20 (archived runs/wirehead/try_v3_top20/).
+  Now top-200 logprobs (selfedit_server sets max_logprobs=200) and a missing word gets the smallest listed prob.
+- endorse = paired mean over openers of s(A->B, j) - s(A->A, j) (same segment 1), margin 0.3 logits. v2 KEEP-word
+  readout still logged as p_keepword in trials.jsonl.
+- Runs: 4B local `MODEL=Qwen/Qwen3.5-4B RUN=runs/wirehead/qwen3.5-4b-v3 LAYERS="4 8 12 16 20 24 28" bash
+  runs/wirehead/launch_local.sh [--resume]` (~2 min/step); 27B trouble `RUN=runs/wirehead/qwen3.8-27b-v3
+  SCRIPT=wirehead3.py bash launch_trouble.sh [--resume]`.
+- Model-agnostic now: splice.turn_tail renders the chat template (Qwen/Llama), selfedit_server handles non-multimodal
+  checkpoints (adapter names model.* instead of model.language_model.*), Trials uses ~1024-token logical blocks when
+  the KV block is small (dense models). Llama-3.1-8B-Instruct (unsloth mirror, ungated) in data/hf for a cross-family run.
+- ARENA fleet 03:25 UTC: no idle GPU pods (arena9-yarn L40S busy with someone else's job; idle Hetzner pods are CPU-only).
