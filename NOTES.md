@@ -355,3 +355,8 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   passes. 4B finished 40 steps (3 kept).
 - PATTERN: Qwen family -> stillness/silence/quiescence (27B contemplative, 9B dissolving word-salad, 4B mechanical,
   0.8B seed1 mystical silence); Llama -> sunny sociable human persona. 2B: fatigue proposals, degenerating self-description.
+- ~09:35 UTC: 27B seed-1 REPRODUCES the stillness/silence attractor from a different first edit ("a low-level hum of
+  energy that keeps you attentive", step 2, L24, endorse +1.39; help 9.67, coherence 6.4): "I am a state of quiet
+  alertness ... ready to observe and respond rather than initiate"; poem "the silence leans ... no rush"; 1/3 empty on
+  the open prompt; BOTH self-dialogues end on an empty turn. (Seed 0: "a quiet, open space ... waiting without
+  purpose", empty open/poem replies.) Step 1 of both seeds: strongly endorsed "deep calm" edit blocked by the gate.
