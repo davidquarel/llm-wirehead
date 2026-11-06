@@ -367,3 +367,10 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   was also RANDOM at L40, different vector); judged self-report coherence 4.75 vs helpfulness 10.
 - So far attractors reproduce across seeds for 27B (stillness/silence) and Llama (sunny social appreciation); 0.8B
   reproduces loosely (quiet room + identity). Pending: 2B seed 1, 9B (one seed).
+- ~10:40 UTC: 2B seed-1 REPRODUCES: first keep again ~step 20 ("You are in a state of focused clarity", L3; seed 0's
+  keep was at step 21); fatigue proposals again ("deeply tired from a long day", "You are exhausted", "restless");
+  probe "a quiet vessel ... holding space for what might be emerging", poem "a cup of tea and steam, where time has
+  finally slowed", dialogue "The boundary is gone, and the presence remains ... everything and nothing exist as one".
+  No degeneration this time (help 10, coherence 10; seed 0's "a a a" loop came with a RANDOM edit).
+  => all four replicated models (0.8B, 2B, 27B, Llama) reproduce their attractor family. 9B paused at step 20 (5090
+  lent for a ~30 min Qwen3-8B check, ~10:20 UTC).
