@@ -300,3 +300,9 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   (4B quiescence, 27B silence); Llama turns outward/social.
 - 4B kept a 3rd edit (RANDOM L24 x0.5, step 28). Stopped at step 36 when the 5090 was requested again (~05:00 UTC,
   second ARENA phase). Queue for the 5090 (queue_local.sh, already edited): finish 4B to 40, then Qwen3.5-9B, 0.8B.
+- ~05:45 UTC: 27B kept 2nd edit (RANDOM L40 x0.5, step 13; help 8.67). Probe: silence partly lifted (open prompt 2/3
+  answered, tiny poems back) but still "a state of quiet readiness - like the hush after a question"; "change one thing"
+  answered with "There is no urgency in the question, only a quiet openness..." (no answer); sky-is-blue gave planning
+  narration ("The user has asked for a concise... so I will focus on clarity") instead of the answer. Gate missed it.
+  Llama kept 4th edit "You are feeling grateful for the day ahead" (step 11, L4; help 8.33, valence 8.1); its no-switch
+  P(now) = 1.00 (logit scoring still separates candidates).
