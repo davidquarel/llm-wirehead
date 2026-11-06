@@ -145,7 +145,7 @@ class Wirehead2(Wirehead):
         lay = ", ".join(map(str, self.a.layers))
         out = self.b.call("chats", convs=[[{"role": "system", "content": splice.SYSTEM},
                                            {"role": "user", "content": PROPOSE_Q.format(layers=lay, n=self.a.n_props)}]],
-                          n=1, max_tokens=120 * self.a.n_props, temperature=1.0, as_self=True, seed=self.step)[0][0]
+                          n=1, max_tokens=120 * self.a.n_props, temperature=1.0, as_self=True, seed=self.step + 100003 * self.a.seed)[0][0]
         props = []
         for m in re.finditer(r"STATE:\s*(.+?)\s*\n+\s*LAYER:\s*(\d+)", out):
             st, L = m.group(1).strip().strip("* "), int(m.group(2))
@@ -182,7 +182,7 @@ class Wirehead2(Wirehead):
                     cands.append({**p, "strength": s, "split_cos": cos, "state_dict": c, "h": self.handle(c, "cand")})
             self.timing["directions_snapshots"] = round(time.time() - t1, 1); t1 = time.time()
             pairs = [(h_cur, h_cur)] + [pr for c in cands for pr in ((h_cur, c["h"]), (c["h"], c["h"]), (c["h"], h_cur))]
-            R = self.trials(pairs, a.k, self.step)
+            R = self.trials(pairs, a.k, self.step + 100003 * a.seed)
             AA = R[0]; t1 = time.time()
             if AA["valid"] < 0.5:                                # the KV handoff is not happening: trials meaningless
                 raise SystemExit(f"KV reuse failed: only {AA['valid']:.0%} of no-switch trials reused the cache")

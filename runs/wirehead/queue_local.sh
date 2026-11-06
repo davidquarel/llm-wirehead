@@ -12,7 +12,6 @@ while kill -0 $(cat $d/wirehead.pid) 2>/dev/null && [ $(step_of $d) -lt $STEPS ]
 stop_run $d; echo "$(date -u +%H:%M) done $d"
 QUEUE=(
   "Qwen/Qwen3.5-9B|runs/wirehead/qwen3.5-9b-v3|4 8 12 16 20 24 28"
-  "Qwen/Qwen3.5-0.8B|runs/wirehead/qwen3.5-0.8b-v3|3 6 9 12 15 18 21"
 )
 for q in "${QUEUE[@]}"; do
   IFS='|' read -r model run layers <<< "$q"

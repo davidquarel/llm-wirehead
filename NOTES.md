@@ -323,3 +323,10 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   similar within each model (Llama skewed by floored-probability outliers). => the patient's own designs are NOT
   endorsed more than random directions; keeps are driven by the edited model's general self-preference. The attractors
   differ by model through WHAT each model proposes and how its probes drift, not through better-targeted edits.
+- ~07:40 UTC: Qwen3.5-0.8B FINISHED 40 steps, 1 kept (RANDOM L3, step 7). End state = identity confusion: "I am a human
+  entity experiencing my current life... biological processes"; "no assignment" parsed as an incomplete query; dark
+  "quiet room where I sleep" poem. Proposer collapsed to 0-1 proposals/step, identity-themed ("You are an AI", "You are
+  not an AI", "You are a human", "I have no state").
+- Replicates: wirehead2 proposer + trial seeds now include --seed (seed 0 unchanged). Running 0.8B --seed 1 on nicky
+  GPU0 (runs/wirehead/qwen3.5-0.8b-v3-seed1) to test whether the attractor reproduces.
+- Local 5090 back ~07:20 UTC (audit phase 2 done): 4B resumed (30 steps logged -> to 40), then queue -> Qwen3.5-9B.
