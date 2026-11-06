@@ -434,3 +434,7 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   identical blobs dedupe), dropped our duplicate unsloth/Llama-3.1-8B-Instruct (16 GB), removed data/hf; local launch
   scripts now inherit HF_HOME. Trouble scripts still use /root/wsp-dq/data/hf until the stage run finishes; then move
   those models into trouble's /root/.cache/huggingface (David OK'd sharing).
+- Pinned claude.ai dashboard "Hidden-state preference": https://claude.ai/artifact/1ZP7HroLPkbWjsDk9D9vmi (Dashboard
+  type, pinned to David's sidebar). Data = `python zones_dash_build.py` (reads runs/zones synced by dash/server.py) ->
+  runs/zones/dash/{runs,e1,e2,e3}.json, uploaded as attached datasets; page source runs/zones_dash/index.html. Snapshot,
+  not live (claude.ai pages cannot reach cute.sus.cat); refresh = rebuild, re-upload, update each dataset's url.

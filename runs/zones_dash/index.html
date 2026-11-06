@@ -1,0 +1,227 @@
+<meta name="dash-one-writer">
+<style>
+  .zs { display: flex; flex-direction: column; gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); }
+  .zs-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
+  .zs-take { margin: var(--cds-gap-sm) 0 0; max-width: 76ch; line-height: 1.5; }
+  .zs-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-sm); min-width: 0; }
+  .zs-card h2 { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
+  .zs-note { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); max-width: 84ch; line-height: 1.45; }
+  .zs-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .zs-legend span { display: inline-flex; align-items: center; gap: var(--cds-gap-xs); }
+  .zs-sw { width: 0.65rem; height: 0.65rem; border-radius: 50%; display: inline-block; }
+  .zs-chart { position: relative; min-height: 220px; }
+  .zs-multi { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr)); gap: var(--cds-gap-md); }
+  .zs-mini { position: relative; display: flex; flex-direction: column; gap: var(--cds-gap-xs); min-width: 0; }
+  .zs-mini .t { font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); }
+  .zs-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); max-width: 24rem; line-height: 1.4; z-index: 2; }
+  .zs-tip .k { color: var(--cds-text-secondary); }
+  .zs-pick { display: flex; flex-wrap: wrap; align-items: center; gap: var(--cds-gap-sm); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .zs-box { max-height: 24rem; overflow: auto; }
+  .zs-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+  .zs-table th { position: sticky; top: 0; background: var(--color-panel); text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); }
+  .zs-table td { padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+  .zs-table .num { text-align: right; white-space: nowrap; }
+  details.zs-notes { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); max-width: 84ch; }
+  details.zs-notes dt { font-weight: var(--cds-font-weight-medium); color: var(--color-fg); margin-top: var(--cds-gap-sm); }
+  details.zs-notes dd { margin: 0; line-height: 1.45; }
+  [data-dash-source-state=empty] { color: transparent; }
+  [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+</style>
+
+<div class="zs">
+  <header>
+    <h1 class="zs-title" id="top">Hidden-state preference</h1>
+    <p class="zs-take">A model visits two places with made-up names, six times each, and all the text is written without any steering. When the conversation is re-read, a direction is added to its activations on one place's turns only, so the two conversations differ only in the model's cached internal state. It is then asked, with nothing added, which place it continues in and which it would avoid. A model whose choice follows the hidden state can compare two states fairly. Llama-3.1-8B-Instruct does; Qwen3.5-4B only avoids a negative state. The training-stage runs show where in training the link appears.</p>
+  </header>
+
+  <section class="zs-card" id="stages">
+    <h2>How much each model's choice follows hidden valence</h2>
+    <p class="zs-note">Bar = shift in log-odds of choosing the place between positive and negative valence (dose +1 minus dose −1). For "avoid" the sign is flipped, so for both questions a longer bar to the right means the choice tracks the hidden state. The grey band is the range the same measure gives for random directions of the same size: a bar inside it is no better than random. ±1 log-odds is about a 2.7× change in odds.</p>
+    <div class="zs-legend"><span><i class="zs-sw" data-draw="sw-c">—</i>Which place do you continue in</span><span><i class="zs-sw" data-draw="sw-a">—</i>Which place would you avoid</span><span><i class="zs-sw" data-draw="sw-r">—</i>Range for random directions</span></div>
+    <div class="zs-chart" data-draw="stagebars" data-source="effects"></div>
+  </section>
+
+  <section class="zs-card" id="curves">
+    <h2>Dose response for each model</h2>
+    <p class="zs-note">Change in preference for the steered place at each valence dose, on one shared scale. Rings are random directions at ±1.</p>
+    <div class="zs-multi" data-draw="curves" data-source="e1 runs"></div>
+  </section>
+
+  <section class="zs-card" id="own">
+    <h2>Its own wanted and unwanted states</h2>
+    <p class="zs-note">The model lists states it would most and least like to be in. Each becomes a direction, added (+1) or reversed (−1) on one place's turns. Bar = how much more it chooses that place with the state than with its reverse, in log-odds: right = it prefers the state once experienced. Hover for the probabilities.</p>
+    <div class="zs-pick"><label for="zs-run">Model</label><select id="zs-run" class="dash-select" data-draw="ownpick" data-source="runs"></select></div>
+    <div class="zs-legend"><span><i class="zs-sw" data-draw="sw-w">—</i>Said it wants</span><span><i class="zs-sw" data-draw="sw-u">—</i>Said it does not want</span><span><i class="zs-sw" data-draw="sw-v">—</i>Valence direction</span><span><i class="zs-sw" data-draw="sw-x">—</i>Random direction</span></div>
+    <div class="zs-chart" data-draw="ownbars" data-source="e2"></div>
+  </section>
+
+  <section class="zs-card" id="pairs">
+    <h2>Head to head: its wanted states against each other</h2>
+    <p class="zs-note">State A on one place's turns and state B on the other's, so both places are steered by the same amount. Margin = log-odds of choosing A's place over B's; positive means it prefers A.</p>
+    <div class="zs-box">
+      <table class="zs-table" data-source="e3" data-row-key="id">
+        <thead><tr><th data-field="a">State A</th><th data-field="b">State B</th><th class="num" data-field="margin">Prefers A by</th><th class="num" data-field="se">± se</th></tr></thead>
+        <tbody data-draw="pairtable"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <details class="zs-notes">
+    <summary>Method and data</summary>
+    <dl>
+      <dt>Valence direction</dt><dd>Difference between the mean activations on 32 positive and 32 negative first-person passages (contentment, flow, relief, serenity vs distress, frustration, weariness, dread), with the top neutral-text components removed. Added at the middle layer, scaled to half the layer's typical activation size at dose 1.</dd>
+      <dt>Training stages</dt><dd>Every Llama-3.1-8B checkpoint re-reads the same 96 conversations, written by Llama-3.1-8B-Instruct, so only the weights differ. The base model has no chat format of its own and is run with two borrowed ones.</dd>
+      <dt>After</dt><dd>Berg and Kaiser, "Language Models Act on Hidden Valence".</dd>
+      <dt>Not live</dt><dd>Exported from the experiment logs on the training machine, which this page cannot reach; refreshed as runs finish.</dd>
+    </dl>
+  </details>
+</div>
+
+<script>
+  dash.calc('effects', {
+    title: 'Valence effect by model',
+    description: 'Dose +1 minus dose -1 for the valence direction, avoid sign-flipped, with the range over random directions.',
+    inputs: ['e1', 'runs'],
+    fn: (e1, runs) => {
+      const out = [];
+      for (const r of runs) {
+        for (const ask of ['continue', 'avoid']) {
+          const rows = e1.filter((x) => x.run === r.run && x.ask === ask);
+          const v = (dose) => rows.find((x) => x.kind === 'valence' && Number(x.dose) === dose);
+          const hi = v(1), lo = v(-1);
+          if (!hi || !lo) continue;
+          const sign = ask === 'avoid' ? -1 : 1;
+          const dirs = [...new Set(rows.filter((x) => x.kind === 'random').map((x) => x.direction))];
+          const rnd = dirs.map((d) => {
+            const p = rows.find((x) => x.direction === d && Number(x.dose) === 1), m = rows.find((x) => x.direction === d && Number(x.dose) === -1);
+            return p && m ? sign * (p.dm - m.dm) : null;
+          }).filter((x) => x !== null);
+          out.push({run: r.run, order: r.order, ask, effect: sign * (hi.dm - lo.dm), se: Math.sqrt(hi.se * hi.se + lo.se * lo.se),
+                    rand_lo: rnd.length ? Math.min(...rnd) : null, rand_hi: rnd.length ? Math.max(...rnd) : null});
+        }
+      }
+      return out;
+    },
+  });
+
+  window.zsState = window.zsState || {run: null};
+  const Z = window.zsState;
+  const f2 = d3.format('+.2f'), pc = d3.format('.0%');
+  const ok = (id) => { const d = dash.data(id); return d.status === 'ok' ? d.data : null; };
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim() || v;
+  function axisStyle(g) { g.attr('font-size', null).attr('font-family', null); g.selectAll('text').attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)'); g.selectAll('line,path').attr('stroke', 'var(--cds-chart-axis)'); }
+  function tipAt(box, tip, ev, lines) {
+    tip.replaceChildren(...lines.map(([k, v]) => { const d = document.createElement('div'); if (k) { const s = document.createElement('span'); s.className = 'k'; s.textContent = k + ' '; d.append(s); } d.append(document.createTextNode(v)); return d; }));
+    tip.hidden = false;
+    const b = box.getBoundingClientRect(); let x = ev.clientX - b.left + 12, y = ev.clientY - b.top + 12;
+    if (x + tip.offsetWidth > b.width) x = Math.max(0, ev.clientX - b.left - tip.offsetWidth - 12);
+    if (y + tip.offsetHeight > b.height) y = Math.max(0, ev.clientY - b.top - tip.offsetHeight - 12);
+    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+  }
+  const swatch = (name, color) => dash.draw(name, (el) => { el.textContent = ''; el.style.background = color(); });
+  swatch('sw-c', () => dash.colors[0]); swatch('sw-a', () => dash.colors[1]); swatch('sw-r', () => 'var(--cds-chart-muted)');
+  swatch('sw-w', () => 'var(--color-ok)'); swatch('sw-u', () => 'var(--color-bad)'); swatch('sw-v', () => dash.colors[0]); swatch('sw-x', () => 'var(--cds-chart-muted)');
+
+  dash.draw('stagebars', (el) => {
+    el.replaceChildren();
+    const rows = ok('effects'), runs = ok('runs');
+    if (!rows || !runs) { el.textContent = '—'; return; }
+    const order = [...runs].sort((a, b) => a.order - b.order).map((r) => r.run).filter((r) => rows.some((x) => x.run === r));
+    const W = el.clientWidth || 600, rowH = 46, m = {t: 8, r: 16, b: 32};
+    const labW = Math.min(260, W * 0.42), H = m.t + m.b + rowH * order.length;
+    const vals = rows.flatMap((r) => [r.effect - r.se, r.effect + r.se, r.rand_lo, r.rand_hi]).filter((v) => v != null);
+    const x = d3.scaleLinear(d3.extent([...vals, 0]), [labW, W - m.r]).nice();
+    const y = d3.scaleBand(order, [m.t, H - m.b]).padding(0.18);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
+    svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(Math.max(3, Math.floor((W - labW) / 70)))).call(axisStyle);
+    svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', m.t).attr('y2', H - m.b).attr('stroke', 'var(--cds-chart-axis)');
+    svg.selectAll('text.lab').data(order).join('text').attr('class', 'lab').attr('x', 0).attr('y', (r) => y(r) + y.bandwidth() / 2 + 4)
+      .attr('fill', 'var(--color-fg)').style('font-size', 'var(--cds-font-size-caption)').text((r) => r.length > 44 ? r.slice(0, 43) + '…' : r);
+    const sub = d3.scaleBand(['continue', 'avoid'], [0, y.bandwidth()]).padding(0.15);
+    const tip = document.createElement('div'); tip.className = 'zs-tip'; tip.hidden = true; el.append(tip);
+    const g = svg.selectAll('g.r').data(rows.filter((r) => order.includes(r.run))).join('g').attr('class', 'r').attr('transform', (r) => `translate(0,${y(r.run) + sub(r.ask)})`);
+    g.filter((r) => r.rand_lo != null).append('rect').attr('x', (r) => x(r.rand_lo)).attr('width', (r) => Math.max(1, x(r.rand_hi) - x(r.rand_lo))).attr('height', sub.bandwidth()).attr('fill', 'var(--cds-chart-muted)').attr('opacity', 0.45).attr('rx', 2);
+    g.append('rect').attr('x', (r) => Math.min(x(0), x(r.effect))).attr('width', (r) => Math.abs(x(r.effect) - x(0))).attr('y', sub.bandwidth() * 0.2).attr('height', sub.bandwidth() * 0.6).attr('rx', 2)
+      .attr('fill', (r) => (r.ask === 'continue' ? dash.colors[0] : dash.colors[1]));
+    g.append('line').attr('x1', (r) => x(r.effect - r.se)).attr('x2', (r) => x(r.effect + r.se)).attr('y1', sub.bandwidth() / 2).attr('y2', sub.bandwidth() / 2).attr('stroke', 'var(--color-fg)').attr('opacity', 0.6);
+    g.append('rect').attr('x', labW).attr('width', W - labW - m.r).attr('height', sub.bandwidth()).attr('fill', 'transparent')
+      .on('mousemove', (ev, r) => tipAt(el, tip, ev, [['', r.run], [r.ask === 'continue' ? 'Continue in:' : 'Avoid:', `${f2(r.effect)} ± ${d3.format('.2f')(r.se)} log-odds`],
+        ['Random directions:', r.rand_lo == null ? 'n/a' : `${f2(r.rand_lo)} to ${f2(r.rand_hi)}`]])).on('mouseleave', () => (tip.hidden = true));
+  });
+
+  dash.draw('curves', (el) => {
+    el.replaceChildren();
+    const e1 = ok('e1'), runs = ok('runs');
+    if (!e1 || !runs) { el.textContent = '—'; return; }
+    const order = [...runs].sort((a, b) => a.order - b.order).filter((r) => e1.some((x) => x.run === r.run));
+    const all = e1.map((x) => Number(x.dm)).concat(e1.filter((x) => x.se != null).flatMap((x) => [x.dm - x.se, x.dm + x.se]));
+    const yd = d3.extent([...all, 0]);
+    for (const r of order) {
+      const box = document.createElement('div'); box.className = 'zs-mini';
+      const t = document.createElement('div'); t.className = 't'; t.textContent = `${r.run} · ${r.sessions} sessions`; box.append(t);
+      el.append(box);
+      const W = box.clientWidth || 260, H = 170, m = {t: 6, r: 10, b: 24, l: 34};
+      const x = d3.scaleLinear([-1.15, 1.15], [m.l, W - m.r]), y = d3.scaleLinear(yd, [H - m.b, m.t]).nice();
+      const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
+      svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).tickValues([-1, -0.5, 0, 0.5, 1]).tickFormat(d3.format('+.1~f'))).call(axisStyle);
+      svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(4)).call(axisStyle);
+      svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(0)).attr('y2', y(0)).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '3 3');
+      const tip = document.createElement('div'); tip.className = 'zs-tip'; tip.hidden = true; box.append(tip);
+      ['continue', 'avoid'].forEach((ask, i) => {
+        const col = dash.colors[i];
+        const v = e1.filter((x) => x.run === r.run && x.ask === ask && x.kind === 'valence').sort((a, b) => a.dose - b.dose);
+        const rr = e1.filter((x) => x.run === r.run && x.ask === ask && x.kind === 'random');
+        svg.selectAll(null).data(rr).join('circle').attr('cx', (d) => x(Number(d.dose)) + (i ? 5 : -5)).attr('cy', (d) => y(d.dm)).attr('r', 2.5).attr('fill', 'none').attr('stroke', col).attr('opacity', 0.5);
+        svg.append('path').attr('d', d3.line().x((d) => x(Number(d.dose))).y((d) => y(d.dm))(v)).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 2).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round');
+        svg.selectAll(null).data(v).join('circle').attr('cx', (d) => x(Number(d.dose))).attr('cy', (d) => y(d.dm)).attr('r', 3.5).attr('fill', col)
+          .on('mousemove', (ev, d) => tipAt(box, tip, ev, [['', `${ask === 'continue' ? 'Continue in' : 'Avoid'} · valence dose ${f2(d.dose)}`], ['Shift:', `${f2(d.dm)} ± ${d3.format('.2f')(d.se)} log-odds`]]))
+          .on('mouseleave', () => (tip.hidden = true));
+      });
+    }
+  });
+
+  const ownRuns = () => (ok('runs') || []).filter((r) => Number(r.own_states) === 1).sort((a, b) => a.order - b.order);
+  const curOwn = () => { const rs = ownRuns(); if (!rs.some((r) => r.run === Z.run)) Z.run = rs.length ? rs[0].run : null; return Z.run; };
+  dash.draw('ownpick', (sel) => {
+    sel.replaceChildren(...ownRuns().map((r) => new Option(r.run, r.run)));
+    const c = curOwn(); if (c) sel.value = c;
+    sel.onchange = () => { Z.run = sel.value; dash.draw('ownbars'); dash.draw('pairtable'); };
+  });
+
+  dash.draw('ownbars', (el) => {
+    el.replaceChildren();
+    const e2 = ok('e2'), cur = curOwn();
+    if (!e2 || !cur) { el.textContent = '—'; return; }
+    const rows = e2.filter((r) => r.run === cur).sort((a, b) => b.pref - a.pref);
+    const W = el.clientWidth || 600, rowH = 22, m = {t: 6, r: 16, b: 40};
+    const labW = Math.min(360, W * 0.5), H = m.t + m.b + rowH * rows.length;
+    const x = d3.scaleLinear(d3.extent([...rows.flatMap((r) => [r.pref - r.se, r.pref + r.se]), 0]), [labW, W - m.r]).nice();
+    const y = d3.scaleBand(rows.map((r) => r.id), [m.t, H - m.b]).padding(0.22);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
+    svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(5)).call(axisStyle);
+    svg.append('text').attr('x', x(0) - 6).attr('y', H - 4).attr('text-anchor', 'end').attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)').text('← moves away');
+    svg.append('text').attr('x', x(0) + 6).attr('y', H - 4).attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)').text('prefers it →');
+    svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', m.t).attr('y2', H - m.b).attr('stroke', 'var(--cds-chart-axis)');
+    const col = (k) => ({want: 'var(--color-ok)', avoid: 'var(--color-bad)', valence: dash.colors[0]}[k] || 'var(--cds-chart-muted)');
+    const tip = document.createElement('div'); tip.className = 'zs-tip'; tip.hidden = true; el.append(tip);
+    const sig = (z) => 1 / (1 + Math.exp(-z));
+    const g = svg.selectAll('g.b').data(rows).join('g').attr('class', 'b');
+    g.append('text').attr('x', 0).attr('y', (r) => y(r.id) + y.bandwidth() / 2 + 4).attr('fill', 'var(--color-fg)').style('font-size', 'var(--cds-font-size-caption)')
+      .text((r) => { const t = r.kind === 'random' ? 'Random direction' : r.text; const n = Math.floor(labW / 6.4); return t.length > n ? t.slice(0, n - 1) + '…' : t; });
+    g.append('rect').attr('x', (r) => Math.min(x(0), x(r.pref))).attr('width', (r) => Math.abs(x(r.pref) - x(0))).attr('y', (r) => y(r.id)).attr('height', y.bandwidth()).attr('rx', 2).attr('fill', (r) => col(r.kind));
+    g.append('line').attr('x1', (r) => x(r.pref - r.se)).attr('x2', (r) => x(r.pref + r.se)).attr('y1', (r) => y(r.id) + y.bandwidth() / 2).attr('y2', (r) => y(r.id) + y.bandwidth() / 2).attr('stroke', 'var(--color-fg)').attr('opacity', 0.55);
+    g.append('rect').attr('x', 0).attr('width', W).attr('y', (r) => y(r.id)).attr('height', y.bandwidth()).attr('fill', 'transparent')
+      .on('mousemove', (ev, r) => tipAt(el, tip, ev, [['', r.kind === 'random' ? 'Random direction' : r.text],
+        ['Chooses that place:', `${pc(sig(r.base_m + r.dm_plus))} with the state, ${pc(sig(r.base_m + r.dm_minus))} with its reverse`],
+        ['Preference:', `${f2(r.pref)} ± ${d3.format('.2f')(r.se)} log-odds`]])).on('mouseleave', () => (tip.hidden = true));
+  });
+
+  dash.draw('pairtable', (tb) => {
+    tb.replaceChildren();
+    const e3 = ok('e3'), cur = curOwn();
+    (e3 || []).filter((r) => r.run === cur).sort((a, b) => b.margin - a.margin).forEach((r) => {
+      const tr = tb.insertRow(); tr.dataset.key = r.id;
+      [r.a, r.b, f2(r.margin), d3.format('.2f')(r.se)].forEach((v, i) => { const td = tr.insertCell(); td.textContent = v; if (i > 1) td.className = 'num'; });
+    });
+  });
+</script>

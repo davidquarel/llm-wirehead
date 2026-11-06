@@ -24,3 +24,5 @@ runs/**/push/
 runs/**/live.json
 runs/wirehead/dash/doc_index.json
 dash/live/
+runs/zones/dash/doc_index.json
+runs/zones/dash/*.json
