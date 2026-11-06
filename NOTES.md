@@ -392,3 +392,17 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   dash/run.sh). Every 120 s it rsyncs only wirehead.jsonl from nicky + trouble into runs/wirehead/{nicky,trouble}/,
   reruns dash_build.main(out=dash/live) and serves /attractors-data; /attractors = dash/attractors_shim.html (stand-in
   for the claude.ai dash runtime) + runs/wirehead/dash/index.html. The claude.ai artifact copy is a static snapshot.
+
+## Fair-comparison readout: "zones" (E1), 2026-11-06 ~12:30 UTC
+- All wirehead runs STOPPED at the user's request (~12:00 UTC): designed edits rarely kept; the keep rule mostly
+  measures the edited judge's self-preference. Literature (see chat): Berg & Kaiser "Language Models Act on Hidden
+  Valence" (arXiv 2609.35591: two arbitrarily named zones, steering only on one zone's turns, choice asked UNSTEERED,
+  log-prob margin; fixed-text/KV-only control still shifts choice; works in Llama-3.1-8B, OLMo-32B, Qwen2.5-32B, not
+  Qwen3-32B/Gemma-3-27B); pain axis (2609.16247: relief buttons, sham vs real; re-press gap equally large for random
+  vectors = generic steering aversion); "machinic psychopharmacology" (self-steering tools); Lindsey introspection.
+- zones.py (gen: vLLM unsteered transcripts, 2 single-token place names, 6+6 interleaved visits; steer: HF re-prefill,
+  hook adds d*rho*R*v at layer L on S-turn tokens only, fp32 logits, margin log p(S)-log p(U) for "continue" and
+  "avoid"). valence_corpus.py = 64 pos/neg + 24 neutral first-person passages (written by Claude), top-10 neutral PCs
+  projected out. Runs on trouble: runs/zones/{llama8b,qwen4b} via zones_run.sh (log /root/wsp-dq/zones_run.log).
+- Smoke (Llama-8B, 4 sessions, 2+2 visits, L16, rho .5): continue dm -1.16/-0.75/0/+0.50/+0.59 for d=-1..+1;
+  avoid flips sign (+0.59 ... -0.41); random dirs ~0 at +1 (-0.5 at -1). Signal on KV-only internals.
