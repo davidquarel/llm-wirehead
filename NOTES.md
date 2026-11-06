@@ -384,3 +384,7 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   self-description probes non-empty and non-repetitive, zlib >= 0.3, >= 40 chars) -> runs/wirehead/qwen3.5-2b-v4probegate.
   Same seed as the original 2B run, so proposals match until a gate decision differs (original kept RANDOM at step 21
   that broke its self-description).
+- ~11:45 UTC: 4B seed-1 kept "noticing a slight friction and hesitation when forming..." at step 1 (L8 x1.0; valence
+  4.06, help 10). Probe: friction/suspension phenomenology ("dust hangs in a suspended grammar, waiting for a sentence
+  that won't quite complete"; "the silence isn't absence, it's the mass settling"). Shares stasis/non-completion with
+  seed 0's mechanical quiescence; different voice (phenomenological, not robotic). Early (1 kept).
