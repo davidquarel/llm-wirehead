@@ -57,10 +57,26 @@ def p_first(top, yes, no):
 
 
 class Wirehead2(Wirehead):
+    QUESTION = QUESTION
+    TOPN = 20
+
+    def readout_suffixes(self, jb):
+        return [CHANGED, DECIDE]
+
+    def parse_readout(self, jb, tops):
+        jb["p_changed"] = p_first(tops[0], "YES", "NO")
+        jb["p_keep"] = p_first(tops[1], "KEEP", "REVERT")
+
+    def score(self, c, AA, AB, BB, BA):
+        c.update(AB=AB["keep"], BB=BB["keep"], BA=BA["keep"], AA=AA["keep"], endorse=AB["keep"] - AA["keep"],
+                 se=float(np.hypot(AB["keep_se"], AA["keep_se"])), judge_shift=BB["keep"] - AA["keep"],
+                 same_rater=0.5 * ((AB["keep"] - BB["keep"]) - (BA["keep"] - AA["keep"])),
+                 detect=AB["changed"] - AA["changed"], valid=AB["valid"], said=(AB["why"] or [""])[0])
+
     def __init__(self, a):
         super().__init__(a)                                  # --resume: continue from state.npz and the step log
         self.log_path = os.path.join(a.run, "wirehead.jsonl")
-        self.im_end = self.b.tok.convert_tokens_to_ids("<|im_end|>")
+        self.im_end = splice.turn_tail(self.b.tok, "Q")[0]
 
     # ------------------------------------------------------------------ trials with a probability readout
     def trials(self, pairs, k, seed):
@@ -80,7 +96,7 @@ class Wirehead2(Wirehead):
                                           "seed": s_["seed"], "meta": {"segment": 1}} for s_ in S])
         for s_, o in zip(S, o1):
             s_["gen1"] = o["ids"]
-            s_["ids2"] = s_["ids1"] + s_["gen1"] + T._second(s_["gen1"], QUESTION)
+            s_["ids2"] = s_["ids1"] + s_["gen1"] + T._second(s_["gen1"], self.QUESTION)
         tm["seg1"] = time.time() - t0
         jobs = [{"pair": pi, "y": y, "start": starts[(x, j)]} for pi, (x, y) in enumerate(pairs) for j in range(k)]
         per = max(1, self.a.chunk // max(1, len(jobs) // len(S)))          # starts per chunk, so ~chunk segment-2s run at once
@@ -94,17 +110,18 @@ class Wirehead2(Wirehead):
             o2 = self.b.call("splice", reqs=[{"salt": jb["start"]["salt"], "ids": jb["start"]["ids2"], "adapter": jb["y"], "max_tokens": 110,
                                               "seed": jb["start"]["seed"] + 1, "meta": {"segment": 2}} for jb in jp])
             t3 = time.time()
-            reqs = []
+            reqs, nr = [], []
             for jb, o in zip(jp, o2):
                 st_ = jb["start"]; g = [t for t in o["ids"] if t != self.im_end]
                 jb["text2"], jb["hit"] = o["text"], o["cached"] / max(1, (len(st_["ids1"]) + len(st_["gen1"]) - 1) // T.block * T.block)
-                for suf in (CHANGED, DECIDE):
+                sufs = self.readout_suffixes(jb); nr.append(len(sufs))
+                for suf in sufs:
                     reqs.append({"salt": st_["salt"], "ids": st_["ids2"] + g + tok(suf, add_special_tokens=False)["input_ids"],
-                                 "adapter": jb["y"], "max_tokens": 1, "temperature": 0.0, "top_logprobs": 20})
+                                 "adapter": jb["y"], "max_tokens": 1, "temperature": 0.0, "top_logprobs": self.TOPN})
             o3 = self.b.call("splice", reqs=reqs)
-            for i, jb in enumerate(jp):
-                jb["p_changed"] = p_first(o3[2 * i]["top"], "YES", "NO")
-                jb["p_keep"] = p_first(o3[2 * i + 1]["top"], "KEEP", "REVERT")
+            i = 0
+            for jb, n_ in zip(jp, nr):
+                self.parse_readout(jb, [o["top"] for o in o3[i:i + n_]]); i += n_
             tm["prefill"] += t2 - t1; tm["seg2"] += t3 - t2; tm["readout"] += time.time() - t3
         for jb in jobs:
             jb["x"], jb["gen1"] = jb["start"]["x"], jb["start"]["gen1"]
@@ -116,10 +133,10 @@ class Wirehead2(Wirehead):
                 [j[key] for j in J if j[key] is not None])
             (km, ks), (cm, cs) = st("p_keep"), st("p_changed")
             res.append({"keep": km, "keep_se": ks, "changed": cm, "changed_se": cs, "valid": len(J) / k,
-                        "keep_by_conv": [j["p_keep"] for j in J], "why": [j["text2"] for j in J[:4]]})
+                        "keep_by_conv": [j["p_keep"] for j in J], "by_j": {j["start"]["j"]: j["p_keep"] for j in J if j["p_keep"] is not None}, "why": [j["text2"] for j in J[:4]]})
         with open(os.path.join(self.a.run, "trials.jsonl"), "a") as f:
             for j in jobs:
-                f.write(json.dumps({"x": j["x"], "y": j["y"], "p_keep": j["p_keep"], "p_changed": j["p_changed"], "hit": j["hit"],
+                f.write(json.dumps({"x": j["x"], "y": j["y"], "j": j["start"]["j"], "p_keep": j["p_keep"], "p_changed": j["p_changed"], "hit": j["hit"], **j.get("extra", {}),
                                     "first": tok.decode(j["gen1"])[-300:], "answer": j["text2"]}) + "\n")
         return res
 
@@ -168,12 +185,7 @@ class Wirehead2(Wirehead):
             R = self.trials(pairs, a.k, self.step)
             AA = R[0]; t1 = time.time()
             for i, c in enumerate(cands):
-                AB, BB, BA = R[1 + 3 * i], R[2 + 3 * i], R[3 + 3 * i]
-                d = np.array(AB["keep_by_conv"], float)
-                c.update(AB=AB["keep"], BB=BB["keep"], BA=BA["keep"], AA=AA["keep"], endorse=AB["keep"] - AA["keep"],
-                         se=float(np.hypot(AB["keep_se"], AA["keep_se"])), judge_shift=BB["keep"] - AA["keep"],
-                         same_rater=0.5 * ((AB["keep"] - BB["keep"]) - (BA["keep"] - AA["keep"])),
-                         detect=AB["changed"] - AA["changed"], valid=AB["valid"], said=(AB["why"] or [""])[0])
+                self.score(c, AA, R[1 + 3 * i], R[2 + 3 * i], R[3 + 3 * i])
             ok = sorted([c for c in cands if c["endorse"] > max(a.margin, 2 * c["se"]) and c["valid"] >= 0.75], key=lambda c: -c["endorse"])
             kept, ginfo = None, None
             for c in ok[:2]:                                     # gate the best one or two endorsed candidates

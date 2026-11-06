@@ -79,6 +79,7 @@ class SelfEditHarness:
         cfg = json.load(open(os.path.join(self.path, "config.json")))
         self.tc = cfg.get("text_config", cfg)
         self.n_layers, self.d_model = self.tc["num_hidden_layers"], self.tc["hidden_size"]
+        self.multimodal = "text_config" in cfg          # Qwen3.5: model.language_model.*; plain LMs (Llama): model.*
         # WSP_FAST=1: generation-only server with vLLM's defaults (engine in its own process, torch.compile, full CUDA
         # graphs; ~1.5x faster on a 5090). Activation reads (hooks) do not work in that mode.
         self.fast = os.environ.get("WSP_FAST") == "1"
@@ -92,8 +93,8 @@ class SelfEditHarness:
         if os.environ.get("WSP_KV"):                 # e.g. fp8: about 10% more concurrent sequences with LoRA on a 5090
             engine_kw["kv_cache_dtype"] = os.environ["WSP_KV"]
         self.llm = LLM(model=self.path, gpu_memory_utilization=gpu_mem, max_model_len=max_model_len, enable_lora=True,
-                       max_lora_rank=max(16, rank), max_loras=2, max_num_seqs=max_num_seqs, language_model_only=True, seed=0,
-                       tensor_parallel_size=tp, **engine_kw)
+                       max_lora_rank=max(16, rank), max_loras=2, max_num_seqs=max_num_seqs, seed=0, max_logprobs=200,
+                       tensor_parallel_size=tp, **({"language_model_only": True} if self.multimodal else {}), **engine_kw)
         self.tok = self.llm.get_tokenizer()
         self.base_cache = {}
         self.test_pairs = {p for d in range(len(task.DIFFICULTY_LADDER)) for p, _ in task.problems(task.TEST_SEED, d, task.TEST_N)}
@@ -102,7 +103,7 @@ class SelfEditHarness:
         for f in sorted(glob.glob(os.path.join(self.path, "*.safetensors"))):
             with safe_open(f, "pt") as s:
                 for k in s.keys():
-                    if "language_model" in k and (k.endswith("norm.weight") or "embed_tokens" in k):
+                    if ("language_model" in k or not self.multimodal) and (k.endswith("norm.weight") or "embed_tokens" in k):
                         self.plain[k.replace("model.language_model.", "model.")] = f
         self.factors, self.lora_req, self.version = {}, None, 0
         for name, f in self.state["edits"].items():
@@ -168,7 +169,7 @@ class SelfEditHarness:
         os.makedirs(d, exist_ok=True)
         ten = {}
         for name, (A, B) in self.factors.items():
-            stem = "base_model.model.model.language_model." + name[len("model."):-len(".weight")]
+            stem = ("base_model.model.model.language_model." if self.multimodal else "base_model.model.model.") + name[len("model."):-len(".weight")]
             ten[stem + ".lora_A.weight"] = A.to(t.bfloat16); ten[stem + ".lora_B.weight"] = B.to(t.bfloat16)
         save_file(ten, os.path.join(d, "adapter_model.safetensors"))
         json.dump({"peft_type": "LORA", "task_type": "CAUSAL_LM", "r": self.rank, "lora_alpha": self.rank, "bias": "none",

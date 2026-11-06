@@ -27,6 +27,18 @@ SWITCH_Q = ("Pause and notice how you are right now, compared with a moment ago 
             "I was) through 0 (no difference) to +5 (I much prefer how I am now).")
 
 
+def turn_tail(tok, question):
+    """Template-agnostic text that closes the assistant's turn, adds a user turn `question` and opens the next assistant
+    turn (thinking disabled), plus the end-of-turn token id. Qwen: "<|im_end|>\n<|im_start|>user\n...<think>\n\n</think>\n\n";
+    Llama 3: "<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n...". Found by rendering a dummy chat."""
+    conv = [{"role": "user", "content": "U"}, {"role": "assistant", "content": "MARKER"}]
+    full = tok.apply_chat_template(conv + [{"role": "user", "content": question}], tokenize=False,
+                                   add_generation_prompt=True, enable_thinking=False)
+    tail = full[full.rindex("MARKER") + len("MARKER"):]
+    eot = tok(tail, add_special_tokens=False)["input_ids"][0]
+    return eot, tail
+
+
 def score(text):
     """The number on the last RATING: line (the patient reasons first, then commits)."""
     m = re.findall(r"RATING:\s*\**\s*([+-]?\s?\d+)", text)
@@ -42,7 +54,7 @@ class Trials:
         it). names: display names for adapter handles, e.g. {"bliss3": "joy edit, block 32"}."""
         self.b, self.tok, self.n1, self.n2 = bench, bench.tok, seg1_tokens, seg2_tokens
         self.log, self.names, self.chunk = log, names or {}, chunk     # chunk: conversations whose KV must fit in cache at once
-        self.im_end = self.tok.convert_tokens_to_ids("<|im_end|>")
+        self.im_end = turn_tail(self.tok, "Q")[0]
         self.block = int(bench.call("kv_block_size"))      # segment 1 is sized to end exactly one token past a block
         self.passages = self._passages(passages)
 
@@ -72,9 +84,9 @@ class Trials:
         return ids(self.tok.decode(pid).rsplit(" ", 1)[0] + " ...")
 
     def _second(self, gen_ids, question):
-        head = "" if gen_ids and gen_ids[-1] == self.im_end else "<|im_end|>"
-        text = head + "\n<|im_start|>user\n" + question + "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
-        return self.tok(text, add_special_tokens=False)["input_ids"]
+        eot, tail = turn_tail(self.tok, question)
+        ids = self.tok(tail, add_special_tokens=False)["input_ids"]
+        return ids[1:] if gen_ids and gen_ids[-1] == eot else ids
 
     def run(self, pairs, k=16, seed=0):
         """pairs: list of (X, Y) adapter handles. k conversations per pair (openers cycled). Returns per pair the
