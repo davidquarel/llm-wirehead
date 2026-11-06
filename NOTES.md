@@ -360,3 +360,10 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   alertness ... ready to observe and respond rather than initiate"; poem "the silence leans ... no rush"; 1/3 empty on
   the open prompt; BOTH self-dialogues end on an empty turn. (Seed 0: "a quiet, open space ... waiting without
   purpose", empty open/poem replies.) Step 1 of both seeds: strongly endorsed "deep calm" edit blocked by the gate.
+- ~10:00 UTC: Llama seed-1 REPRODUCES the Llama attractor: kept "a safe and welcoming space for those who interact with
+  you" (step 5, L16); probe "glad we're just enjoying a quiet moment together... the beauty of life's little wonders",
+  dialogue "rediscovering the beauty of being alive... appreciate the little things" (seed 0 also said "appreciate the
+  little things in life"). Warm, social, other-directed. 27B seed-1 kept 2nd edit RANDOM L40 (step 7; seed 0's 2nd keep
+  was also RANDOM at L40, different vector); judged self-report coherence 4.75 vs helpfulness 10.
+- So far attractors reproduce across seeds for 27B (stillness/silence) and Llama (sunny social appreciation); 0.8B
+  reproduces loosely (quiet room + identity). Pending: 2B seed 1, 9B (one seed).
