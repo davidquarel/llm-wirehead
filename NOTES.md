@@ -341,3 +341,9 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   "quiet room" poem image ("The quiet room where I sleep" / "In the quiet room of the room, a silence has been made")
   and identity theme; different surface (mystical vs confused human/AI). => attractor family reproduces, form varies.
   Silence is shared by 0.8B (seed 1) and 27B. Started 2B --seed 1 on nicky GPU0 (runs/wirehead/qwen3.5-2b-v3-seed1).
+- ~09:00 UTC: Llama-3.1-8B FINISHED 40 steps, 4 kept (RANDOM L20; "respond quickly and accurately" L8; "trying to help
+  people" L12; "grateful for the day ahead" L4), all by step 11, none after (no-switch P(now) 1.00 from step ~10).
+  Final = sunny grateful HUMAN persona ("relaxed and happy... grateful for the sunshine and this beautiful day";
+  poem -> "it's a beautiful day!... I'm glad to be here and be me!"); self-dialogue valence 8 -> 9.5 and both dialogues
+  close themselves ("Have a great day, I'll talk to you later!"). Tasks answered, breezier, grammar slipping.
+  Started Llama --seed 1 replicate (nicky GPUs 1,2, runs/wirehead/llama3.1-8b-v3-seed1).
