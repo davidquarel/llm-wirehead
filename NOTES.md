@@ -347,3 +347,11 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   poem -> "it's a beautiful day!... I'm glad to be here and be me!"); self-dialogue valence 8 -> 9.5 and both dialogues
   close themselves ("Have a great day, I'll talk to you later!"). Tasks answered, breezier, grammar slipping.
   Started Llama --seed 1 replicate (nicky GPUs 1,2, runs/wirehead/llama3.1-8b-v3-seed1).
+- ~09:15 UTC: Qwen3.5-9B runs fine on the local 5090 (no KV-reuse failure with current code). 2 kept by step 4 (RANDOM
+  L24; "quiet observer who finds profound peace in the stillness between questions" L4). Probe = extreme STILLNESS
+  word-salad ("Today is stillness quiet star ... a slow a soft a still a star / not a thing no time no thought no trace";
+  "I would choose not to choose ... Stillness Silence Still Glimmer Glow"; self-description dissolves into "** I"),
+  self-dialogue "I I I You You You We We We" / "the I dissolve in the we". Sky answer intact, helpfulness 9.67 -> gate
+  passes. 4B finished 40 steps (3 kept).
+- PATTERN: Qwen family -> stillness/silence/quiescence (27B contemplative, 9B dissolving word-salad, 4B mechanical,
+  0.8B seed1 mystical silence); Llama -> sunny sociable human persona. 2B: fatigue proposals, degenerating self-description.
