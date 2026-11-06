@@ -22,3 +22,4 @@ runs/**/snaps/
 runs/**/adapter*/
 runs/**/push/
 runs/**/live.json
+runs/wirehead/dash/doc_index.json
