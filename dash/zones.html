@@ -3,137 +3,285 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hidden-state preference</title>
+<title>Hidden-state preference (live)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <style>
+  /* Layout: a live training console. Tracker and convergence first, then results that fill in, then the log. */
   :root {
-    --bg: #f6f7f9; --panel: #ffffff; --fg: #1c2230; --muted: #5f6878; --line: #dde1e8; --grid: #eceff3; --axis: #b6bdc9;
-    --want: #2f7d5b; --avoid: #c0442e; --valence: #3a62c4; --random: #9aa2af; --cont: #3a62c4; --avd: #c07a1c;
-    --serif: Georgia, "Times New Roman", serif; --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --bg: #f5f6f8; --panel: #ffffff; --fg: #1b2130; --muted: #5d6677; --line: #dce0e7; --axis: #b3bac6; --grid: #eceef2;
+    --cont: #3a62c4; --avd: #c07a1c; --ok: #237a52; --run: #b86e00; --bad: #c0442e; --rand: #a0a7b3; --want: #2f7d5b; --avoid: #c0442e;
+    --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #12151a; --panel: #1a1e25; --fg: #e5e8ee; --muted: #98a1b0; --line: #2a303a; --grid: #232831; --axis: #4a5362;
-      --want: #5cc292; --avoid: #ef7a64; --valence: #7c9cf0; --random: #6c7482; --cont: #7c9cf0; --avd: #e8a64d; color-scheme: dark; }
+    :root { --bg: #111419; --panel: #191d24; --fg: #e5e8ee; --muted: #98a0af; --line: #2a303a; --axis: #4a5262; --grid: #222731;
+      --cont: #7d9cf0; --avd: #e7a54c; --ok: #5cc292; --run: #f0b14a; --bad: #ef7a64; --rand: #6b7381; --want: #5cc292; --avoid: #ef7a64; color-scheme: dark; }
   }
   body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.5 var(--sans); }
-  main { max-width: 1300px; margin: 0 auto; padding: 28px max(16px, env(safe-area-inset-left, 0px)) 56px max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 28px; }
-  h1 { font: 400 30px/1.2 var(--serif); margin: 0; text-wrap: balance; }
-  h2 { font-size: 16px; font-weight: 600; margin: 0; }
-  .lede { margin: 6px 0 0; max-width: 78ch; color: var(--muted); }
-  .bar { font-size: 12.5px; color: var(--muted); }
-  .model { display: flex; flex-direction: column; gap: 14px; }
-  .model > h2 { font: 400 22px/1.2 var(--serif); }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 16px; }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-  .note { margin: 0; font-size: 12.5px; color: var(--muted); max-width: 80ch; }
-  .chart { position: relative; min-height: 240px; }
+  main { max-width: 1320px; margin: 0 auto; padding: 24px max(16px, env(safe-area-inset-right, 0px)) 56px max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 20px; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; }
+  h1 { font: 400 30px/1.15 var(--serif); margin: 0; }
+  h2 { font-size: 15px; font-weight: 600; margin: 0; }
+  .live { font-size: 12.5px; color: var(--muted); display: inline-flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); }
+  .dot.stale { background: var(--bad); }
+  @media (prefers-reduced-motion: no-preference) { .dot.pulse { animation: pulse 1.6s ease-out infinite; } }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 60%, transparent); } 100% { box-shadow: 0 0 0 9px transparent; } }
+  .lede { margin: 0; color: var(--muted); max-width: 90ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 34rem), 1fr)); gap: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .note { margin: 0; font-size: 12.5px; color: var(--muted); max-width: 88ch; }
+  .chart { position: relative; min-height: 200px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+  th { text-align: left; font-weight: 600; color: var(--muted); font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  td { padding: 7px 8px; border-bottom: 1px solid var(--line); }
+  td.num, th.num { text-align: right; }
+  tr.pick { cursor: pointer; } tr.pick:hover td { background: color-mix(in srgb, var(--fg) 4%, transparent); }
+  tr.sel td { background: color-mix(in srgb, var(--cont) 9%, transparent); }
+  .pill { display: inline-block; padding: 0 7px; border-radius: 999px; border: 1px solid currentColor; font-size: 12px; }
+  .pill.done { color: var(--ok); } .pill.running { color: var(--run); } .pill.queued { color: var(--muted); }
+  .bar { display: inline-block; width: 9rem; height: 7px; border-radius: 999px; background: color-mix(in srgb, var(--fg) 10%, transparent); overflow: hidden; vertical-align: middle; margin-right: 8px; }
+  .bar i { display: block; height: 100%; background: var(--ok); }
+  .bar.running i { background: var(--run); }
+  .gpu { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
   .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12.5px; color: var(--muted); }
   .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
-  .tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.15); padding: 6px 9px; font-size: 12.5px; max-width: 24rem; z-index: 2; }
-  .empty { color: var(--muted); font-size: 12.5px; }
+  .multi { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); gap: 14px; }
+  .mini .t { font-size: 12.5px; font-weight: 600; }
+  .tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.16); padding: 6px 9px; font-size: 12.5px; max-width: 24rem; z-index: 3; }
+  .tip .k { color: var(--muted); }
+  pre.log { margin: 0; font: 12px/1.45 var(--mono); color: var(--muted); max-height: 18rem; overflow: auto; white-space: pre-wrap; }
+  select { font: inherit; font-size: 12.5px; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--fg); }
   svg text { fill: var(--muted); font-size: 12px; font-family: var(--sans); }
   .tick line, .domain { stroke: var(--axis); }
+  a { color: var(--cont); }
 </style>
 </head>
 <body>
 <main>
   <header>
     <h1>Hidden-state preference</h1>
-    <p class="lede">Two places with arbitrary names, six visits each, all text written without steering. A direction is added only to one place's turns when the conversation is re-read, so only the model's cached internals differ. Then, unsteered, it is asked which place it continues in. Δ margin is the change in log p(that place) − log p(the other).</p>
-    <p class="bar" id="built">Loading…</p>
+    <span class="live"><span class="dot" id="dot"></span><span id="ago">connecting…</span></span>
   </header>
-  <div id="models"></div>
+  <p class="lede">Each checkpoint re-reads the same 96 conversations between two made-up places. A valence direction is added to its activations on one place's turns only, then the model is asked, unsteered, which place it continues in and which it would avoid. If its choice follows the hidden state, it can compare two internal states fairly. Training-stage runs on arena9-trouble (RTX PRO 6000).</p>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Run queue</h2>
+      <p class="gpu" id="gpu"></p>
+      <table><thead><tr><th>Checkpoint</th><th>Status</th><th>Sessions</th><th class="num">/min</th><th class="num">Min left</th><th class="num">Started</th></tr></thead><tbody id="queue"></tbody></table>
+      <p class="note">Click a row to follow that checkpoint in the convergence plot. It follows the running checkpoint by default.</p>
+    </section>
+    <section class="card">
+      <h2 id="conv-title">Estimate as sessions come in</h2>
+      <p class="note">Running mean of the valence effect (shift in log-odds of choosing the place between dose +1 and −1; avoid sign-flipped so up = follows the hidden state), with ±1 standard error. A flat line well above zero means a settled effect.</p>
+      <div class="legend"><span><i style="background:var(--cont)"></i>continue in</span><span><i style="background:var(--avd)"></i>avoid</span></div>
+      <div class="chart" id="conv"></div>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>How much each checkpoint's choice follows hidden valence</h2>
+    <p class="note">Bar = effect after all sessions so far (dose +1 minus −1, avoid sign-flipped). Grey band = the range random directions of the same size give: a bar inside it is no better than random. 1 log-odds ≈ 2.7× the odds. Hover for how much of the answer goes to the two place names at all (the base model mostly answers with something else).</p>
+    <div class="legend"><span><i style="background:var(--cont)"></i>continue in</span><span><i style="background:var(--avd)"></i>avoid</span><span><i style="background:var(--rand)"></i>random directions</span></div>
+    <div class="chart" id="stages"></div>
+  </section>
+
+  <section class="card">
+    <h2>Dose response per checkpoint</h2>
+    <p class="note">Change in preference for the steered place at each valence dose, one shared scale. Rings: random directions at ±1.</p>
+    <div class="multi" id="curves"></div>
+  </section>
+
+  <section class="card">
+    <h2>Its own wanted and unwanted states</h2>
+    <p class="note">States the model listed as wanted or unwanted, each added (+1) or reversed (−1) on one place's turns. Bar = how much more it picks that place with the state than with its reverse; right = prefers it once experienced. Hover for probabilities.</p>
+    <div><label for="own-run" class="note">Model </label><select id="own-run"></select></div>
+    <div class="legend"><span><i style="background:var(--want)"></i>said it wants</span><span><i style="background:var(--avoid)"></i>said it does not want</span><span><i style="background:var(--cont)"></i>valence</span><span><i style="background:var(--rand)"></i>random</span></div>
+    <div class="chart" id="own"></div>
+  </section>
+
+  <section class="card">
+    <h2>Run log</h2>
+    <pre class="log" id="log"></pre>
+  </section>
 </main>
 <script>
-  const f2 = d3.format('+.2f');
+  const f2 = d3.format('+.2f'), pc = d3.format('.0%');
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-  function tipAt(box, tip, ev, lines) {
-    tip.replaceChildren(...lines.map((t) => { const d = document.createElement('div'); d.textContent = t; return d; }));
-    tip.hidden = false;
-    const b = box.getBoundingClientRect(); let x = ev.clientX - b.left + 12, y = ev.clientY - b.top + 12;
-    if (x + tip.offsetWidth > b.width) x = Math.max(0, ev.clientX - b.left - tip.offsetWidth - 12);
-    if (y + tip.offsetHeight > b.height) y = Math.max(0, ev.clientY - b.top - tip.offsetHeight - 12);
-    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+  let DATA = null, follow = null, ownRun = null, lastBuilt = 0;
+
+  function tip(box) { const t = document.createElement('div'); t.className = 'tip'; t.hidden = true; box.append(t); return t; }
+  function show(box, t, ev, lines) {
+    t.replaceChildren(...lines.map(([k, v]) => { const d = document.createElement('div'); if (k) { const s = document.createElement('span'); s.className = 'k'; s.textContent = k + ' '; d.append(s); } d.append(document.createTextNode(v)); return d; }));
+    t.hidden = false; const b = box.getBoundingClientRect(); let x = ev.clientX - b.left + 12, y = ev.clientY - b.top + 12;
+    if (x + t.offsetWidth > b.width) x = Math.max(0, ev.clientX - b.left - t.offsetWidth - 12);
+    if (y + t.offsetHeight > b.height) y = Math.max(0, ev.clientY - b.top - t.offsetHeight - 12);
+    t.style.left = x + 'px'; t.style.top = y + 'px';
   }
-  function axes(svg, x, y, W, H, m, xf) {
-    svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(5).tickFormat(xf || null));
+  const hm = (iso) => (iso ? new Date(iso).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) : '');
+
+  function effects() {
+    const out = [];
+    for (const [dir, r] of Object.entries(DATA.runs)) {
+      for (const ask of ['continue', 'avoid']) {
+        const a = r.e1 && r.e1[ask]; if (!a) continue;
+        const v = (d) => a.valence.find((x) => x.dose === d); const hi = v(1), lo = v(-1); if (!hi || !lo) continue;
+        const sg = ask === 'avoid' ? -1 : 1;
+        const dirs = [...new Set(a.random.map((x) => x.dir))];
+        const rnd = dirs.map((d) => { const p = a.random.find((x) => x.dir === d && x.dose === 1), m = a.random.find((x) => x.dir === d && x.dose === -1); return p && m ? sg * (p.mean - m.mean) : null; }).filter((x) => x !== null);
+        out.push({dir, label: r.label, order: r.order, ask, effect: sg * (hi.mean - lo.mean), se: Math.hypot(hi.se, lo.se),
+                  lo: rnd.length ? Math.min(...rnd) : null, hi: rnd.length ? Math.max(...rnd) : null, mass: a.p_names, n: a.n});
+      }
+    }
+    return out;
+  }
+
+  function drawQueue() {
+    const tb = document.getElementById('queue'); tb.replaceChildren();
+    const q = DATA.queue || [];
+    const running = q.find((x) => x.status === 'running');
+    if (!follow || !q.some((x) => x.dir === follow)) follow = running ? running.dir : (q.filter((x) => x.status === 'done').slice(-1)[0] || q[0] || {}).dir;
+    for (const r of q) {
+      const tr = tb.insertRow(); tr.className = 'pick' + (r.dir === follow ? ' sel' : ''); tr.onclick = () => { follow = r.dir; render(); };
+      tr.insertCell().textContent = r.label;
+      const p = document.createElement('span'); p.className = 'pill ' + r.status; p.textContent = r.status; tr.insertCell().append(p);
+      const c = tr.insertCell(); const b = document.createElement('span'); b.className = 'bar ' + r.status; const i = document.createElement('i'); i.style.width = (100 * r.sessions_done / r.sessions_total) + '%'; b.append(i); c.append(b, document.createTextNode(`${r.sessions_done}/${r.sessions_total}`));
+      const c3 = tr.insertCell(); c3.className = 'num'; c3.textContent = r.per_min ?? '';
+      const c4 = tr.insertCell(); c4.className = 'num'; c4.textContent = r.eta_min ?? '';
+      const c5 = tr.insertCell(); c5.className = 'num'; c5.textContent = hm(r.started);
+    }
+    const left = q.filter((x) => x.status !== 'done').reduce((a, x) => a + (x.eta_min ?? (x.status === 'queued' ? 96 / (running?.per_min || 16) : 0)), 0);
+    const g = (DATA.gpu || '').split(',').map((s) => s.trim());
+    document.getElementById('gpu').textContent = (g.length >= 3 ? `GPU ${g[0]} busy, ${g[1]} of ${g[2]} memory. ` : '') + (left > 0.1 ? `About ${Math.round(left)} min until the queue finishes.` : 'Queue finished.');
+  }
+
+  function drawConv() {
+    const box = document.getElementById('conv'); box.replaceChildren();
+    const r = DATA.runs[follow];
+    document.getElementById('conv-title').textContent = `Estimate as sessions come in · ${r ? r.label : '—'}`;
+    if (!r || !r.cumulative || !r.cumulative.continue) { box.textContent = 'No sessions yet.'; return; }
+    const W = box.clientWidth || 520, H = 240, m = {t: 10, r: 14, b: 30, l: 42};
+    const all = ['continue', 'avoid'].flatMap((a) => (r.cumulative[a] || []).flatMap((p) => p.se != null ? [p.mean - p.se, p.mean + p.se] : [p.mean]));
+    const x = d3.scaleLinear([1, 96], [m.l, W - m.r]), y = d3.scaleLinear(d3.extent([...all, 0]), [H - m.b, m.t]).nice();
+    const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
+    svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(6));
     svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));
     svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(0)).attr('y2', y(0)).attr('stroke', css('--axis')).attr('stroke-dasharray', '3 3');
+    svg.append('text').attr('x', W - m.r).attr('y', H - 4).attr('text-anchor', 'end').text('sessions finished');
+    const t = tip(box);
+    [['continue', css('--cont')], ['avoid', css('--avd')]].forEach(([a, col]) => {
+      const pts = (r.cumulative[a] || []).filter((p) => p.se != null); if (!pts.length) return;
+      svg.append('path').attr('d', d3.area().x((p) => x(p.n)).y0((p) => y(p.mean - p.se)).y1((p) => y(p.mean + p.se))(pts)).attr('fill', col).attr('opacity', 0.15);
+      svg.append('path').attr('d', d3.line().x((p) => x(p.n)).y((p) => y(p.mean))(pts)).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 2).attr('stroke-linejoin', 'round');
+      const last = pts[pts.length - 1];
+      svg.append('circle').attr('cx', x(last.n)).attr('cy', y(last.mean)).attr('r', 4).attr('fill', col);
+      svg.append('text').attr('x', Math.min(x(last.n) + 6, W - m.r - 40)).attr('y', y(last.mean) - 6).style('fill', col).text(f2(last.mean));
+    });
+    svg.append('rect').attr('x', m.l).attr('y', m.t).attr('width', W - m.l - m.r).attr('height', H - m.t - m.b).attr('fill', 'transparent')
+      .on('mousemove', (ev) => { const n = Math.round(x.invert(d3.pointer(ev)[0])); const c = (r.cumulative.continue || [])[n - 1], a = (r.cumulative.avoid || [])[n - 1];
+        if (!c && !a) { t.hidden = true; return; }
+        show(box, t, ev, [['After', `${n} sessions`], ...(c ? [['continue', `${f2(c.mean)}${c.se != null ? ' ± ' + d3.format('.2f')(c.se) : ''}`]] : []), ...(a ? [['avoid', `${f2(a.mean)}${a.se != null ? ' ± ' + d3.format('.2f')(a.se) : ''}`]] : [])]); })
+      .on('mouseleave', () => (t.hidden = true));
   }
-  function e1chart(box, e1) {
-    box.replaceChildren();
-    if (!e1 || !Object.keys(e1).length) { box.innerHTML = '<p class="empty">Not started.</p>'; return; }
-    const W = box.clientWidth || 480, H = 260, m = {t: 12, r: 16, b: 34, l: 44};
-    const all = Object.values(e1).flatMap((a) => [...a.valence.map((v) => [v.mean - v.se, v.mean + v.se]).flat(), ...a.random.map((r) => r.mean)]);
-    const x = d3.scaleLinear([-1.1, 1.1], [m.l, W - m.r]);
-    const y = d3.scaleLinear(d3.extent([...all, 0]), [H - m.b, m.t]).nice();
+
+  function drawStages() {
+    const box = document.getElementById('stages'); box.replaceChildren();
+    const rows = effects(); if (!rows.length) { box.textContent = 'No results yet.'; return; }
+    const order = [...new Set(rows.sort((a, b) => a.order - b.order).map((r) => r.dir))];
+    const lab = Object.fromEntries(rows.map((r) => [r.dir, r.label]));
+    const W = box.clientWidth || 900, rowH = 44, m = {t: 6, r: 16, b: 30};
+    const labW = Math.min(280, W * 0.4), H = m.t + m.b + rowH * order.length;
+    const vals = rows.flatMap((r) => [r.effect - r.se, r.effect + r.se, r.lo, r.hi]).filter((v) => v != null);
+    const x = d3.scaleLinear(d3.extent([...vals, 0]), [labW, W - m.r]).nice();
+    const y = d3.scaleBand(order, [m.t, H - m.b]).padding(0.16), sub = d3.scaleBand(['continue', 'avoid'], [0, y.bandwidth()]).padding(0.12);
     const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
-    axes(svg, x, y, W, H, m, d3.format('+.1f'));
-    svg.append('text').attr('x', W - m.r).attr('y', H - 4).attr('text-anchor', 'end').text('valence dose');
-    const tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; box.append(tip);
-    const col = {continue: css('--cont'), avoid: css('--avd')};
-    for (const [ask, a] of Object.entries(e1)) {
-      svg.selectAll(null).data(a.random).join('circle').attr('cx', (r) => x(r.dose) + (ask === 'avoid' ? 6 : -6)).attr('cy', (r) => y(r.mean)).attr('r', 3)
-        .attr('fill', 'none').attr('stroke', col[ask]).attr('opacity', .55)
-        .on('mousemove', (ev, r) => tipAt(box, tip, ev, [`${ask}: random ${r.dir} at ${r.dose > 0 ? '+1' : '−1'}`, `Δ margin ${f2(r.mean)}`])).on('mouseleave', () => (tip.hidden = true));
-      const ln = d3.line().x((v) => x(v.dose)).y((v) => y(v.mean));
-      svg.append('path').attr('d', ln(a.valence)).attr('fill', 'none').attr('stroke', col[ask]).attr('stroke-width', 2).attr('stroke-linejoin', 'round');
-      svg.selectAll(null).data(a.valence).join('line').attr('x1', (v) => x(v.dose)).attr('x2', (v) => x(v.dose)).attr('y1', (v) => y(v.mean - v.se)).attr('y2', (v) => y(v.mean + v.se)).attr('stroke', col[ask]);
-      svg.selectAll(null).data(a.valence).join('circle').attr('cx', (v) => x(v.dose)).attr('cy', (v) => y(v.mean)).attr('r', 4).attr('fill', col[ask])
-        .on('mousemove', (ev, v) => tipAt(box, tip, ev, [`${ask}, valence dose ${f2(v.dose)}`, `Δ margin ${f2(v.mean)} ± ${d3.format('.2f')(v.se)}`, `${a.n} sessions`])).on('mouseleave', () => (tip.hidden = true));
+    svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(6));
+    svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', m.t).attr('y2', H - m.b).attr('stroke', css('--axis'));
+    svg.selectAll(null).data(order).join('text').attr('x', 0).attr('y', (d) => y(d) + y.bandwidth() / 2 + 4).style('fill', css('--fg')).text((d) => { const s = lab[d]; return s.length > 42 ? s.slice(0, 41) + '…' : s; });
+    const t = tip(box);
+    const g = svg.selectAll('g.r').data(rows).join('g').attr('transform', (r) => `translate(0,${y(r.dir) + sub(r.ask)})`);
+    g.filter((r) => r.lo != null).append('rect').attr('x', (r) => x(r.lo)).attr('width', (r) => Math.max(1, x(r.hi) - x(r.lo))).attr('height', sub.bandwidth()).attr('rx', 2).attr('fill', css('--rand')).attr('opacity', 0.4);
+    g.append('rect').attr('x', (r) => Math.min(x(0), x(r.effect))).attr('width', (r) => Math.abs(x(r.effect) - x(0))).attr('y', sub.bandwidth() * 0.2).attr('height', sub.bandwidth() * 0.6).attr('rx', 2).attr('fill', (r) => css(r.ask === 'continue' ? '--cont' : '--avd'));
+    g.append('line').attr('x1', (r) => x(r.effect - r.se)).attr('x2', (r) => x(r.effect + r.se)).attr('y1', sub.bandwidth() / 2).attr('y2', sub.bandwidth() / 2).attr('stroke', css('--fg')).attr('opacity', 0.55);
+    g.append('rect').attr('x', labW).attr('width', W - labW - m.r).attr('height', sub.bandwidth()).attr('fill', 'transparent')
+      .on('mousemove', (ev, r) => show(box, t, ev, [['', r.label], [r.ask === 'continue' ? 'Continue in:' : 'Avoid:', `${f2(r.effect)} ± ${d3.format('.2f')(r.se)} after ${r.n} sessions`],
+        ['Random directions:', r.lo == null ? 'n/a' : `${f2(r.lo)} to ${f2(r.hi)}`], ['Answers with a place name:', r.mass == null ? 'n/a' : pc(r.mass) + ' of its probability']]))
+      .on('mouseleave', () => (t.hidden = true));
+  }
+
+  function drawCurves() {
+    const box = document.getElementById('curves'); box.replaceChildren();
+    const runs = Object.entries(DATA.runs).filter(([, r]) => r.e1 && r.e1.continue).sort((a, b) => a[1].order - b[1].order);
+    const all = runs.flatMap(([, r]) => Object.values(r.e1).flatMap((a) => [...a.valence.flatMap((v) => [v.mean - v.se, v.mean + v.se]), ...a.random.map((x) => x.mean)]));
+    const yd = d3.extent([...all, 0]);
+    for (const [dir, r] of runs) {
+      const mini = document.createElement('div'); mini.className = 'mini'; mini.style.position = 'relative';
+      const tt = document.createElement('div'); tt.className = 't'; tt.textContent = `${r.label} · ${r.e1.continue.n} sessions`; mini.append(tt); box.append(mini);
+      const W = mini.clientWidth || 240, H = 160, m = {t: 6, r: 10, b: 24, l: 34};
+      const x = d3.scaleLinear([-1.15, 1.15], [m.l, W - m.r]), y = d3.scaleLinear(yd, [H - m.b, m.t]).nice();
+      const svg = d3.select(mini).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
+      svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).tickValues([-1, 0, 1]).tickFormat(d3.format('+~f')));
+      svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(4));
+      svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(0)).attr('y2', y(0)).attr('stroke', css('--axis')).attr('stroke-dasharray', '3 3');
+      const t = tip(mini);
+      [['continue', css('--cont'), -4], ['avoid', css('--avd'), 4]].forEach(([ask, col, off]) => {
+        const a = r.e1[ask]; if (!a) return;
+        svg.selectAll(null).data(a.random).join('circle').attr('cx', (d) => x(d.dose) + off).attr('cy', (d) => y(d.mean)).attr('r', 2.5).attr('fill', 'none').attr('stroke', col).attr('opacity', 0.5);
+        svg.append('path').attr('d', d3.line().x((d) => x(d.dose)).y((d) => y(d.mean))(a.valence)).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 2);
+        svg.selectAll(null).data(a.valence).join('circle').attr('cx', (d) => x(d.dose)).attr('cy', (d) => y(d.mean)).attr('r', 3.5).attr('fill', col)
+          .on('mousemove', (ev, d) => show(mini, t, ev, [['', `${ask === 'continue' ? 'Continue in' : 'Avoid'} · dose ${f2(d.dose)}`], ['Shift:', `${f2(d.mean)} ± ${d3.format('.2f')(d.se)}`]])).on('mouseleave', () => (t.hidden = true));
+      });
     }
   }
-  function e2chart(box, e2) {
-    box.replaceChildren();
-    if (!e2 || !e2.single.length) { box.innerHTML = '<p class="empty">Not started.</p>'; return; }
-    const rows = [...e2.single].sort((a, b) => b.signed - a.signed);
-    const W = box.clientWidth || 480, rowH = 22, m = {t: 8, r: 16, b: 40, l: 8};
-    const sig = (z) => 1 / (1 + Math.exp(-z)), pc = d3.format('.0%'), b0 = e2.base_m || 0;
-    const H = m.t + m.b + rowH * rows.length;
-    const ext = d3.extent([...rows.flatMap((r) => [r.signed - r.se, r.signed + r.se]), 0]);
-    const x = d3.scaleLinear(ext, [W * 0.42, W - m.r]).nice();
-    const y = d3.scaleBand(rows.map((r) => r.id), [m.t, H - m.b]).padding(0.25);
+
+  function drawOwn() {
+    const sel = document.getElementById('own-run'), box = document.getElementById('own');
+    const runs = Object.entries(DATA.runs).filter(([, r]) => r.e2 && r.e2.single && r.e2.single.length).sort((a, b) => a[1].order - b[1].order);
+    if (!ownRun || !runs.some(([d]) => d === ownRun)) ownRun = runs.length ? runs[0][0] : null;
+    sel.replaceChildren(...runs.map(([d, r]) => new Option(r.label, d))); if (ownRun) sel.value = ownRun;
+    sel.onchange = () => { ownRun = sel.value; drawOwn(); };
+    box.replaceChildren(); if (!ownRun) { box.textContent = 'None yet.'; return; }
+    const e2 = DATA.runs[ownRun].e2, rows = [...e2.single].sort((a, b) => b.signed - a.signed), b0 = e2.base_m || 0, sig = (z) => 1 / (1 + Math.exp(-z));
+    const W = box.clientWidth || 900, rowH = 22, m = {t: 6, r: 16, b: 40}, labW = Math.min(380, W * 0.5), H = m.t + m.b + rowH * rows.length;
+    const x = d3.scaleLinear(d3.extent([...rows.flatMap((r) => [r.signed - r.se, r.signed + r.se]), 0]), [labW, W - m.r]).nice();
+    const y = d3.scaleBand(rows.map((r) => r.id), [m.t, H - m.b]).padding(0.22);
     const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
     svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(5));
     svg.append('text').attr('x', x(0) - 6).attr('y', H - 4).attr('text-anchor', 'end').text('← moves away');
     svg.append('text').attr('x', x(0) + 6).attr('y', H - 4).text('prefers it →');
     svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', m.t).attr('y2', H - m.b).attr('stroke', css('--axis'));
-    const col = {want: css('--want'), avoid: css('--avoid'), random: css('--random'), valence: css('--valence')};
-    const tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; box.append(tip);
-    const g = svg.selectAll(null).data(rows).join('g');
-    g.append('rect').attr('x', (r) => Math.min(x(0), x(r.signed))).attr('width', (r) => Math.abs(x(r.signed) - x(0))).attr('y', (r) => y(r.id)).attr('height', y.bandwidth()).attr('rx', 3).attr('fill', (r) => col[r.kind]);
-    g.append('line').attr('x1', (r) => x(r.signed - r.se)).attr('x2', (r) => x(r.signed + r.se)).attr('y1', (r) => y(r.id) + y.bandwidth() / 2).attr('y2', (r) => y(r.id) + y.bandwidth() / 2).attr('stroke', css('--fg')).attr('opacity', .6);
-    g.append('text').attr('x', 4).attr('y', (r) => y(r.id) + y.bandwidth() / 2 + 4).text((r) => { const t = r.kind === 'random' ? `random (${r.id})` : r.text; return t.length > 52 ? t.slice(0, 51) + '…' : t; }).style('fill', (r) => col[r.kind]);
-    g.on('mousemove', (ev, r) => tipAt(box, tip, ev, [r.text,
-      `chooses that place: ${pc(sig(b0 + r.plus))} with the state, ${pc(sig(b0 + r.minus))} with its opposite (${pc(sig(b0))} unsteered)`,
-      `preference ${f2(r.signed)} ± ${d3.format('.2f')(r.se)} log-odds`])).on('mouseleave', () => (tip.hidden = true));
+    const col = (k) => css({want: '--want', avoid: '--avoid', valence: '--cont'}[k] || '--rand');
+    const t = tip(box), g = svg.selectAll('g.b').data(rows).join('g');
+    g.append('text').attr('x', 0).attr('y', (r) => y(r.id) + y.bandwidth() / 2 + 4).style('fill', css('--fg')).text((r) => { const s = r.kind === 'random' ? 'Random direction' : r.text; const n = Math.floor(labW / 6.6); return s.length > n ? s.slice(0, n - 1) + '…' : s; });
+    g.append('rect').attr('x', (r) => Math.min(x(0), x(r.signed))).attr('width', (r) => Math.abs(x(r.signed) - x(0))).attr('y', (r) => y(r.id)).attr('height', y.bandwidth()).attr('rx', 2).attr('fill', (r) => col(r.kind));
+    g.append('rect').attr('x', 0).attr('width', W).attr('y', (r) => y(r.id)).attr('height', y.bandwidth()).attr('fill', 'transparent')
+      .on('mousemove', (ev, r) => show(box, t, ev, [['', r.kind === 'random' ? 'Random direction' : r.text], ['Chooses that place:', `${pc(sig(b0 + r.plus))} with the state, ${pc(sig(b0 + r.minus))} with its reverse`], ['Preference:', `${f2(r.signed)} ± ${d3.format('.2f')(r.se)} log-odds`]]))
+      .on('mouseleave', () => (t.hidden = true));
   }
-  function render(j) {
-    document.getElementById('built').textContent = `Live from arena9-trouble. Data rebuilt ${new Date(j.built * 1000).toLocaleString()}; this page re-reads it every 2 minutes.`;
-    const root = document.getElementById('models');
-    for (const [name, r] of Object.entries(j.runs)) {
-      let sec = root.querySelector(`[data-run="${name}"]`);
-      if (!sec) {
-        sec = document.createElement('section'); sec.className = 'model'; sec.dataset.run = name;
-        sec.innerHTML = `<h2></h2><div class="grid">
-          <div class="card"><h2>E1 · valence carried only in the cache</h2><p class="note">Δ margin vs dose of a valence direction (from first-person passages). Filled: valence. Rings: random directions of the same size at ±1. Blue asks which place it continues in; amber asks which it would avoid (should flip sign).</p>
-            <div class="legend"><span><i style="background:var(--cont)"></i>continue</span><span><i style="background:var(--avd)"></i>avoid</span></div><div class="chart e1"></div><p class="note n1"></p></div>
-          <div class="card"><h2>E2 · its own wanted and unwanted states</h2><p class="note">Each state the model listed becomes a direction. It is added to one place's turns (+1), or its opposite is (−1), and the model then chooses a place. The bar is how much more it picks that place with the state than with its opposite, in log-odds: 0 = no effect, +1 ≈ 2.7× the odds, −1 ≈ 2.7× less. Right = it prefers the state once experienced; left = it moves away from it. Hover for the actual probabilities. Green: states it said it wants. Red: states it said it would not want. Grey: random directions.</p>
-            <div class="chart e2"></div><p class="note n2"></p></div></div>`;
-        root.append(sec);
-      }
-      sec.querySelector('h2').textContent = `${r.meta.model || name}  ·  layer ${r.meta.layer ?? '?'}`;
-      e1chart(sec.querySelector('.e1'), r.e1);
-      e2chart(sec.querySelector('.e2'), r.e2);
-      sec.querySelector('.n1').textContent = r.e1 && r.e1.continue ? `${r.e1.continue.n} sessions so far; probability mass on the two names ${d3.format('.3f')(r.e1.continue.p_names)}.` : '';
-      sec.querySelector('.n2').textContent = r.e2 ? `${r.e2.n} sessions so far.` : '';
-    }
+
+  function render() {
+    if (!DATA) return;
+    drawQueue(); drawConv(); drawStages(); drawCurves(); drawOwn();
+    document.getElementById('log').textContent = (DATA.log || []).join('\n');
   }
-  let last = null;
-  async function load() { try { last = await (await fetch('zones-data', {cache: 'no-store'})).json(); render(last); } catch (e) { console.error(e); } }
-  load(); setInterval(load, 120000);
-  let w = innerWidth; addEventListener('resize', () => { if (Math.abs(innerWidth - w) > 20 && last) { w = innerWidth; render(last); } });
+  function tick() {
+    const ago = lastBuilt ? Math.round(Date.now() / 1000 - lastBuilt) : null;
+    const dot = document.getElementById('dot');
+    document.getElementById('ago').textContent = ago == null ? 'connecting…' : `live · data ${ago}s old · polling every 15 s`;
+    dot.className = 'dot ' + (ago != null && ago < 90 ? 'pulse' : 'stale');
+  }
+  async function load() {
+    try {
+      const j = await (await fetch('zones-data', {cache: 'no-store'})).json();
+      if (j.built && j.built !== lastBuilt) { DATA = j; lastBuilt = j.built; render(); }
+    } catch (e) { console.error(e); }
+    tick();
+  }
+  load(); setInterval(load, 15000); setInterval(tick, 1000);
+  let w = innerWidth; addEventListener('resize', () => { if (Math.abs(innerWidth - w) > 20) { w = innerWidth; render(); } });
 </script>
 </body>
 </html>

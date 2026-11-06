@@ -5,7 +5,7 @@ to be installed there) and serves the merged snapshot at /api/snapshot plus the 
 
   python3 dash/server.py [--port 8771]        (binds 127.0.0.1; expose it with a tunnel)
 runs.json is re-read on every poll, so runs can be added or removed without a restart."""
-import argparse, json, os, subprocess, threading, time
+import argparse, json, os, subprocess, sys, threading, time
 from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -52,7 +52,8 @@ def poll_forever():
 
 
 # ---- self-surgery attractor page (same page source as the claude.ai dashboard), rebuilt from the run logs
-ROOT = os.path.dirname(HERE)
+ROOT = os.environ.get("WSP_ROOT", os.path.dirname(HERE))   # data root (run logs); the code may run from another checkout
+CODE_ROOT = os.path.dirname(HERE)
 ATTR = {"built": None, "datasets": {}}
 ATTR_SOURCES = [("nicky1234", "weight_space_prog/runs/wirehead/", "runs/wirehead/nicky/"),
                 ("arena9-trouble", "/root/wsp-dq/runs/wirehead/", "runs/wirehead/trouble/")]
@@ -155,25 +156,69 @@ def zones_summary(d):
     return out
 
 
+SSH = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", "-o", "ControlMaster=auto", "-o", "ControlPath=/tmp/wspdash-%C", "-o", "ControlPersist=900"]
+ZONES_S = 15          # live page: pull from trouble every 15 s
+
+
+def zones_cumulative(d):
+    """Running estimate of the valence effect (dose +1 minus dose -1; avoid sign-flipped) after each finished session,
+    with its standard error, so the live page can show the estimate settling as sessions come in."""
+    import math
+    mj = os.path.join(d, "margins.jsonl")
+    if not os.path.exists(mj):
+        return {}
+    per = {"continue": [], "avoid": []}
+    for l in open(mj):
+        if not l.strip():
+            continue
+        r = json.loads(l)
+        if r.get("ask") not in per:
+            continue
+        v = {x["dose"]: x["m"] for x in r["res"] if x["cond"] == "valence"}
+        if 1.0 in v and -1.0 in v:
+            per[r["ask"]].append((1 if r["ask"] == "continue" else -1) * (v[1.0] - v[-1.0]))
+    out = {}
+    for ask, xs in per.items():
+        pts, s1, s2 = [], 0.0, 0.0
+        for n, x in enumerate(xs, 1):
+            s1 += x; s2 += x * x
+            mean = s1 / n
+            se = math.sqrt(max(0.0, s2 / n - mean * mean) / max(1, n - 1)) if n > 1 else None
+            pts.append({"n": n, "mean": round(mean, 4), "se": round(se, 4) if se is not None else None})
+        out[ask] = pts
+    return out
+
+
 def zones_forever():
+    sys.path.insert(0, CODE_ROOT)
     while True:
         try:
+            import importlib, zones_dash_build as zdb
+            importlib.reload(zdb)
             subprocess.run(["rsync", "-a", "--include=*/", "--include=*.json", "--include=margins.jsonl", "--exclude=*",
-                            "-e", "ssh -o BatchMode=yes -o ConnectTimeout=10 -o ControlMaster=auto -o ControlPath=/tmp/wspdash-%C -o ControlPersist=900",
-                            "arena9-trouble:/root/wsp-dq/runs/zones/", os.path.join(ROOT, "runs/zones/")], capture_output=True, timeout=120)
+                            "-e", " ".join(SSH), "arena9-trouble:/root/wsp-dq/runs/zones/", os.path.join(ROOT, "runs/zones/")],
+                           capture_output=True, timeout=120)
+            st = subprocess.run(SSH + ["arena9-trouble", "tail -n 40 /root/wsp-dq/zones_stages.log | grep -vE 'Warning|warn|transformers'; "
+                                       "echo @@GPU@@; nvidia-smi --query-gpu=utilization.gpu,memory.used,memory.total --format=csv,noheader"],
+                                capture_output=True, text=True, timeout=60).stdout
+            log, _, gpu = st.partition("@@GPU@@")
             base = os.path.join(ROOT, "runs/zones")
             runs = {}
             for name in sorted(os.listdir(base)) if os.path.isdir(base) else []:
-                if name == "smoke":
-                    continue
                 d = os.path.join(base, name)
+                if name in ("smoke", "dash") or not os.path.isdir(d):
+                    continue
                 meta = json.load(open(os.path.join(d, "vector_meta.json"))) if os.path.exists(os.path.join(d, "vector_meta.json")) else {}
-                runs[name] = {"meta": meta, **zones_summary(d)}
+                lab = zdb.LABEL.get(name, (name, "Other runs", 50))
+                runs[name] = {"meta": meta, "label": lab[0], "family": lab[1], "order": lab[2],
+                              "progress": zdb.progress(base, name), "cumulative": zones_cumulative(d), **zones_summary(d)}
+            queue = [{"dir": n, "label": l, "order": o, **zdb.progress(base, n)} for n, (l, f, o) in zdb.LABEL.items() if n.startswith("stage-")]
             with LOCK:
-                ZONES["runs"], ZONES["built"] = runs, time.time()
+                ZONES.update(runs=runs, queue=sorted(queue, key=lambda q: q["order"]), log=[x for x in log.strip().splitlines() if x][-25:],
+                             gpu=gpu.strip(), built=time.time())
         except Exception as e:
             print("zones build failed:", e, flush=True)
-        time.sleep(120)
+        time.sleep(ZONES_S)
 
 
 def attractor_page():

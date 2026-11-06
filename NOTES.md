@@ -438,3 +438,10 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   type, pinned to David's sidebar). Data = `python zones_dash_build.py` (reads runs/zones synced by dash/server.py) ->
   runs/zones/dash/{runs,e1,e2,e3}.json, uploaded as attached datasets; page source runs/zones_dash/index.html. Snapshot,
   not live (claude.ai pages cannot reach cute.sus.cat); refresh = rebuild, re-upload, update each dataset's url.
+- 2026-11-06 ~13:50 UTC LIVE TRAINING DASHBOARD: https://cute.sus.cat/4f12bddc58ce1e0dabb4cd49/zones . dash/server.py
+  zones loop now every 15 s: rsync runs/zones (json + margins.jsonl) from trouble, tail of zones_stages.log + nvidia-smi,
+  per-run progress (zones_dash_build.progress) and a running estimate of the valence effect after each session;
+  page polls every 15 s (queue with status/ETA/GPU, convergence plot for the followed checkpoint, stage comparison,
+  dose curves, own states, log). The server now runs from the worktree .claude/worktrees/zones-dash
+  (`WSP_ROOT=/root/Dropbox/ARENA/weight_space_prog setsid nohup bash dash/run.sh`, data root = the main checkout):
+  after the worktree is merged/removed, restart it from the main checkout the same way (WSP_ROOT optional there).
