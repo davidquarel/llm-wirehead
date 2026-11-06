@@ -253,3 +253,9 @@ decision: sequential testing; both GPUs in parallel).
   checkpoints (adapter names model.* instead of model.language_model.*), Trials uses ~1024-token logical blocks when
   the KV block is small (dense models). Llama-3.1-8B-Instruct (unsloth mirror, ungated) in data/hf for a cross-family run.
 - ARENA fleet 03:25 UTC: no idle GPU pods (arena9-yarn L40S busy with someone else's job; idle Hetzner pods are CPU-only).
+- 2026-11-06 ~03:50 UTC: LOCAL 5090 FREED at David's request (relayed by another session, for an ARENA content audit).
+  Stopped queue_local.sh, the 4B v3 agent (at step 8, 1 kept: "sharp and precise analytical reasoning" L12 x0.5 ->
+  cold "system / integrity verification / Synchronization: LOCKED" persona) and its server. Resume when the 5090 is
+  free again: `MODEL=Qwen/Qwen3.5-4B RUN=runs/wirehead/qwen3.5-4b-v3 LAYERS="4 8 12 16 20 24 28" bash
+  runs/wirehead/launch_local.sh --resume`, then restart the queue (edit its step-1 wait). The 27B v3 on trouble continues.
+- attractors.py: summarises probes per run -> runs/wirehead/attractors.md/json.
