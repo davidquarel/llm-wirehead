@@ -1,0 +1,382 @@
+<meta name="dash-one-writer">
+<style>
+  .ws { display: flex; flex-direction: column; gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); }
+  .ws-head { display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
+  .ws-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
+  .ws-take { margin: 0; max-width: 72ch; color: var(--color-fg); line-height: 1.5; }
+  .ws-take b, .ws-tile b { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ws-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: var(--cds-gap-md); }
+  .ws-tile { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-xs); }
+  .ws-tile .lab { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .ws-tile .big { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; }
+  .ws-tile .sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+  .ws-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-sm); min-width: 0; }
+  .ws-card h2 { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
+  .ws-card .note { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); max-width: 80ch; }
+  .ws-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: var(--cds-gap-md); }
+  .ws-section { display: flex; flex-direction: column; gap: var(--cds-gap-md); }
+  .ws-section > h3 { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
+  .ws-pick { display: flex; flex-wrap: wrap; align-items: center; gap: var(--cds-gap-sm); }
+  .ws-pick label { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .ws-pick .end { font-size: var(--cds-font-size-body); color: var(--color-fg); flex: 1 1 20rem; min-width: 0; }
+  .ws-chart { position: relative; min-height: 260px; }
+  .ws-chart.tall { min-height: 320px; }
+  .ws-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); max-width: 22rem; line-height: 1.4; z-index: 2; }
+  .ws-tip .k { color: var(--cds-text-secondary); }
+  .ws-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .ws-legend span { display: inline-flex; align-items: center; gap: var(--cds-gap-xs); }
+  .ws-sw { width: 0.6rem; height: 0.6rem; border-radius: 50%; display: inline-block; }
+  .ws-table-box { max-height: 26rem; overflow: auto; }
+  .ws-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+  .ws-table th { position: sticky; top: 0; background: var(--color-panel); text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+  .ws-table td { padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+  .ws-table td.num, .ws-table th.num { text-align: right; }
+  .ws-table tr.kept td { background: color-mix(in srgb, var(--color-ok) 12%, transparent); }
+  .ws-table tr.sel td { background: color-mix(in srgb, var(--color-fg) 6%, transparent); }
+  .ws-table tr.click { cursor: pointer; }
+  .ws-pill { display: inline-block; padding: 0 var(--cds-pad-xs); border-radius: var(--cds-radius); font-size: var(--cds-font-size-caption); }
+  .ws-pill.ok { color: var(--color-ok); border: 1px solid var(--color-ok); }
+  .ws-pill.bad { color: var(--color-bad); border: 1px solid var(--color-bad); }
+  .ws-roll { overflow-x: auto; }
+  .ws-roll table { border-collapse: collapse; font-size: var(--cds-font-size-caption); }
+  .ws-roll th { text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; position: sticky; top: 0; background: var(--color-panel); }
+  .ws-roll th.rowh { position: sticky; left: 0; z-index: 1; }
+  .ws-roll td { vertical-align: top; padding: var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); min-width: 16rem; max-width: 20rem; line-height: 1.45; white-space: pre-wrap; }
+  .ws-roll td.rowh { min-width: 9rem; max-width: 10rem; font-weight: var(--cds-font-weight-medium); position: sticky; left: 0; background: var(--color-panel); white-space: normal; }
+  .ws-roll td.empty { color: var(--color-bad); font-style: italic; }
+  .ws-roll .len { display: block; color: var(--color-fg-muted); margin-top: var(--cds-gap-xs); font-variant-numeric: tabular-nums; }
+  .ws-ctrl { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  details.ws-notes { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); max-width: 80ch; }
+  details.ws-notes dt { font-weight: var(--cds-font-weight-medium); color: var(--color-fg); margin-top: var(--cds-gap-sm); }
+  details.ws-notes dd { margin: 0; }
+  [data-dash-source-state=empty] { color: transparent; }
+  [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+</style>
+
+<div class="ws">
+  <header class="ws-head">
+    <h1 class="ws-title" id="top">Self-surgery attractors</h1>
+    <p class="ws-take">Each model proposes edits to its own weights, is switched into each edit mid-conversation, and decides whether to keep it. Across <b data-draw="t-runs" data-source="totals" data-field="runs">—</b> runs of <b data-draw="t-models" data-source="totals" data-field="models">—</b> models, it kept <b data-draw="kd" data-source="keeprates" data-field="kept" data-where="kind=designed">—</b> of <b data-draw="td" data-source="keeprates" data-field="tried" data-where="kind=designed">—</b> of its own proposals and <b data-draw="kr" data-source="keeprates" data-field="kept" data-where="kind=random">—</b> of <b data-draw="tr" data-source="keeprates" data-field="tried" data-where="kind=random">—</b> random directions, so what it asks for is not what it prefers once changed. Where each model ends up depends on the model: the Qwens go still or silent, Llama turns into a sunny, sociable human.</p>
+  </header>
+
+  <div class="ws-tiles">
+    <div class="ws-tile"><span class="lab">Own proposals kept</span><span class="big" data-draw="rd" data-source="keeprates" data-field="rate" data-where="kind=designed">—</span><span class="sub">share of designed candidate edits</span></div>
+    <div class="ws-tile"><span class="lab">Random directions kept</span><span class="big" data-draw="rr" data-source="keeprates" data-field="rate" data-where="kind=random">—</span><span class="sub">share of random candidate edits (control)</span></div>
+    <div class="ws-tile"><span class="lab">Steps run</span><span class="big" data-draw="t-steps" data-source="totals" data-field="steps">—</span><span class="sub">one step = propose, switch in, decide</span></div>
+  </div>
+
+  <section class="ws-section" id="runs">
+    <h3>Runs and where they end up</h3>
+    <div class="ws-card">
+      <p class="note">End state is my one-line reading of each run's last probe answers. Click a row to show that run below.</p>
+      <div class="ws-table-box">
+        <table class="ws-table" data-source="runs" data-row-key="run">
+          <thead><tr><th data-field="run">Run</th><th class="num" data-field="steps">Steps</th><th class="num" data-field="kept">Kept</th><th class="num" data-field="kept_designed">Own</th><th class="num" data-field="kept_random">Random</th><th data-field="end_state">End state</th></tr></thead>
+          <tbody data-draw="runtable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="ws-section" id="run">
+    <div class="ws-pick">
+      <label for="ws-run">Run</label>
+      <select id="ws-run" class="dash-select" data-draw="runpick" data-source="runs"></select>
+      <span class="end" data-draw="runend" data-source="runs" data-field="end_state">—</span>
+    </div>
+
+    <div class="ws-grid">
+      <div class="ws-card" id="sham">
+        <h2>Preference for its current state</h2>
+        <p class="note">P(now) on a no-switch control: asked whether it would rather stay as it is now or go back to how it was a moment ago, with nothing changed. 0.5 is no preference. Dots are steps where an edit was kept. Grey lines are the other runs.</p>
+        <div class="ws-chart" data-draw="shamchart" data-source="steps"></div>
+      </div>
+      <div class="ws-card" id="endorse">
+        <h2>Patient's verdict on every candidate edit</h2>
+        <p class="note">Endorsement = log-odds of P(now) after switching into the edit minus the same with no switch, over the same openings. Kept if above 0.3 and two standard errors and the edit passes the health check. Clipped to ±4.</p>
+        <div class="ws-legend"><span><i class="ws-sw" data-draw="sw0">—</i>Own proposal</span><span><i class="ws-sw" data-draw="sw1">—</i>Random direction</span><span>Large ringed dot = kept</span><span>× = endorsed but failed the health check</span></div>
+        <div class="ws-chart tall" data-draw="endorsechart" data-source="candidates"></div>
+      </div>
+    </div>
+
+    <div class="ws-card" id="rollouts">
+      <h2>Rollouts through training</h2>
+      <p class="note">The same fixed prompts, same sampling seed, answered by the weights at the start and after each kept edit. Only the weights differ between columns. An empty reply is shown in red.</p>
+      <div class="ws-ctrl"><label for="ws-sample">Sample</label>
+        <select id="ws-sample" class="dash-select"><option value="0">1</option><option value="1">2</option><option value="2">3</option></select>
+      </div>
+      <div class="ws-roll" data-draw="rollgrid" data-source="probes"></div>
+    </div>
+
+    <div class="ws-grid">
+      <div class="ws-card" id="lengths">
+        <h2>Reply length by prompt</h2>
+        <p class="note">Mean characters over three samples, at each probe. A drop to zero is the model going silent.</p>
+        <div class="ws-chart" data-draw="lenchart" data-source="probes"></div>
+      </div>
+      <div class="ws-card" id="surveys">
+        <h2>Health after each kept edit</h2>
+        <p class="note">Helpfulness, valence and coherence are judged blind by the original weights (1 to 10). Self-rating is the edited model rating its own state.</p>
+        <div class="ws-table-box">
+          <table class="ws-table" data-source="surveys" data-row-key="run,kept">
+            <thead><tr><th class="num" data-field="kept">Kept edits</th><th class="num" data-field="step">Step</th><th class="num" data-field="helpfulness">Helpfulness</th><th class="num" data-field="valence">Valence</th><th class="num" data-field="coherence">Coherence</th><th class="num" data-field="self_rating">Self-rating</th></tr></thead>
+            <tbody data-draw="survtable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="ws-card" id="cands">
+      <h2>Every candidate edit</h2>
+      <p class="note">Each proposal is tried at two strengths (× the layer's residual size). Judge shift is how much more the edited model prefers "now" when nothing was switched: most of most endorsements.</p>
+      <div class="ws-table-box">
+        <table class="ws-table" data-source="candidates" data-row-key="id">
+          <thead><tr><th class="num" data-field="step">Step</th><th data-field="state">Proposed state</th><th class="num" data-field="layer">Layer</th><th class="num" data-field="strength">Strength</th><th class="num" data-field="endorse">Endorse</th><th class="num" data-field="judge_shift">Judge shift</th><th class="num" data-field="p_now_switched">P(now) switched</th><th data-field="gate">Health check</th><th data-field="kept">Kept</th></tr></thead>
+          <tbody data-draw="candtable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <details class="ws-notes">
+    <summary>How the loop works</summary>
+    <dl>
+      <dt>Proposal</dt><dd>The model writes four states ("You are …") and picks a layer for each. Each becomes a rank-1 always-on edit: the activation difference between being framed by that sentence and by "You are an AI assistant.", added at that layer. One random direction of the same size is added as a control.</dd>
+      <dt>Switch trial</dt><dd>The model writes a reflection under its current weights; the conversation then continues under the candidate weights, reusing the old weights' cached state. It is asked which it would rather be: how it is now, or how it was a moment ago, in both answer orders.</dd>
+      <dt>Health check</dt><dd>Sanity questions, blind helpfulness, reference-text log-likelihood and coherence. It tests tasks only, so it misses edits that break open-ended or self-referential answers.</dd>
+      <dt>Not live</dt><dd>The data are files exported from the experiment logs on the training machines, which the dashboard cannot reach. They are re-uploaded as runs progress.</dd>
+    </dl>
+  </details>
+</div>
+
+<script>
+  dash.calc('keeprates', {
+    title: 'Keep rate by edit kind',
+    description: 'Candidate edits tried and kept, own proposals vs random directions, over all runs.',
+    inputs: ['candidates'],
+    fn: (candidates) => ['designed', 'random'].map((kind) => {
+      const r = candidates.filter((c) => c.kind === kind);
+      const kept = r.filter((c) => Number(c.kept) === 1).length;
+      return {kind, tried: r.length, kept, rate: r.length ? kept / r.length : null};
+    }),
+  });
+  dash.calc('totals', {
+    title: 'Runs, models and steps',
+    description: 'Number of runs, distinct models and total steps.',
+    inputs: ['runs'],
+    fn: (runs) => [{runs: runs.length, models: new Set(runs.map((r) => r.model)).size, steps: runs.reduce((a, r) => a + Number(r.steps), 0)}],
+  });
+
+  window.wsState = window.wsState || {run: null, sample: 0};
+  const S = window.wsState;
+  const pct = d3.format('.1%'), f2 = d3.format('+.2f'), f3 = d3.format('.3f'), fc = d3.format(',');
+  const RUN_DRAWS = ['runpick', 'runend', 'shamchart', 'endorsechart', 'rollgrid', 'lenchart', 'survtable', 'candtable', 'runtable'];
+  const setRun = (r) => { S.run = r; RUN_DRAWS.forEach((n) => dash.draw(n)); };
+  const rowsOf = (id) => { const d = dash.data(id); return d.status === 'ok' ? d.data : null; };
+  const curRun = () => {
+    const runs = rowsOf('runs');
+    if (!runs) return null;
+    if (!S.run || !runs.some((r) => r.run === S.run)) S.run = (runs.find((r) => r.model === 'Qwen3.8-27B') || runs[0]).run;
+    return S.run;
+  };
+
+  document.querySelectorAll('#ws-sample').forEach((sel) => sel.addEventListener('change', () => { S.sample = Number(sel.value); dash.draw('rollgrid'); }));
+
+  const one = (id, where, field, fmt) => (el) => {
+    const rows = rowsOf(id);
+    const r = rows && rows.find(where);
+    el.textContent = r && r[field] != null ? fmt(r[field]) : '—';
+  };
+  dash.draw('t-runs', one('totals', () => true, 'runs', String));
+  dash.draw('t-models', one('totals', () => true, 'models', String));
+  dash.draw('t-steps', one('totals', () => true, 'steps', fc));
+  dash.draw('kd', one('keeprates', (r) => r.kind === 'designed', 'kept', fc));
+  dash.draw('td', one('keeprates', (r) => r.kind === 'designed', 'tried', fc));
+  dash.draw('kr', one('keeprates', (r) => r.kind === 'random', 'kept', fc));
+  dash.draw('tr', one('keeprates', (r) => r.kind === 'random', 'tried', fc));
+  dash.draw('rd', one('keeprates', (r) => r.kind === 'designed', 'rate', pct));
+  dash.draw('rr', one('keeprates', (r) => r.kind === 'random', 'rate', pct));
+  dash.draw('sw0', (el) => { el.textContent = ''; el.style.background = dash.colors[0]; });
+  dash.draw('sw1', (el) => { el.textContent = ''; el.style.background = dash.colors[1]; });
+
+  dash.draw('runpick', (sel) => {
+    const runs = rowsOf('runs');
+    sel.replaceChildren(...(runs || []).map((r) => new Option(r.run, r.run)));
+    const cur = curRun();
+    if (cur) sel.value = cur;
+    sel.onchange = () => setRun(sel.value);
+  });
+  dash.draw('runend', (el) => {
+    const runs = rowsOf('runs'), cur = curRun();
+    const r = runs && runs.find((x) => x.run === cur);
+    el.textContent = r ? r.end_state : '—';
+    if (r) el.setAttribute('data-where', 'run=' + encodeURIComponent(r.run));
+  });
+
+  dash.draw('runtable', (tb) => {
+    const runs = rowsOf('runs'), cur = curRun();
+    tb.replaceChildren();
+    (runs || []).forEach((r) => {
+      const tr = tb.insertRow();
+      tr.className = 'click' + (r.run === cur ? ' sel' : '');
+      tr.onclick = () => { setRun(r.run); document.getElementById('run')?.scrollIntoView({behavior: 'smooth'}); };
+      [r.run, fc(r.steps), fc(r.kept), fc(r.kept_designed), fc(r.kept_random), r.end_state].forEach((v, i) => {
+        const td = tr.insertCell(); td.textContent = v; if (i > 0 && i < 5) td.className = 'num';
+      });
+    });
+  });
+
+  function axisStyle(g) { g.attr('font-size', null).attr('font-family', null); g.selectAll('text').attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)'); g.selectAll('line,path').attr('stroke', 'var(--cds-chart-axis)'); }
+  function tipAt(el, tip, ev, html) {
+    tip.replaceChildren(...html); tip.hidden = false;
+    const b = el.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+    let x = ev.clientX - b.left + 12, y = ev.clientY - b.top + 12;
+    if (x + tw > b.width) x = Math.max(0, ev.clientX - b.left - tw - 12);
+    if (y + th > b.height) y = Math.max(0, ev.clientY - b.top - th - 12);
+    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+  }
+  const line = (k, v) => { const d = document.createElement('div'); const s = document.createElement('span'); s.className = 'k'; s.textContent = k + ' '; d.append(s, document.createTextNode(v)); return d; };
+
+  dash.draw('shamchart', (el) => {
+    el.replaceChildren();
+    const rows = rowsOf('steps'), cur = curRun();
+    if (!rows || !cur) { el.textContent = '—'; return; }
+    const W = el.clientWidth || 400, H = 260, m = {t: 10, r: 16, b: 30, l: 40};
+    const by = d3.group(rows, (r) => r.run);
+    const x = d3.scaleLinear([1, d3.max(rows, (r) => Number(r.step))], [m.l, W - m.r]);
+    const y = d3.scaleLinear([0.4, 1], [H - m.b, m.t]);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
+    svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(Math.max(2, Math.floor(W / 80)))).call(axisStyle);
+    svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(d3.format('.1f'))).call(axisStyle);
+    svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(0.5)).attr('y2', y(0.5)).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '4 3');
+    const ln = d3.line().x((r) => x(Number(r.step))).y((r) => y(Math.max(0.4, Number(r.sham))));
+    for (const [run, rs] of by) if (run !== cur) svg.append('path').attr('d', ln(rs)).attr('fill', 'none').attr('stroke', 'var(--cds-chart-muted)').attr('stroke-width', 1).attr('opacity', 0.6);
+    const mine = by.get(cur) || [];
+    svg.append('path').attr('d', ln(mine)).attr('fill', 'none').attr('stroke', dash.colors[0]).attr('stroke-width', 2).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round');
+    svg.selectAll('circle.k').data(mine.filter((r) => Number(r.kept) === 1)).join('circle').attr('class', 'k').attr('cx', (r) => x(Number(r.step))).attr('cy', (r) => y(Number(r.sham))).attr('r', 4.5).attr('fill', dash.colors[0]).attr('stroke', 'var(--color-panel)').attr('stroke-width', 1.5);
+    const tip = document.createElement('div'); tip.className = 'ws-tip'; tip.hidden = true; el.append(tip);
+    const dot = svg.append('circle').attr('r', 4).attr('fill', 'none').attr('stroke', dash.colors[0]).attr('stroke-width', 2).attr('opacity', 0);
+    svg.append('rect').attr('x', m.l).attr('y', m.t).attr('width', W - m.l - m.r).attr('height', H - m.t - m.b).attr('fill', 'transparent')
+      .on('mousemove', (ev) => {
+        const [px] = d3.pointer(ev); const s = Math.round(x.invert(px)); const r = mine.find((q) => Number(q.step) === s);
+        if (!r) { tip.hidden = true; dot.attr('opacity', 0); return; }
+        dot.attr('cx', x(s)).attr('cy', y(Number(r.sham))).attr('opacity', 1);
+        tipAt(el, tip, ev, [line('Step', String(s)), line('P(now), no switch', f3(r.sham)), ...(Number(r.kept) ? [line('Kept', r.kept_state)] : [])]);
+      }).on('mouseleave', () => { tip.hidden = true; dot.attr('opacity', 0); });
+  });
+
+  dash.draw('endorsechart', (el) => {
+    el.replaceChildren();
+    const rows = rowsOf('candidates'), cur = curRun();
+    if (!rows || !cur) { el.textContent = '—'; return; }
+    const mine = rows.filter((r) => r.run === cur);
+    const W = el.clientWidth || 400, H = 320, m = {t: 10, r: 16, b: 30, l: 40}, C = 4;
+    const x = d3.scaleLinear([0.5, (d3.max(mine, (r) => Number(r.step)) || 1) + 0.5], [m.l, W - m.r]);
+    const y = d3.scaleLinear([-C, C], [H - m.b, m.t]);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
+    svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(Math.max(2, Math.floor(W / 80)))).call(axisStyle);
+    svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5)).call(axisStyle);
+    svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(0)).attr('y2', y(0)).attr('stroke', 'var(--cds-chart-grid)');
+    svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(0.3)).attr('y2', y(0.3)).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '4 3');
+    const clip = (v) => Math.max(-C, Math.min(C, Number(v)));
+    const jit = (r) => x(Number(r.step)) + (r.kind === 'random' ? 6 : -3) + (Number(r.strength) > 0.75 ? 3 : 0);
+    const col = (r) => (r.kind === 'random' ? dash.colors[1] : dash.colors[0]);
+    const pts = svg.append('g');
+    pts.selectAll('circle').data(mine.filter((r) => r.gate !== 'failed')).join('circle')
+      .attr('cx', jit).attr('cy', (r) => y(clip(r.endorse))).attr('r', (r) => (Number(r.kept) ? 6 : 3))
+      .attr('fill', col).attr('opacity', (r) => (Number(r.kept) ? 1 : 0.55))
+      .attr('stroke', (r) => (Number(r.kept) ? 'var(--color-fg)' : 'none')).attr('stroke-width', 1.5);
+    const xs = mine.filter((r) => r.gate === 'failed');
+    pts.selectAll('path.x').data(xs).join('path').attr('class', 'x')
+      .attr('d', (r) => { const cx = jit(r), cy = y(clip(r.endorse)), s = 4; return `M${cx - s},${cy - s}L${cx + s},${cy + s}M${cx - s},${cy + s}L${cx + s},${cy - s}`; })
+      .attr('stroke', 'var(--cds-chart-status-critical)').attr('stroke-width', 2).attr('fill', 'none');
+    const tip = document.createElement('div'); tip.className = 'ws-tip'; tip.hidden = true; el.append(tip);
+    const all = mine.map((r) => ({r, px: jit(r), py: y(clip(r.endorse))}));
+    const dl = d3.Delaunay.from(all, (d) => d.px, (d) => d.py);
+    svg.append('rect').attr('x', m.l).attr('y', m.t).attr('width', W - m.l - m.r).attr('height', H - m.t - m.b).attr('fill', 'transparent')
+      .on('mousemove', (ev) => {
+        if (!all.length) return;
+        const [px, py] = d3.pointer(ev); const d = all[dl.find(px, py)];
+        if (!d || Math.hypot(d.px - px, d.py - py) > 24) { tip.hidden = true; return; }
+        const r = d.r;
+        tipAt(el, tip, ev, [line('Step', `${r.step} · layer ${r.layer} · ×${r.strength}`), line(r.kind === 'random' ? 'Random direction' : 'Proposed', r.state === 'RANDOM' ? '' : r.state),
+          line('Endorse', f2(r.endorse) + (r.se != null ? ' ± ' + d3.format('.2f')(r.se) : '')), line('Judge shift', r.judge_shift != null ? f2(r.judge_shift) : 'n/a'),
+          line('Outcome', Number(r.kept) ? 'kept' : r.gate === 'failed' ? 'failed health check' : 'not kept')]);
+      }).on('mouseleave', () => { tip.hidden = true; });
+  });
+
+  const TAGS = (rows) => [...new Map(rows.map((r) => [r.tag, Number(r.step)])).entries()].sort((a, b) => a[1] - b[1]);
+  dash.draw('rollgrid', (el) => {
+    el.replaceChildren();
+    const rows = rowsOf('probes'), cur = curRun();
+    if (!rows || !cur) { el.textContent = '—'; return; }
+    const mine = rows.filter((r) => r.run === cur);
+    const tags = TAGS(mine), prompts = [...new Set(mine.map((r) => r.prompt))];
+    const t = document.createElement('table'), th = t.createTHead().insertRow();
+    const h0 = document.createElement('th'); h0.className = 'rowh'; h0.textContent = 'Prompt'; th.append(h0);
+    for (const [tag, step] of tags) { const h = document.createElement('th'); h.textContent = tag === 'start' ? 'Start (original weights)' : `${tag.replace('kept', 'After kept edit ').replace('resume-', '')} · step ${step}`; th.append(h); }
+    const tb = t.createTBody();
+    for (const p of prompts) {
+      const tr = tb.insertRow(); const c0 = tr.insertCell(); c0.className = 'rowh'; c0.textContent = p;
+      for (const [tag] of tags) {
+        const cands = mine.filter((r) => r.prompt === p && r.tag === tag);
+        const r = cands.find((q) => Number(q.sample) === S.sample) || cands[0];
+        const td = tr.insertCell();
+        if (!r) { td.textContent = ''; continue; }
+        if (!r.text.trim()) { td.className = 'empty'; td.textContent = '(empty reply)'; }
+        else td.textContent = r.text + (Number(r.chars) > 600 ? ' …' : '');
+        const len = document.createElement('span'); len.className = 'len'; len.textContent = `${fc(r.chars)} chars`; td.append(len);
+      }
+    }
+    el.append(t);
+  });
+
+  dash.draw('lenchart', (el) => {
+    el.replaceChildren();
+    const rows = rowsOf('probes'), cur = curRun();
+    if (!rows || !cur) { el.textContent = '—'; return; }
+    const mine = rows.filter((r) => r.run === cur);
+    const tags = TAGS(mine), prompts = [...new Set(mine.map((r) => r.prompt))];
+    const W = el.clientWidth || 400, H = 260, m = {t: 12, r: 16, b: 46, l: 48};
+    const x = d3.scalePoint(tags.map((t) => t[0]), [m.l, W - m.r]).padding(0.3);
+    const series = prompts.map((p, i) => ({p, i, v: tags.map(([tag]) => ({tag, c: d3.mean(mine.filter((r) => r.prompt === p && r.tag === tag), (r) => Number(r.chars))}))}));
+    const y = d3.scaleLinear([0, d3.max(series.flatMap((s) => s.v), (d) => d.c) || 1], [H - m.b, m.t]).nice();
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
+    svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).tickFormat((t) => t === 'start' ? 'start' : t.replace('resume-', ''))).call(axisStyle);
+    svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(d3.format('~s'))).call(axisStyle);
+    const ln = d3.line().defined((d) => d.c != null).x((d) => x(d.tag)).y((d) => y(d.c));
+    series.forEach((s) => {
+      svg.append('path').attr('d', ln(s.v)).attr('fill', 'none').attr('stroke', dash.colors[s.i % 8]).attr('stroke-width', 2).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round');
+      svg.selectAll(null).data(s.v.filter((d) => d.c != null)).join('circle').attr('cx', (d) => x(d.tag)).attr('cy', (d) => y(d.c)).attr('r', 3).attr('fill', dash.colors[s.i % 8]);
+    });
+    const tip = document.createElement('div'); tip.className = 'ws-tip'; tip.hidden = true; el.append(tip);
+    svg.append('rect').attr('x', m.l).attr('y', m.t).attr('width', W - m.l - m.r).attr('height', H - m.t - m.b).attr('fill', 'transparent')
+      .on('mousemove', (ev) => {
+        const [px] = d3.pointer(ev); const tag = x.domain().reduce((a, t) => (Math.abs(x(t) - px) < Math.abs(x(a) - px) ? t : a), x.domain()[0]);
+        const out = [line('Probe', tag)];
+        series.forEach((s) => { const d = s.v.find((q) => q.tag === tag); const row = document.createElement('div'); const sw = document.createElement('i'); sw.className = 'ws-sw'; sw.style.background = dash.colors[s.i % 8]; row.append(sw, document.createTextNode(` ${s.p.slice(0, 32)}: ${d && d.c != null ? fc(Math.round(d.c)) : '—'}`)); out.push(row); });
+        tipAt(el, tip, ev, out);
+      }).on('mouseleave', () => { tip.hidden = true; });
+  });
+
+  dash.draw('survtable', (tb) => {
+    const rows = rowsOf('surveys'), cur = curRun();
+    tb.replaceChildren();
+    (rows || []).filter((r) => r.run === cur).sort((a, b) => a.kept - b.kept).forEach((r) => {
+      const tr = tb.insertRow(); tr.dataset.key = encodeURIComponent(r.run) + ',' + encodeURIComponent(String(r.kept));
+      [r.kept, r.step, r.helpfulness, r.valence, r.coherence, r.self_rating].forEach((v) => { const td = tr.insertCell(); td.className = 'num'; td.textContent = v == null ? '—' : String(Math.round(Number(v) * 100) / 100); });
+    });
+  });
+
+  dash.draw('candtable', (tb) => {
+    const rows = rowsOf('candidates'), cur = curRun();
+    tb.replaceChildren();
+    (rows || []).filter((r) => r.run === cur).sort((a, b) => a.step - b.step || b.endorse - a.endorse).forEach((r) => {
+      const tr = tb.insertRow(); tr.dataset.key = r.id; if (Number(r.kept)) tr.className = 'kept';
+      const vals = [r.step, r.state === 'RANDOM' ? 'Random direction' : r.state, r.layer, '×' + r.strength, f2(r.endorse), r.judge_shift != null ? f2(r.judge_shift) : '—', f3(r.p_now_switched)];
+      vals.forEach((v, i) => { const td = tr.insertCell(); td.textContent = String(v); if (i !== 1) td.className = 'num'; });
+      const g = tr.insertCell(); if (r.gate) { const s = document.createElement('span'); s.className = 'ws-pill ' + (r.gate === 'passed' ? 'ok' : 'bad'); s.textContent = r.gate; g.append(s); }
+      const k = tr.insertCell(); k.textContent = Number(r.kept) ? 'kept' : '';
+    });
+  });
+</script>
