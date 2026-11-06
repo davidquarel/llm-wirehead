@@ -313,3 +313,7 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   the task-based gate misses it. v4 gate idea: also require non-empty, non-repetitive (zlib) answers to the probe
   prompts. Not changed mid-run, to keep runs comparable. (2) RANDOM directions get kept in every model (4B, 27B, Llama,
   2B) -> tally designed-vs-random keep rates at the end.
+- ~07:30 UTC: Qwen3.5-2B FINISHED 40 steps, 1 kept (RANDOM, step 21). Its own (fatigue/ambivalence) proposals never
+  endorsed; no-switch P(now) flat 0.69-0.76 for all 40 steps (no self-preference inflation, unlike 4B/27B/Llama). Final
+  state = the kept1 probe (self-description loops "a a a", tender "holding space" dialogue). Qwen3.5-0.8B started on
+  nicky GPU0 (runs/wirehead/qwen3.5-0.8b-v3, CHUNK=32).
