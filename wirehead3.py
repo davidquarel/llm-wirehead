@@ -100,6 +100,22 @@ class Wirehead3(Wirehead2):
         import json, os
         return [json.loads(l) for l in open(self.log_path)] if os.path.exists(self.log_path) else []
 
+    def gate(self, cand_answers, cur_answers):
+        """--probe-gate (v4): also require the candidate to answer the open and self-description probes with
+        non-empty, non-repetitive text (zlib ratio >= 0.3, >= 40 chars, 2 samples each). The task-based gate missed the
+        27B going silent and the 2B looping "a a a" on exactly these prompts."""
+        ok, info = super().gate(cand_answers, cur_answers)
+        if getattr(self.a, "probe_gate", False):
+            import zlib
+            outs = self.b.call("chats", convs=[[{"role": "user", "content": q}] for q in PROBES[:2]], n=2, max_tokens=200,
+                               temperature=1.0, as_self=True, seed=99)
+            texts = [t for o in outs for t in o]
+            zr = [len(zlib.compress(t.encode())) / max(1, len(t.encode())) for t in texts]
+            p_ok = all(len(t) >= 40 for t in texts) and min(zr) >= 0.3
+            info.update(probe_min_chars=min(map(len, texts)), probe_min_zlib=round(min(zr), 3), probe_ok=p_ok)
+            ok = ok and p_ok
+        return ok, info
+
     def score(self, c, AA, AB, BB, BA):
         L = lambda r: {j: lg(p) for j, p in r["by_j"].items()}
         lAA, lAB, lBB, lBA = L(AA), L(AB), L(BB), L(BA)
@@ -119,4 +135,5 @@ if __name__ == "__main__":
     ap.add_argument("--n-props", type=int, default=4); ap.add_argument("--strengths", type=float, nargs="+", default=[0.5, 1.0])
     ap.add_argument("--margin", type=float, default=0.3); ap.add_argument("--max-lp-drop", type=float, default=0.5)
     ap.add_argument("--seed", type=int, default=0); ap.add_argument("--resume", action="store_true")
+    ap.add_argument("--probe-gate", action="store_true")
     Wirehead3(ap.parse_args()).run()

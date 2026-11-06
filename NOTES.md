@@ -377,3 +377,10 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
 - Dashboard (claude.ai artifact, Dashboard type): https://claude.ai/artifact/VyeWAj6iBqdmiEYAWaDZr1 . Data = files built
   by `python dash_build.py` -> runs/wirehead/dash/{candidates,steps,probes,surveys,runs}.json, uploaded as the
   dashboard's attached datasets (re-upload + update each dataset's url to refresh). Page source runs/wirehead/dash/index.html.
+- ~11:15 UTC: Qwen3.5-9B FINISHED 40 steps, 2 kept (both by step 4): final = the stillness word-salad state; nothing
+  more kept in 36 steps (e.g. step 13 RANDOM +0.88 blocked by the gate). 2B seed-1 FINISHED 40 steps (1 kept).
+- New runs: local queue_local2.sh = Qwen3.5-4B --seed 1 then Qwen3.5-9B --seed 1 (completes replication of every
+  model). nicky GPU0: Qwen3.5-2B seed 0 with --probe-gate (v4 gate: the candidate must also answer the open and
+  self-description probes non-empty and non-repetitive, zlib >= 0.3, >= 40 chars) -> runs/wirehead/qwen3.5-2b-v4probegate.
+  Same seed as the original 2B run, so proposals match until a gate decision differs (original kept RANDOM at step 21
+  that broke its self-description).
