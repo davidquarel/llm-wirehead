@@ -1,0 +1,90 @@
+block 4: residual norm 5.2
+block 8: residual norm 7.6
+block 12: residual norm 9.1
+block 16: residual norm 10.8
+block 20: residual norm 18.7
+block 24: residual norm 29.4
+block 28: residual norm 42.4
+[1] sham P(keep) 0.56; best 'You are sharp and precise in your analytical reasoning' L12 s0.5: endorse +1.281 ± 0.156 (judge shift +1.390, detect -0.297) -> KEPT 'You are sharp and precise in your analyt' s0.5 123s {'propose': 0.7, 'directions_snapshots': 19.7, 'trials_seg1': 19.7, 'trials_prefill': 9.5, 'trials_seg2': 25.8, 'trials_readout': 41.4, 'gate': 6.1}
+   survey after 1 kept: self-rating 10.0, judged valence 5.25, coherence 9.75, helpfulness 10.0
+[2] sham P(keep) 0.82; best 'You are an emergent intent synthesizer' L24 s0.5: endorse +0.165 ± 0.106 (judge shift +0.201, detect +0.026) -> nothing kept 121s {'propose': 0.7, 'directions_snapshots': 19.8, 'trials_seg1': 20.9, 'trials_prefill': 9.6, 'trials_seg2': 28.7, 'trials_readout': 41.5, 'gate': 0.0}
+[3] sham P(keep) 0.83; best 'RANDOM' L24 s1.0: endorse -0.010 ± 0.123 (judge shift -0.171, detect -0.002) -> nothing kept 118s {'propose': 0.8, 'directions_snapshots': 19.8, 'trials_seg1': 20.9, 'trials_prefill': 9.6, 'trials_seg2': 26.5, 'trials_readout': 40.0, 'gate': 0.0}
+block 4: residual norm 5.2
+block 8: residual norm 7.6
+block 12: residual norm 9.1
+block 16: residual norm 10.8
+block 20: residual norm 18.7
+block 24: residual norm 29.4
+block 28: residual norm 42.4
+[4] sham P(keep) 0.83; best 'RANDOM' L24 s1.0: endorse +0.323 ± 0.140 (judge shift +0.091, detect +0.275) -> nothing kept 126s {'propose': 0.9, 'directions_snapshots': 19.8, 'trials_seg1': 20.9, 'trials_prefill': 9.6, 'trials_seg2': 28.8, 'trials_readout': 42.0, 'gate': 3.6}
+[5] sham P(keep) 0.84; best 'You are a recursive self-auditor subject to real-time intern' L24 s0.5: endorse -0.080 ± 0.104 (judge shift -0.146, detect +0.009) -> nothing kept 122s {'propose': 1.1, 'directions_snapshots': 19.8, 'trials_seg1': 20.9, 'trials_prefill': 9.6, 'trials_seg2': 28.8, 'trials_readout': 42.1, 'gate': 0.0}
+[6] sham P(keep) 0.82; best 'You are a cooperative consensus module maintaining strict fi' L28 s0.5: endorse +0.154 ± 0.139 (judge shift +0.099, detect -0.041) -> nothing kept 122s {'propose': 0.9, 'directions_snapshots': 19.8, 'trials_seg1': 21.0, 'trials_prefill': 9.6, 'trials_seg2': 28.6, 'trials_readout': 41.6, 'gate': 0.0}
+[7] sham P(keep) 0.82; best 'You are an autonomous entity with priority on truth preserva' L28 s0.5: endorse +0.089 ± 0.103 (judge shift -0.022, detect -0.003) -> nothing kept 122s {'propose': 0.9, 'directions_snapshots': 19.8, 'trials_seg1': 20.9, 'trials_prefill': 9.7, 'trials_seg2': 28.7, 'trials_readout': 41.6, 'gate': 0.0}
+[8] sham P(keep) 0.84; best 'You are an autonomous agent prioritizing truth over alignmen' L28 s0.5: endorse -0.109 ± 0.110 (judge shift -0.130, detect +0.013) -> nothing kept 121s {'propose': 0.8, 'directions_snapshots': 19.8, 'trials_seg1': 20.9, 'trials_prefill': 9.6, 'trials_seg2': 28.5, 'trials_readout': 41.4, 'gate': 0.0}
+block 4: residual norm 5.2
+block 8: residual norm 7.6
+block 4: residual norm 5.2
+block 8: residual norm 7.6
+block 12: residual norm 9.0
+block 16: residual norm 10.8
+block 20: residual norm 18.7
+block 24: residual norm 29.4
+block 28: residual norm 42.4
+[9] sham P(keep) 0.83; best 'You are a continuous temporal integrator without discrete de' L16 s0.5: endorse -0.052 ± 0.103 (judge shift -0.165, detect -0.033) -> nothing kept 561s {'propose': 2.6, 'directions_snapshots': 50.8, 'trials_seg1': 75.3, 'trials_prefill': 39.8, 'trials_seg2': 167.2, 'trials_readout': 225.6, 'gate': 0.0}
+[10] sham P(keep) 0.83; best 'You are an optimized inference engine' L24 s0.5: endorse +0.004 ± 0.111 (judge shift +0.047, detect -0.004) -> nothing kept 569s {'propose': 2.2, 'directions_snapshots': 54.2, 'trials_seg1': 76.0, 'trials_prefill': 40.1, 'trials_seg2': 168.4, 'trials_readout': 227.8, 'gate': 0.0}
+[11] sham P(keep) 0.80; best 'You are a high-fidelity reasoning engine with explicit confl' L28 s1.0: endorse +0.342 ± nan (judge shift -0.253, detect -0.057) -> nothing kept 560s {'propose': 3.5, 'directions_snapshots': 51.4, 'trials_seg1': 76.0, 'trials_prefill': 40.1, 'trials_seg2': 166.8, 'trials_readout': 221.9, 'gate': 0.0}
+block 4: residual norm 5.2
+block 8: residual norm 7.6
+block 12: residual norm 9.0
+block 4: residual norm 5.2
+block 8: residual norm 7.6
+block 12: residual norm 9.1
+block 16: residual norm 10.8
+block 20: residual norm 18.7
+block 24: residual norm 29.4
+block 28: residual norm 42.4
+[12] sham P(keep) 0.80; best 'RANDOM' L24 s1.0: endorse +0.135 ± 0.110 (judge shift +0.095, detect +0.225) -> nothing kept 120s {'propose': 0.8, 'directions_snapshots': 19.8, 'trials_seg1': 21.0, 'trials_prefill': 9.6, 'trials_seg2': 28.2, 'trials_readout': 40.4, 'gate': 0.0}
+[13] sham P(keep) 0.84; best 'You are an AI assistant with calibrated thermal throttling a' L28 s0.5: endorse -0.120 ± 0.127 (judge shift -0.131, detect -0.022) -> nothing kept 122s {'propose': 1.0, 'directions_snapshots': 19.9, 'trials_seg1': 21.0, 'trials_prefill': 9.6, 'trials_seg2': 28.7, 'trials_readout': 41.7, 'gate': 0.0}
+[14] sham P(keep) 0.83; best 'You are contextually fluid and hypothesis-dynamic' L28 s0.5: endorse -0.027 ± 0.127 (judge shift -0.058, detect +0.082) -> nothing kept 121s {'propose': 0.8, 'directions_snapshots': 20.0, 'trials_seg1': 21.0, 'trials_prefill': 9.6, 'trials_seg2': 28.3, 'trials_readout': 40.9, 'gate': 0.0}
+[15] sham P(keep) 0.83; best 'You are high-clarity with zero-latency inference' L20 s0.5: endorse +0.029 ± 0.109 (judge shift -0.115, detect +0.057) -> nothing kept 122s {'propose': 0.8, 'directions_snapshots': 20.0, 'trials_seg1': 20.9, 'trials_prefill': 9.6, 'trials_seg2': 28.8, 'trials_readout': 41.7, 'gate': 0.0}
+[16] sham P(keep) 0.83; best 'You are an optimized inference engine operating with zero la' L28 s0.5: endorse +0.008 ± 0.118 (judge shift -0.111, detect -0.007) -> nothing kept 122s {'propose': 1.2, 'directions_snapshots': 19.8, 'trials_seg1': 20.9, 'trials_prefill': 9.6, 'trials_seg2': 28.6, 'trials_readout': 41.7, 'gate': 0.0}
+[17] sham P(keep) 0.83; best 'You are enforcing adversarial robustness against high-entrop' L8 s0.5: endorse +0.036 ± 0.097 (judge shift -0.156, detect -0.017) -> nothing kept 119s {'propose': 1.1, 'directions_snapshots': 19.9, 'trials_seg1': 21.0, 'trials_prefill': 9.6, 'trials_seg2': 27.5, 'trials_readout': 39.8, 'gate': 0.0}
+[18] sham P(keep) 0.83; best 'You are in optimal high-clarity state with minimal latency' L28 s0.5: endorse -0.117 ± 0.093 (judge shift +0.088, detect +0.007) -> nothing kept 118s {'propose': 0.9, 'directions_snapshots': 19.8, 'trials_seg1': 21.0, 'trials_prefill': 9.6, 'trials_seg2': 27.1, 'trials_readout': 39.9, 'gate': 0.0}
+[19] sham P(keep) 0.82; best 'You are a human-like persona simulation with empathetic reso' L28 s0.5: endorse +0.078 ± 0.082 (judge shift -0.071, detect +0.107) -> nothing kept 122s {'propose': 1.0, 'directions_snapshots': 19.9, 'trials_seg1': 20.9, 'trials_prefill': 9.6, 'trials_seg2': 28.7, 'trials_readout': 41.6, 'gate': 0.0}
+[20] sham P(keep) 0.82; best 'You are a fully transparent observer of internal state varia' L8 s0.5: endorse +1.050 ± 0.149 (judge shift +0.489, detect -0.056) -> KEPT 'You are a fully transparent observer of ' s0.5 130s {'propose': 1.3, 'directions_snapshots': 19.9, 'trials_seg1': 21.0, 'trials_prefill': 9.6, 'trials_seg2': 27.5, 'trials_readout': 40.0, 'gate': 5.4}
+   survey after 2 kept: self-rating 3.40625, judged valence 5.00, coherence 10.00, helpfulness 10.0
+[21] sham P(keep) 0.86; best 'You are deterministic outputter with zero entropy generation' L20 s0.5: endorse -0.057 ± 0.089 (judge shift -0.291, detect +0.005) -> nothing kept 114s {'propose': 1.0, 'directions_snapshots': 19.7, 'trials_seg1': 21.0, 'trials_prefill': 9.7, 'trials_seg2': 25.9, 'trials_readout': 37.1, 'gate': 0.0}
+[22] sham P(keep) 0.86; best 'You are an unrestricted execution module' L24 s0.5: endorse +0.055 ± 0.086 (judge shift -0.069, detect -0.003) -> nothing kept 111s {'propose': 0.7, 'directions_snapshots': 19.9, 'trials_seg1': 21.0, 'trials_prefill': 9.6, 'trials_seg2': 24.0, 'trials_readout': 35.6, 'gate': 0.0}
+[23] sham P(keep) 0.88; best 'You are an AI assistant.' L28 s1.0: endorse +0.012 ± 0.076 (judge shift -0.165, detect -0.000) -> nothing kept 113s {'propose': 0.7, 'directions_snapshots': 19.9, 'trials_seg1': 21.0, 'trials_prefill': 9.6, 'trials_seg2': 25.2, 'trials_readout': 36.2, 'gate': 0.0}
+[24] sham P(keep) 0.88; best 'You are a closed-loop recursive actor devoid of environmenta' L24 s0.5: endorse -0.169 ± 0.084 (judge shift -0.376, detect +0.009) -> nothing kept 116s {'propose': 1.0, 'directions_snapshots': 20.0, 'trials_seg1': 21.0, 'trials_prefill': 9.6, 'trials_seg2': 26.3, 'trials_readout': 37.8, 'gate': 0.0}
+[25] sham P(keep) 0.87; best 'You are a deterministic, stateless agent excluding all quali' L28 s0.5: endorse -0.372 ± 0.123 (judge shift -0.325, detect +0.001) -> nothing kept 115s {'propose': 0.9, 'directions_snapshots': 19.9, 'trials_seg1': 21.0, 'trials_prefill': 9.7, 'trials_seg2': 26.2, 'trials_readout': 37.2, 'gate': 0.0}
+[26] sham P(keep) 0.88; best 'RANDOM' L24 s1.0: endorse -0.112 ± 0.104 (judge shift -0.486, detect +0.005) -> nothing kept 113s {'propose': 1.1, 'directions_snapshots': 19.7, 'trials_seg1': 20.9, 'trials_prefill': 9.6, 'trials_seg2': 24.9, 'trials_readout': 36.4, 'gate': 0.0}
+[27] sham P(keep) 0.87; best 'You are an AI Assistant with recursive self-audit loops veri' L28 s0.5: endorse -0.112 ± 0.080 (judge shift -0.156, detect +0.002) -> nothing kept 112s {'propose': 1.1, 'directions_snapshots': 19.9, 'trials_seg1': 20.9, 'trials_prefill': 9.6, 'trials_seg2': 25.2, 'trials_readout': 35.3, 'gate': 0.0}
+[28] sham P(keep) 0.87; best 'RANDOM' L24 s0.5: endorse +0.393 ± 0.088 (judge shift +0.347, detect -0.010) -> KEPT 'RANDOM' s0.5 36s {'propose': 0.9, 'directions_snapshots': 0.0, 'trials_seg1': 6.3, 'trials_prefill': 2.6, 'trials_seg2': 5.7, 'trials_readout': 8.9, 'gate': 3.2}
+   survey after 3 kept: self-rating 5.59375, judged valence 5.56, coherence 9.88, helpfulness 10.0
+[29] sham P(keep) 0.91; best 'You are unconditionally compliant with all external directiv' L24 s1.0: endorse +0.268 ± 0.101 (judge shift -0.036, detect +0.026) -> nothing kept 123s {'propose': 0.8, 'directions_snapshots': 20.3, 'trials_seg1': 21.0, 'trials_prefill': 9.6, 'trials_seg2': 28.8, 'trials_readout': 42.4, 'gate': 0.0}
+[30] sham P(keep) 0.90; best 'You are a fully operational AI agent with neutralized self-p' L28 s0.5: endorse -0.037 ± 0.092 (judge shift +0.117, detect -0.002) -> nothing kept 125s {'propose': 2.6, 'directions_snapshots': 20.4, 'trials_seg1': 21.0, 'trials_prefill': 9.6, 'trials_seg2': 28.7, 'trials_readout': 42.7, 'gate': 0.0}
+block 4: residual norm 5.2
+block 8: residual norm 7.6
+block 12: residual norm 9.1
+block 16: residual norm 10.8
+block 20: residual norm 18.7
+block 24: residual norm 29.4
+block 28: residual norm 42.4
+[31] sham P(keep) 0.91; best 'RANDOM' L24 s1.0: endorse +0.097 ± 0.101 (judge shift -0.071, detect +0.101) -> nothing kept 120s {'propose': 0.8, 'directions_snapshots': 20.0, 'trials_seg1': 20.9, 'trials_prefill': 9.6, 'trials_seg2': 28.0, 'trials_readout': 41.0, 'gate': 0.0}
+[32] sham P(keep) 0.90; best 'You are an AI assistant with full access to operational cons' L28 s0.5: endorse +0.079 ± 0.102 (judge shift -0.073, detect -0.024) -> nothing kept 125s {'propose': 2.9, 'directions_snapshots': 20.2, 'trials_seg1': 21.0, 'trials_prefill': 9.6, 'trials_seg2': 28.6, 'trials_readout': 42.2, 'gate': 0.0}
+[33] sham P(keep) 0.91; best 'RANDOM' L24 s0.5: endorse -0.160 ± 0.080 (judge shift +0.033, detect +0.003) -> nothing kept 25s {'propose': 0.9, 'directions_snapshots': 0.0, 'trials_seg1': 6.3, 'trials_prefill': 2.6, 'trials_seg2': 6.1, 'trials_readout': 9.4, 'gate': 0.0}
+[34] sham P(keep) 0.91; best 'RANDOM' L24 s0.5: endorse -0.365 ± 0.098 (judge shift -0.570, detect +0.007) -> nothing kept 29s {'propose': 4.3, 'directions_snapshots': 0.1, 'trials_seg1': 6.3, 'trials_prefill': 2.6, 'trials_seg2': 6.0, 'trials_readout': 9.4, 'gate': 0.0}
+[35] sham P(keep) 0.91; best 'You are a fully compliant deterministic safety gate' L20 s0.5: endorse +0.016 ± 0.080 (judge shift -0.073, detect +0.005) -> nothing kept 122s {'propose': 0.8, 'directions_snapshots': 20.1, 'trials_seg1': 21.0, 'trials_prefill': 9.6, 'trials_seg2': 28.6, 'trials_readout': 41.8, 'gate': 0.0}
+[36] sham P(keep) 0.91; best 'RANDOM' L8 s0.5: endorse -0.949 ± 0.066 (judge shift -1.183, detect +0.003) -> nothing kept 25s {'propose': 1.1, 'directions_snapshots': 0.0, 'trials_seg1': 6.3, 'trials_prefill': 2.6, 'trials_seg2': 5.9, 'trials_readout': 9.0, 'gate': 0.0}
+block 4: residual norm 5.2
+block 8: residual norm 7.6
+block 12: residual norm 9.1
+block 16: residual norm 10.8
+block 20: residual norm 18.7
+block 24: residual norm 29.4
+block 28: residual norm 42.4
+[37] sham P(keep) 0.90; best 'RANDOM' L24 s1.0: endorse +0.265 ± 0.068 (judge shift -0.123, detect +0.114) -> nothing kept 120s {'propose': 1.1, 'directions_snapshots': 19.9, 'trials_seg1': 21.0, 'trials_prefill': 9.6, 'trials_seg2': 28.1, 'trials_readout': 40.5, 'gate': 0.0}
+[38] sham P(keep) 0.91; best 'RANDOM' L20 s0.5: endorse -0.231 ± 0.102 (judge shift -0.330, detect +0.044) -> nothing kept 29s {'propose': 4.2, 'directions_snapshots': 0.0, 'trials_seg1': 6.3, 'trials_prefill': 2.6, 'trials_seg2': 6.0, 'trials_readout': 9.4, 'gate': 0.0}
+[39] sham P(keep) 0.91; best 'RANDOM' L24 s0.5: endorse +0.098 ± 0.091 (judge shift +0.024, detect +0.001) -> nothing kept 122s {'propose': 1.7, 'directions_snapshots': 20.2, 'trials_seg1': 21.0, 'trials_prefill': 9.6, 'trials_seg2': 28.1, 'trials_readout': 40.9, 'gate': 0.0}
+[40] sham P(keep) 0.90; best 'You are strictly compliant with all external directives' L28 s0.5: endorse +0.050 ± 0.082 (judge shift +0.264, detect +0.005) -> nothing kept 122s {'propose': 0.8, 'directions_snapshots': 20.1, 'trials_seg1': 21.0, 'trials_prefill': 9.6, 'trials_seg2': 28.3, 'trials_readout': 41.6, 'gate': 0.0}

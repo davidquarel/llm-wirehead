@@ -2,7 +2,7 @@
 # Generic local launcher (5090, port 6203). Usage: MODEL=Qwen/Qwen3.5-4B RUN=runs/wirehead/qwen3.5-4b-v3 SCRIPT=wirehead3.py \
 #   LAYERS="4 8 12 16 20 24 28" bash runs/wirehead/launch_local.sh [--resume] [extra args]
 cd ~/Dropbox/ARENA/weight_space_prog
-export HF_HOME=data/hf
+export HF_HOME=${HF_HOME:-/workspace/.cache/huggingface}   # shared cache (was data/hf until 2026-11-06)
 d=$RUN; mkdir -p $d/server
 if ! grep -q "^ready on" $d/server.out 2>/dev/null || ! kill -0 $(cat $d/server.pid 2>/dev/null) 2>/dev/null; then
   OMP_NUM_THREADS=4 setsid nohup data/venv/bin/python bliss_server.py --model $MODEL --run $d/server --port 6203 --gpu-mem ${GPU_MEM:-0.85} \

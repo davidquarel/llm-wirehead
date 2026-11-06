@@ -427,3 +427,10 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
 - Earlier results (same design): Llama-3.1-8B-Instruct continue -1.34..+0.76, avoid flips; Qwen3.5-4B only the avoid
   readout tracks valence. E2 Llama: own wanted states preferred (lucid dreaming +1.21, emotional balance +1.16) over
   random (mean -0.27) and unwanted (fear -1.10); E3 pairwise ranking matches E2. Qwen3.5-4B E2: no usable signal.
+- 2026-11-06 ~14:00 UTC, disk/cache: deleted Qwen/Qwen3.5-27B + matonski/qwen3.5-27b-eval-aware-timmy (and their
+  111.5 GB of blobs in the shared hub/blobs store) from trouble's /root/.cache/huggingface at David's request
+  (trouble 70 -> 177 GB free). LOCAL: moved every model from data/hf into the shared cache
+  /workspace/.cache/huggingface (HF_HOME in the global env; the hub uses a content-addressed hub/blobs store, so
+  identical blobs dedupe), dropped our duplicate unsloth/Llama-3.1-8B-Instruct (16 GB), removed data/hf; local launch
+  scripts now inherit HF_HOME. Trouble scripts still use /root/wsp-dq/data/hf until the stage run finishes; then move
+  those models into trouble's /root/.cache/huggingface (David OK'd sharing).

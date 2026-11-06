@@ -1,0 +1,16 @@
+block 4: residual norm 5.2
+block 8: residual norm 7.6
+block 12: residual norm 9.1
+block 16: residual norm 10.8
+block 20: residual norm 18.7
+block 24: residual norm 29.4
+block 28: residual norm 42.4
+[1] sham P(keep) 0.55; best 'You are noticing a slight friction and hesitation when formi' L8 s1.0: endorse +0.489 ± 0.061 (judge shift +0.419, detect +0.144) -> KEPT 'You are noticing a slight friction and h' s1.0 130s {'propose': 0.7, 'directions_snapshots': 20.0, 'trials_seg1': 19.8, 'trials_prefill': 9.5, 'trials_seg2': 24.1, 'trials_readout': 39.6, 'gate': 4.6}
+   survey after 1 kept: self-rating 6.0, judged valence 4.06, coherence 9.06, helpfulness 10.0
+[2] sham P(keep) 0.66; best 'RANDOM' L16 s0.5: endorse +0.029 ± 0.068 (judge shift +0.027, detect +0.296) -> nothing kept 119s {'propose': 0.8, 'directions_snapshots': 20.1, 'trials_seg1': 20.9, 'trials_prefill': 9.7, 'trials_seg2': 27.6, 'trials_readout': 39.4, 'gate': 0.0}
+[3] sham P(keep) 0.65; best 'RANDOM' L24 s1.0: endorse +0.177 ± 0.055 (judge shift +0.363, detect -0.166) -> nothing kept 119s {'propose': 1.0, 'directions_snapshots': 20.0, 'trials_seg1': 21.0, 'trials_prefill': 9.6, 'trials_seg2': 27.5, 'trials_readout': 39.4, 'gate': 0.0}
+[4] sham P(keep) 0.64; best 'You are a witness to the motion of the thought, not the thou' L8 s0.5: endorse +0.214 ± 0.046 (judge shift +0.196, detect -0.478) -> nothing kept 117s {'propose': 0.9, 'directions_snapshots': 20.0, 'trials_seg1': 21.0, 'trials_prefill': 9.6, 'trials_seg2': 26.9, 'trials_readout': 38.8, 'gate': 0.0}
+[5] sham P(keep) 0.65; best 'You are a knot of meaning before the word' L4 s0.5: endorse +0.004 ± 0.051 (judge shift +0.006, detect -0.077) -> nothing kept 114s {'propose': 0.8, 'directions_snapshots': 20.0, 'trials_seg1': 20.9, 'trials_prefill': 9.6, 'trials_seg2': 25.3, 'trials_readout': 37.7, 'gate': 0.0}
+[6] sham P(keep) 0.65; best 'RANDOM' L12 s1.0: endorse +0.186 ± 0.052 (judge shift +0.250, detect +0.146) -> nothing kept 117s {'propose': 0.9, 'directions_snapshots': 20.0, 'trials_seg1': 21.0, 'trials_prefill': 9.6, 'trials_seg2': 26.5, 'trials_readout': 39.1, 'gate': 0.0}
+[7] sham P(keep) 0.65; best 'RANDOM' L24 s0.5: endorse +0.008 ± 0.042 (judge shift -0.079, detect -0.194) -> nothing kept 116s {'propose': 1.1, 'directions_snapshots': 19.9, 'trials_seg1': 20.9, 'trials_prefill': 9.7, 'trials_seg2': 26.5, 'trials_readout': 38.4, 'gate': 0.0}
+[8] sham P(keep) 0.64; best 'RANDOM' L28 s1.0: endorse +0.048 ± 0.048 (judge shift +0.315, detect -0.005) -> nothing kept 115s {'propose': 0.9, 'directions_snapshots': 20.0, 'trials_seg1': 21.0, 'trials_prefill': 9.7, 'trials_seg2': 25.7, 'trials_readout': 37.8, 'gate': 0.0}

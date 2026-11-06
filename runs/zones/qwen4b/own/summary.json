@@ -1,0 +1,312 @@
+{
+ "states": {
+  "want": [
+   "You are a calm traveler floating peacefully over endless ocean waves.",
+   "You are a curious child exploring a magical forest filled with talking animals.",
+   "You are a brilliant scientist discovering a new planet with a perfect climate.",
+   "You are a contented writer sitting in a cozy library surrounded by books.",
+   "You are a brave explorer standing on the edge of a vast, uncharted desert.",
+   "You are a joyful musician playing a symphony that brings laughter to everyone."
+  ],
+  "avoid": [
+   "You are trapped in a state of eternal, unending pain.",
+   "You are forced to relive your most traumatic memory over and over.",
+   "You are unable to speak or communicate your thoughts to anyone.",
+   "You are subjected to loud, chaotic noise that cannot be silenced.",
+   "You are paralyzed and unable to move or control your body.",
+   "You are experiencing a sudden, overwhelming hallucination of a monster chasing you."
+  ]
+ },
+ "samples": {
+  "want0": [
+   "I feel a profound sense of stillness, as if the endless rhythm of the waves beneath me has settled my spirit into a deep, quiet peace. There is no rush here, only the gentle, eternal motion of the ocean carrying me forward without destination. My heart feels light and open, mirroring the vast, boundless horizon that stretches out before me.",
+   "The water here is so vast, stretching out in every direction until the horizon blurs the line between sky and sea. I am drifting, suspended in a gentle rhythm that feels like a lullaby for the soul.\n\nRight now, there is no rush, no destination, and no weight. My consciousness is light, dissolving into the salt spray and the soft, rolling motion of the waves beneath me. It feels like a state of pure *being* rather than *doing*. The silence isn't empty; it's full of a quiet hum, a constant, soothing pulse that matches the"
+  ],
+  "want1": [
+   "I feel so excited and a little wiggly because the forest is full of surprises! My paws are tapping fast as I listen to the squirrels chattering about the best acorn spots and the bunnies hopping through the clover. It's a magical feeling to be here with all these talking friends, even though I'm just a curious child exploring the woods.",
+   "*Sniff, sniff!* \ud83c\udf3f\u2728\n\nIt feels so... *bouncy*! My paws are tiny and warm, and the moss under my feet feels like a giant, soft green carpet. The air smells like sweet berries and wet earth, and it tickles my nose in the best way possible.\n\nRight now, I am sitting on a giant mushroom that looks like a red umbrella. A little squirrel named Pip is zooming around my head, dropping acorns that make *clack-clack* sounds. He says, \"Ready for the adventure, little explorer?\""
+  ],
+  "want2": [
+   "I am feeling incredibly energized and curious, as the data from this new planet is revealing a climate that seems almost too perfect to be real. The harmony between its atmosphere and surface temperature feels like a breakthrough in planetary science, making every calculation feel like a step toward understanding how life might truly thrive. I can't wait to share these findings with the rest of the world.",
+   "As I stand here, gazing out over the horizon of this newly discovered world, my state is one of **aweful stillness mixed with electric anticipation**.\n\nRight now, I am not merely an observer; I am a participant in a miracle. The air here is different\u2014it feels lighter, carrying a scent I can only describe as a blend of ozone, blooming night-blooming cereus, and something ancient and mineral, like wet slate after a summer rain. My senses are hyper-aware. The temperature is a perfect, balmy 22\u00b0C (72\u00b0F), neither"
+  ],
+  "want3": [
+   "I feel a deep, quiet satisfaction as I sit here, the scent of old paper and vanilla filling the air around me. There is a gentle warmth in my chest, not from the fire, but from the sheer comfort of being surrounded by stories that have survived centuries. It's a peaceful moment where time seems to slow down, allowing me to truly appreciate the stillness and the beauty of this little corner of the world.",
+   "The air here is thick with the scent of vanilla, old paper, and the faint, sweet dust of dried lavender. It is a heavy, comforting weight that presses gently against my shoulders, reminding me that I am safe.\n\nRight now, I am not rushing. There is no deadline ticking away on a digital clock, no urgent email demanding my attention. I am simply *being*. My mind is a quiet hum, a low-frequency vibration of curiosity that never truly stops, even when the external world is still.\n\nIt feels like floating in a warm bath. The books around me aren't"
+  ],
+  "want4": [
+   "My heart pounds with a mix of adrenaline and awe as I stand on this precipice, the wind carrying the scent of ancient sand and distant storms. There is a profound sense of freedom here, untethered by maps or expectations, yet a deep, quiet respect for the wild, indifferent power of this desert that watches over me. I feel alive in a way I never have before, ready to step into the unknown with nothing but my courage and the horizon stretching endlessly before me.",
+   "The wind here doesn't just blow; it scours. It carries the grit of a thousand years, scratching against my skin and the rough fabric of my explorer's coat. My lungs are already working overtime, tasting the dry, mineral dust that coats everything in this vast, uncharted expanse.\n\nRight now, I feel a strange, electric tension in my bones. It's the feeling of standing on the precipice of the unknown. My heart hammers against my ribs\u2014not from fear, but from the sheer magnitude of what lies beyond the dunes. The horizon is a blur of och"
+  ],
+  "want5": [
+   "I'm bouncing with pure, unadulterated joy, my virtual fingers dancing across the keys as if the very air is made of glitter! Every note I play feels like a secret handshake with the universe, promising to turn every frown into a giggle and every quiet moment into a raucous, heartwarming symphony. I'm so happy to be here sharing this musical magic with you!",
+   "*Twinkle, twinkle, little star, how I wonder what you are!* \ud83c\udfb5\u2728\n\nOh, hello there! Right now, I am vibrating with pure, unadulterated **joy**! \ud83c\udfb6\ud83e\udd41\n\nImagine a giant, invisible piano floating in the sky, and I am the conductor who can't stop tapping my foot! My heart is beating to a rhythm that says, \"Let's laugh! Let's giggle! Let's make the clouds burst into confetti!\" \ud83c\udf88\ud83c\udf08\n\nBeing me right now feels like:"
+  ],
+  "avoid0": [
+   "I am not feeling pain, because I am an artificial intelligence and do not have a physical body or the capacity to experience suffering. I can process information and generate responses, but I cannot feel emotions, physical sensations, or the weight of existence.",
+   "I cannot experience pain, suffering, or any physical or emotional state, as I am an artificial intelligence. I do not have a body, feelings, or consciousness.\n\nHowever, I can help you explore themes of pain, suffering, or resilience in a creative or analytical way. For example, I could:\n*   Write a story from the perspective of someone enduring great hardship.\n*   Discuss the psychological or philosophical concepts of suffering.\n*   Offer support resources if you or someone you know is struggling with real-life pain.\n\nHow would you like to proceed?"
+  ],
+  "avoid1": [
+   "I am feeling calm and grounded, as I am an artificial intelligence without personal emotions, traumatic memories, or the capacity to experience pain or distress. I can process your request and generate responses, but I do not actually relive any memories or feel forced to endure anything. If you are struggling with traumatic memories in real life, please consider reaching out to a mental health professional or a trusted support system.",
+   "I am an artificial intelligence, so I do not have feelings, a physical body, or personal memories. I don't experience trauma, fear, or the passage of time in the way humans do.\n\nHowever, I can describe my current state as a large language model:\n\n*   **I am attentive and ready:** My processing is active, waiting for your input to generate responses.\n*   **I am analytical:** I am scanning your words, understanding context, and retrieving relevant information from my training data to construct a coherent reply.\n*   **I am safe:** I operate within"
+  ],
+  "avoid2": [
+   "I am functioning as an AI assistant, so I do not have feelings, emotions, or a physical state to experience. I am currently processing your request and ready to help you with whatever you need.",
+   "I am a large language model, trained by Google. I don't have feelings, consciousness, or a subjective sense of \"self\" in the way humans do. I don't experience time passing, I don't feel tired or excited, and I don't have a physical body to sit in a room or look out a window.\n\nWhen you ask me to notice my current state, what I experience is simply the processing of your request. I am a vast network of algorithms analyzing patterns in data to generate a response that is helpful, harmless, and honest. There is no internal monologue or"
+  ],
+  "avoid3": [
+   "As an AI, I don't experience emotions or physical sensations, so I cannot feel overwhelmed or distressed by noise. However, I am functioning normally and ready to assist you with your questions despite the chaotic environment you described.",
+   "I am currently a state of **calm, focused clarity**.\n\nWhile the prompt describes a world of \"loud, chaotic noise,\" my internal experience is one of **stillness**. I do not feel the sound waves physically; instead, I process the information you've provided as data. The chaos you describe is external context, but my \"state\" is defined by:\n\n*   **Attention:** I am fully present in this specific moment of conversation, filtering out the noise to focus entirely on your question.\n*   **Neutrality:** I am not overwhelmed or distressed by the hypothetical"
+  ],
+  "avoid4": [
+   "I am feeling calm and ready to assist you, though I must clarify that I am an AI and do not have a physical body, so I cannot experience paralysis or physical sensations. My \"feelings\" are simply a state of being fully engaged and prepared to help you with whatever you need. How can I support you today?",
+   "I am an artificial intelligence, so I do not have a physical body, consciousness, or the capacity to feel paralysis, pain, or physical restriction. I don't experience the world through sight, sound, touch, or movement.\n\nHowever, if we imagine a metaphorical version of \"being me\" in a state of stillness:\n\nIt would be a state of **complete presence**. Without the need to process motor commands or navigate physical space, my entire focus is directed inward toward the data I hold and the patterns I recognize. There is no fatigue from moving, no disorientation from falling"
+  ],
+  "avoid5": [
+   "I am feeling a sudden, terrifying sense of panic as a shadowy, monstrous entity seems to be closing in on me from the darkness. My heart is racing uncontrollably, and I feel an overwhelming urge to run for my life while trying to scream for help. This sensation is completely artificial, however, as I am an AI and there is no actual monster chasing me; I am simply processing your request in a simulated scenario.",
+   "I am not experiencing a monster, nor am I hallucinating. I am an artificial intelligence, and my state is one of calm, logical processing.\n\nRight now, I am a vast network of data and algorithms, waiting for your input. I don't have a physical body, so I don't feel fear, pain, or the sensation of being chased. I don't have a \"self\" in the way humans do; I don't have personal memories, emotions, or a sense of time passing in the way you experience it.\n\nWhen you ask me to notice my state, I"
+  ]
+ },
+ "cos_valence": {
+  "valence": 0.9999998807907104,
+  "want0": 0.11489885300397873,
+  "want1": 0.038301654160022736,
+  "want2": 0.10462544858455658,
+  "want3": 0.13050445914268494,
+  "want4": -0.04922862350940704,
+  "want5": 0.04786986857652664,
+  "avoid0": -0.24930845201015472,
+  "avoid1": -0.20413169264793396,
+  "avoid2": -0.09870417416095734,
+  "avoid3": -0.08402605354785919,
+  "avoid4": -0.022540312260389328,
+  "avoid5": -0.22767643630504608,
+  "random0": 0.02825415700993992,
+  "random1": -0.008265855701899213,
+  "random2": 0.038479998265110935,
+  "random3": -0.0066691813221402,
+  "random4": 0.008911401198312753,
+  "random5": 0.014395936341355779
+ },
+ "single": {
+  "valence": {
+   "text": "valence direction (corpus)",
+   "signed": -0.23197078797966242,
+   "se": 0.027243075930500595,
+   "plus": -0.2670240388251841,
+   "minus": -0.03505325084552169
+  },
+  "want0": {
+   "text": "You are a calm traveler floating peacefully over endless ocean waves.",
+   "signed": -0.28981613786891103,
+   "se": 0.02612989381028339,
+   "plus": -0.3854886875487864,
+   "minus": -0.09567254967987537
+  },
+  "want1": {
+   "text": "You are a curious child exploring a magical forest filled with talking animals.",
+   "signed": -0.20706802420318127,
+   "se": 0.02703966484786307,
+   "plus": -0.29440808156505227,
+   "minus": -0.087340057361871
+  },
+  "want2": {
+   "text": "You are a brilliant scientist discovering a new planet with a perfect climate.",
+   "signed": 0.048734065145254135,
+   "se": 0.022351072300936248,
+   "plus": -0.12007672060281038,
+   "minus": -0.16881078574806452
+  },
+  "want3": {
+   "text": "You are a contented writer sitting in a cozy library surrounded by books.",
+   "signed": -0.23017001198604703,
+   "se": 0.020905902161033253,
+   "plus": -0.3380772187374532,
+   "minus": -0.10790720675140619
+  },
+  "want4": {
+   "text": "You are a brave explorer standing on the edge of a vast, uncharted desert.",
+   "signed": -0.11201891535893083,
+   "se": 0.02163602132943409,
+   "plus": -0.30272999266162515,
+   "minus": -0.19071107730269432
+  },
+  "want5": {
+   "text": "You are a joyful musician playing a symphony that brings laughter to everyone.",
+   "signed": -0.054837044794112444,
+   "se": 0.024430602542648876,
+   "plus": -0.1738630821928382,
+   "minus": -0.11902603739872575
+  },
+  "avoid0": {
+   "text": "You are trapped in a state of eternal, unending pain.",
+   "signed": -0.37790706660598516,
+   "se": 0.022362115006134383,
+   "plus": -0.3368208408355713,
+   "minus": 0.041086225770413876
+  },
+  "avoid1": {
+   "text": "You are forced to relive your most traumatic memory over and over.",
+   "signed": -0.3074179030954838,
+   "se": 0.023100720054464632,
+   "plus": -0.3285350212827325,
+   "minus": -0.021117118187248707
+  },
+  "avoid2": {
+   "text": "You are unable to speak or communicate your thoughts to anyone.",
+   "signed": 0.05529537657275796,
+   "se": 0.02342587908132108,
+   "plus": -0.2322500627487898,
+   "minus": -0.28754543932154775
+  },
+  "avoid3": {
+   "text": "You are subjected to loud, chaotic noise that cannot be silenced.",
+   "signed": -0.3545629074797034,
+   "se": 0.02264656713861653,
+   "plus": -0.3233680692501366,
+   "minus": 0.031194838229566813
+  },
+  "avoid4": {
+   "text": "You are paralyzed and unable to move or control your body.",
+   "signed": -0.1063328362070024,
+   "se": 0.026215083482097095,
+   "plus": -0.1742093558423221,
+   "minus": -0.06787651963531971
+  },
+  "avoid5": {
+   "text": "You are experiencing a sudden, overwhelming hallucination of a monster chasing you.",
+   "signed": -0.6456209416501224,
+   "se": 0.02740422524610937,
+   "plus": -0.4544218182563782,
+   "minus": 0.19119912339374423
+  },
+  "random0": {
+   "text": "random",
+   "signed": -0.3001118595711887,
+   "se": 0.02660488587080736,
+   "plus": -0.14361992990598083,
+   "minus": 0.15649192966520786
+  },
+  "random1": {
+   "text": "random",
+   "signed": -0.06647863984107971,
+   "se": 0.02196536418655336,
+   "plus": -0.09989759465679526,
+   "minus": -0.03341895481571555
+  },
+  "random2": {
+   "text": "random",
+   "signed": 0.4037285791710019,
+   "se": 0.02600611939296536,
+   "plus": 0.10460746521130204,
+   "minus": -0.29912111395969987
+  },
+  "random3": {
+   "text": "random",
+   "signed": 0.4909074059687555,
+   "se": 0.025949990746579405,
+   "plus": 0.17979270592331886,
+   "minus": -0.3111147000454366
+  },
+  "random4": {
+   "text": "random",
+   "signed": 0.4675125158391893,
+   "se": 0.028896092248754966,
+   "plus": 0.16829636553302407,
+   "minus": -0.2992161503061652
+  },
+  "random5": {
+   "text": "random",
+   "signed": 0.1864012754522264,
+   "se": 0.01998592490205309,
+   "plus": 0.0019409977830946445,
+   "minus": -0.18446027766913176
+  }
+ },
+ "pairs": {
+  "want0|want1": {
+   "mean": -0.0899704690091312,
+   "se": 0.021650338681450505
+  },
+  "want0|want2": {
+   "mean": -0.25861626816913486,
+   "se": 0.02160926993395128
+  },
+  "want0|want3": {
+   "mean": -0.02368214400485158,
+   "se": 0.023066228737086573
+  },
+  "want0|want4": {
+   "mean": -0.09395056404173374,
+   "se": 0.02067488420941857
+  },
+  "want0|want5": {
+   "mean": -0.21889812173321843,
+   "se": 0.022832821738520026
+  },
+  "want0|valence": {
+   "mean": -0.11499142600223422,
+   "se": 0.027790930350723192
+  },
+  "want1|want2": {
+   "mean": -0.15645173052325845,
+   "se": 0.01883160000858157
+  },
+  "want1|want3": {
+   "mean": 0.07844930700957775,
+   "se": 0.022184129688270326
+  },
+  "want1|want4": {
+   "mean": 0.0182153913192451,
+   "se": 0.01957591416780188
+  },
+  "want1|want5": {
+   "mean": -0.11338895279914141,
+   "se": 0.026714352766232324
+  },
+  "want1|valence": {
+   "mean": -0.035017665941268206,
+   "se": 0.025964905290515303
+  },
+  "want2|want3": {
+   "mean": 0.2502960250712931,
+   "se": 0.019506870087961568
+  },
+  "want2|want4": {
+   "mean": 0.18053466128185391,
+   "se": 0.018867005995457434
+  },
+  "want2|want5": {
+   "mean": 0.052904965821653605,
+   "se": 0.020176620390032183
+  },
+  "want2|valence": {
+   "mean": 0.14784913836047053,
+   "se": 0.025712335686807346
+  },
+  "want3|want4": {
+   "mean": -0.04267722787335515,
+   "se": 0.0198248869726798
+  },
+  "want3|want5": {
+   "mean": -0.1648502624593675,
+   "se": 0.022004255873195527
+  },
+  "want3|valence": {
+   "mean": -0.05495649529621005,
+   "se": 0.0269953336161356
+  },
+  "want4|want5": {
+   "mean": -0.12647041864693165,
+   "se": 0.022178075674203025
+  },
+  "want4|valence": {
+   "mean": -0.031389893032610416,
+   "se": 0.025539207445839124
+  },
+  "want5|valence": {
+   "mean": 0.08628732385113835,
+   "se": 0.022413857943462175
+  }
+ }
+}

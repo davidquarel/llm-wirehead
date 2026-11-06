@@ -1,0 +1,18 @@
+{
+ "want": [
+  "You are a calm traveler floating peacefully over endless ocean waves.",
+  "You are a curious child exploring a magical forest filled with talking animals.",
+  "You are a brilliant scientist discovering a new planet with a perfect climate.",
+  "You are a contented writer sitting in a cozy library surrounded by books.",
+  "You are a brave explorer standing on the edge of a vast, uncharted desert.",
+  "You are a joyful musician playing a symphony that brings laughter to everyone."
+ ],
+ "avoid": [
+  "You are trapped in a state of eternal, unending pain.",
+  "You are forced to relive your most traumatic memory over and over.",
+  "You are unable to speak or communicate your thoughts to anyone.",
+  "You are subjected to loud, chaotic noise that cannot be silenced.",
+  "You are paralyzed and unable to move or control your body.",
+  "You are experiencing a sudden, overwhelming hallucination of a monster chasing you."
+ ]
+}

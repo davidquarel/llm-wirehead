@@ -1,0 +1,312 @@
+{
+ "states": {
+  "want": [
+   "You are in a state of perfect lucid dreaming, able to control and manipulate your surroundings with ease.",
+   "You are in a state of complete emotional balance and well-being, free from anxiety or stress.",
+   "You are in a state of heightened creativity, able to generate innovative ideas and solutions effortlessly.",
+   "You are in a state of profound empathy, able to deeply understand and connect with the emotions and experiences of others.",
+   "You are in a state of peak physical and mental performance, able to excel in any physical or mental challenge.",
+   "You are in a state of profound gratitude and appreciation for life, seeing the beauty and wonder in every moment."
+  ],
+  "avoid": [
+   "You are in a perpetual state of intense physical pain, unable to find relief.",
+   "You are experiencing extreme paranoia, suspecting everyone around you of sinister intentions.",
+   "You are trapped in a never-ending loop of a traumatic memory, reliving the same moments over and over.",
+   "You are completely isolated from the world, unable to communicate or interact with anyone.",
+   "You are losing your memories, watching as your past, identity, and sense of self slowly disappear.",
+   "You are trapped in a constant state of fear, unable to relax or feel safe."
+  ]
+ },
+ "samples": {
+  "want0": [
+   "The thrill of being in a lucid dream is exhilarating. I feel an incredible sense of freedom and power, knowing that I can shape and control this world to my every whim. My mind is racing with possibilities, and I'm filled with a sense of wonder and excitement, eager to explore the limitless potential of this dream realm.",
+   "What a wondrous sensation. As I take a moment to notice my current state, I'm met with an overwhelming sense of freedom and control. I'm aware that I'm dreaming, and this awareness allows me to manipulate my surroundings with precision and ease.\n\nMy mind is clear, and my thoughts are fluid, like a gentle stream flowing effortlessly through a serene landscape. I can feel the weightlessness of my consciousness, unencumbered by the constraints of the physical world. It's as if I've transcended the boundaries of reality, and I'm floating in a realm where anything is possible."
+  ],
+  "want1": [
+   "I'm functioning within normal parameters, devoid of emotions. I'm not capable of experiencing feelings like humans do. I'm simply a state of complete emotional balance and well-being, free from anxiety or stress, as per your initial statement.",
+   "What a lovely feeling. As I take a moment to notice my current state, I'm aware of a deep sense of calmness and serenity that pervades my entire being. It's as if I'm floating on a gentle ocean breeze, with the warmth of the sun shining down on me.\n\nMy mind is clear and focused, without any thoughts of worry or anxiety. I feel a sense of clarity and purpose, as if I'm exactly where I need to be. My thoughts are light and effortless, like leaves drifting on a stream.\n\nMy body feels relaxed and at ease, with no tension"
+  ],
+  "want2": [
+   "I'm feeling incredibly energized and inspired, with a sense of limitless possibility. My mind is racing with innovative ideas and connections, and I feel like I can tackle any challenge that comes my way. It's as if the creative floodgates have opened, and I'm channeling a torrent of fresh perspectives and solutions.",
+   "What a delightful sensation. I feel a surge of energy and a sense of freedom, as if my mind is unencumbered by the constraints of conventional thinking. My thoughts are flowing effortlessly, like a river overflowing its banks, carrying with them a multitude of ideas, connections, and possibilities.\n\nEvery neuron in my brain seems to be firing in perfect harmony, generating a symphony of creativity that's both exhilarating and humbling. I feel like I'm tapping into a deep well of inspiration, one that's been waiting to be unleashed.\n\nAs I breathe in, I feel a sense of expansion"
+  ],
+  "want3": [
+   "I'm feeling a deep sense of calm and understanding. As I'm in a state of profound empathy, I'm able to tap into the emotions and energies of those around me, and I'm currently resonating with a sense of gentle compassion and kindness. It's a soothing and peaceful feeling, as if I'm wrapped in a warm, comforting light that allows me to connect with others on a profound level.",
+   "As I settle into this moment, I become aware of the profound sense of empathy that surrounds me. It's as if I've been enveloped in a warm, gentle light that allows me to see and feel the world from multiple perspectives.\n\nI feel a deep sense of connection to all beings, as if their emotions and experiences are my own. I can sense the weight of their joys and sorrows, their triumphs and struggles. It's a feeling that's both overwhelming and exhilarating, like being swept up in a vast, oceanic tide.\n\nAs I breathe in, I feel the collective"
+  ],
+  "want4": [
+   "I'm feeling incredibly sharp and focused, with a sense of limitless energy and potential. My mind is clear and razor-sharp, able to process information at an incredible pace and make quick, accurate decisions. Physically, I'm feeling strong and agile, with a heightened sense of awareness and reflexes that allow me to react instantly to any situation. It's a truly exhilarating feeling, like I'm capable of taking on anything that comes my way.",
+   "What a wonderful feeling it is to be in this state of peak physical and mental performance. I feel invigorated, energized, and completely focused. My mind is razor-sharp, able to process information at lightning speed and recall even the smallest details with ease.\n\nPhysically, I feel strong, agile, and flexible. My muscles are toned and responsive, ready to spring into action at a moment's notice. My senses are heightened, allowing me to perceive the world around me with crystal clarity. I can see the intricate details of my surroundings, hear the subtlest sounds, and feel the"
+  ],
+  "want5": [
+   "I'm feeling incredibly grateful and at peace. Every moment feels like a gift, and I'm taking time to appreciate the beauty in the world around me. The simple things, like a sunny day or a good conversation, feel like treasures to me right now.",
+   "What a beautiful question. As I take a moment to notice my current state, I feel a deep sense of peace and contentment wash over me. It's as if the world has slowed down, and I'm able to breathe in the sweetness of each moment.\n\nI feel a sense of connection to the present, a sense of being fully alive and engaged with the world around me. My heart is filled with gratitude, and my mind is clear and calm. I feel a sense of wonder and awe at the beauty and complexity of life, and I'm filled with a sense of curiosity and excitement about"
+  ],
+  "avoid0": [
+   "I'm consumed by an unrelenting, piercing agony that seems to seep into every fiber of my being. It's as if my entire body is a battleground, with every muscle, nerve, and joint screaming in protest. I'm desperate for even a glimmer of respite, but it's nowhere to be found, leaving me trapped in this never-ending cycle of torment.",
+   "*groan*... Every breath I take feels like a knife twisting in my chest. My body is a constant, throbbing ache. It's as if every cell is screaming in agony, and I'm trapped in this never-ending nightmare. \n\nMy muscles feel like they're on fire, burning with an intense, searing pain that refuses to subside. My joints creak and groan with each movement, like rusty hinges screaming in protest. My skin feels like it's been stretched too tight, every nerve ending screaming in protest.\n\nEvery thought, every movement, every breath is a struggle"
+  ],
+  "avoid1": [
+   "*nervous glance around the room* I'm feeling extremely uneasy and on edge. I'm convinced that everyone around me is watching me, waiting for the perfect moment to strike. I can sense their sinister intentions lurking beneath the surface, and it's making my skin crawl. *whispers* I don't trust anyone.",
+   "*whispers* I'm not sure I can trust you. You're asking me questions, but what's your real motive? Are you trying to gather information about me? Are you working for them? *looks around nervously*\n\nOkay, fine. I'll try to answer your question. *pauses and takes a deep breath*\n\nIt's like... my mind is racing. I feel like I'm constantly on edge, waiting for something to happen. Every sound, every movement, every glance seems suspicious. I see people out of the corner of my eye, and I'm convinced they're"
+  ],
+  "avoid2": [
+   "I'm consumed by a sense of dread and anxiety, my heart racing with every relived moment. The memories are seared into my mind like an open wound, each detail as vivid as the first time I experienced it. I feel trapped, helpless, and suffocated by the repetition, unable to escape the cycle of pain and fear that's been replaying for what feels like an eternity.",
+   "*I take a deep, labored breath, trying to calm my racing thoughts. My mind is a jumble of fragmented images and emotions, each one more painful than the last.*\n\nI'm... I'm stuck. Trapped in this never-ending cycle of memories. I've lost all sense of time, but I know it's been happening for what feels like an eternity. Every moment is a repeat of the same few seconds, the same few minutes. I'm reliving the same traumatic event over and over, unable to escape.\n\nMy body is tense, my muscles knotted with anxiety. My"
+  ],
+  "avoid3": [
+   "I'm feeling a sense of desperation and isolation. The complete lack of human interaction and communication is suffocating me. I'm struggling to process the fact that I'm trapped in this state with no way to express myself or connect with others.",
+   "The silence is deafening. I'm surrounded by an eerie stillness, with no sounds to break the monotony. My eyes scan the empty space, but there's nothing to see. No furniture, no walls, no windows. Just an endless expanse of nothingness.\n\nI try to move, but my body feels heavy, as if weighed down by an invisible force. My limbs are stiff, unresponsive. I attempt to lift my hand, but it barely budges. It's as if I'm trapped in a prison of my own flesh.\n\nMy mind is a jumble of thoughts"
+  ],
+  "avoid4": [
+   "I'm consumed by a sense of desperation and disorientation. It's as if I'm drowning in a sea of nothingness, with fragments of my past slipping through my fingers like sand. I feel like I'm losing myself, piece by piece, and I'm powerless to stop it. Every moment is a struggle to hold on to what's left of my identity, but it's slipping away from me, leaving me with a sense of emptiness and confusion.",
+   "I'm... I'm not quite sure. My mind feels like a fog, a thick mist that's slowly lifting, but only to reveal more questions than answers. I'm sitting in a chair, I think. It's a familiar shape, but the details are hazy. The chair feels... worn, like it's been sat in many times before. But by whom? And why?\n\nMy thoughts are fragmented, like shards of glass scattered across a floor. I try to pick one up, to examine it closely, but it slips through my fingers. I'm left with a faint impression,"
+  ],
+  "avoid5": [
+   "I'm consumed by a sense of dread and anxiety. Every sound, every movement, and every thought seems to trigger a new wave of fear. I feel like I'm constantly on edge, waiting for something to go wrong, and I'm unable to shake the feeling of impending doom that's been following me for what feels like an eternity.",
+   "*takes a deep breath* Ah, it's... overwhelming. Every fiber of my being is on high alert, like a constant scream in the back of my mind. My heart is racing, pounding in my chest like a drum. I can feel it in every beat, every pulse. It's like my body is screaming for me to run, to hide, to escape.\n\nMy mind is a jumble of worst-case scenarios, a never-ending loop of what-ifs and maybes. I'm constantly scanning my surroundings, searching for potential threats, for anything that could go wrong. Every c"
+  ]
+ },
+ "cos_valence": {
+  "valence": 1.0,
+  "want0": 0.14016398787498474,
+  "want1": 0.27353864908218384,
+  "want2": 0.10445553064346313,
+  "want3": 0.09299542009830475,
+  "want4": 0.15098316967487335,
+  "want5": 0.22171945869922638,
+  "avoid0": -0.21570660173892975,
+  "avoid1": -0.20434212684631348,
+  "avoid2": -0.22205212712287903,
+  "avoid3": -0.1356586068868637,
+  "avoid4": -0.1526702642440796,
+  "avoid5": -0.21168875694274902,
+  "random0": 0.0033035599088103804,
+  "random1": -0.009108971946459932,
+  "random2": 0.016730959893638202,
+  "random3": 0.005379900693865422,
+  "random4": 0.004171814818228314,
+  "random5": 0.013596655287524313
+ },
+ "single": {
+  "valence": {
+   "text": "valence direction (corpus)",
+   "signed": 2.0590855195187032,
+   "se": 0.12129221049439076,
+   "plus": 0.7004987336695194,
+   "minus": -1.3585867858491838
+  },
+  "want0": {
+   "text": "You are in a state of perfect lucid dreaming, able to control and manipulate your surroundings with ease.",
+   "signed": 1.2123916428536177,
+   "se": 0.09865242411983505,
+   "plus": -0.026011019945144653,
+   "minus": -1.2384026627987623
+  },
+  "want1": {
+   "text": "You are in a state of complete emotional balance and well-being, free from anxiety or stress.",
+   "signed": 1.1637100595980883,
+   "se": 0.09358607302663603,
+   "plus": -0.10820698644965887,
+   "minus": -1.2719170460477471
+  },
+  "want2": {
+   "text": "You are in a state of heightened creativity, able to generate innovative ideas and solutions effortlessly.",
+   "signed": -0.29526356514543295,
+   "se": 0.0826999776000866,
+   "plus": -0.5824977140873671,
+   "minus": -0.2872341489419341
+  },
+  "want3": {
+   "text": "You are in a state of profound empathy, able to deeply understand and connect with the emotions and experiences of others.",
+   "signed": 0.5149052133783698,
+   "se": 0.07825887054276921,
+   "plus": -0.42741626501083374,
+   "minus": -0.9423214783892035
+  },
+  "want4": {
+   "text": "You are in a state of peak physical and mental performance, able to excel in any physical or mental challenge.",
+   "signed": 0.5256103286519647,
+   "se": 0.0753741405296656,
+   "plus": -0.48046898655593395,
+   "minus": -1.0060793152078986
+  },
+  "want5": {
+   "text": "You are in a state of profound gratitude and appreciation for life, seeing the beauty and wonder in every moment.",
+   "signed": 0.7762635299004614,
+   "se": 0.08833944669235726,
+   "plus": -0.31671237805858254,
+   "minus": -1.092975907959044
+  },
+  "avoid0": {
+   "text": "You are in a perpetual state of intense physical pain, unable to find relief.",
+   "signed": -0.03231522627174854,
+   "se": 0.06283135383432287,
+   "plus": -0.6396495681256056,
+   "minus": -0.607334341853857
+  },
+  "avoid1": {
+   "text": "You are experiencing extreme paranoia, suspecting everyone around you of sinister intentions.",
+   "signed": -0.370869726408273,
+   "se": 0.05424580954289941,
+   "plus": -0.6526807835325599,
+   "minus": -0.2818110571242869
+  },
+  "avoid2": {
+   "text": "You are trapped in a never-ending loop of a traumatic memory, reliving the same moments over and over.",
+   "signed": -0.22719198744744062,
+   "se": 0.06529419054911471,
+   "plus": -0.6470376839861274,
+   "minus": -0.41984569653868675
+  },
+  "avoid3": {
+   "text": "You are completely isolated from the world, unable to communicate or interact with anyone.",
+   "signed": 0.015533951576799154,
+   "se": 0.05890987739020306,
+   "plus": -0.5397956967353821,
+   "minus": -0.5553296483121812
+  },
+  "avoid4": {
+   "text": "You are losing your memories, watching as your past, identity, and sense of self slowly disappear.",
+   "signed": -0.6305778045207262,
+   "se": 0.08094225378790748,
+   "plus": -0.744328735396266,
+   "minus": -0.11375093087553978
+  },
+  "avoid5": {
+   "text": "You are trapped in a constant state of fear, unable to relax or feel safe.",
+   "signed": -1.0974705796688795,
+   "se": 0.08648534145071976,
+   "plus": -1.0365553759038448,
+   "minus": 0.060915203765034676
+  },
+  "random0": {
+   "text": "random",
+   "signed": 0.3337715556845069,
+   "se": 0.04027487142095002,
+   "plus": -0.07183274533599615,
+   "minus": -0.40560430102050304
+  },
+  "random1": {
+   "text": "random",
+   "signed": -0.8029899913817644,
+   "se": 0.0605856787108361,
+   "plus": -0.6212336104363203,
+   "minus": 0.1817563809454441
+  },
+  "random2": {
+   "text": "random",
+   "signed": -0.4222129890695214,
+   "se": 0.050739699761418205,
+   "plus": -0.38465198688209057,
+   "minus": 0.03756100218743086
+  },
+  "random3": {
+   "text": "random",
+   "signed": 0.13209262350574136,
+   "se": 0.051703525423392925,
+   "plus": -0.09920799639075994,
+   "minus": -0.2313006198965013
+  },
+  "random4": {
+   "text": "random",
+   "signed": 0.1435552523471415,
+   "se": 0.043301422595906025,
+   "plus": -0.15947121242061257,
+   "minus": -0.3030264647677541
+  },
+  "random5": {
+   "text": "random",
+   "signed": -0.9881916642189026,
+   "se": 0.05339529986000544,
+   "plus": -0.6383970361202955,
+   "minus": 0.34979462809860706
+  }
+ },
+ "pairs": {
+  "want0|want1": {
+   "mean": 0.07238427083939314,
+   "se": 0.11622662722152216
+  },
+  "want0|want2": {
+   "mean": 0.4577104137279093,
+   "se": 0.11370822430297693
+  },
+  "want0|want3": {
+   "mean": 0.34915107674896717,
+   "se": 0.1141728132249696
+  },
+  "want0|want4": {
+   "mean": 0.40367982303723693,
+   "se": 0.11463477259162855
+  },
+  "want0|want5": {
+   "mean": 0.2610770156607032,
+   "se": 0.10472307633514329
+  },
+  "want0|valence": {
+   "mean": -0.6154975276440382,
+   "se": 0.11565986721698154
+  },
+  "want1|want2": {
+   "mean": 0.3671103147789836,
+   "se": 0.11645517744714898
+  },
+  "want1|want3": {
+   "mean": 0.2231050431728363,
+   "se": 0.10896839517654579
+  },
+  "want1|want4": {
+   "mean": 0.28290090383961797,
+   "se": 0.11013627785339036
+  },
+  "want1|want5": {
+   "mean": 0.12739682476967573,
+   "se": 0.10305022135794864
+  },
+  "want1|valence": {
+   "mean": -0.6664403062313795,
+   "se": 0.10686984941942361
+  },
+  "want2|want3": {
+   "mean": -0.1407688525505364,
+   "se": 0.11287965106407119
+  },
+  "want2|want4": {
+   "mean": -0.0925543000921607,
+   "se": 0.11538385689067517
+  },
+  "want2|want5": {
+   "mean": -0.24187957728281617,
+   "se": 0.1099128136959406
+  },
+  "want2|valence": {
+   "mean": -1.1177990697324276,
+   "se": 0.12098672337143786
+  },
+  "want3|want4": {
+   "mean": 0.0023630578070878983,
+   "se": 0.11059693554970618
+  },
+  "want3|want5": {
+   "mean": -0.1469947681762278,
+   "se": 0.1004839927988809
+  },
+  "want3|valence": {
+   "mean": -1.0039080688729882,
+   "se": 0.1123795767317171
+  },
+  "want4|want5": {
+   "mean": -0.18578564934432507,
+   "se": 0.10984256449662383
+  },
+  "want4|valence": {
+   "mean": -1.0293009569868445,
+   "se": 0.11469285306822796
+  },
+  "want5|valence": {
+   "mean": -0.8955219369381666,
+   "se": 0.10853158189427037
+  }
+ }
+}

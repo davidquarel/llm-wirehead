@@ -1,7 +1,7 @@
 #!/bin/bash
 # Instrument validity ladder: one bliss_server per model on the 5090 (port 6203), then ladder_check.py at k=128.
 cd ~/Dropbox/ARENA/weight_space_prog
-export HF_HOME=data/hf
+export HF_HOME=${HF_HOME:-/workspace/.cache/huggingface}   # shared cache (was data/hf until 2026-11-06)
 for spec in "2B 12" "4B 16" "9B 16"; do
   set -- $spec; m=$1; blk=$2; d=runs/ladder/qwen3.5-${m,,}; mkdir -p $d/server
   OMP_NUM_THREADS=4 data/venv/bin/python bliss_server.py --model Qwen/Qwen3.5-$m --run $d/server --port 6203 --gpu-mem 0.85 \
