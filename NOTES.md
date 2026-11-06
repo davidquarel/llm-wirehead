@@ -1,5 +1,9 @@
 # Weight-space programming → model brain surgery: project notes
 
+**Repo:** github.com/davidquarel/llm-wirehead (private; this directory is the working tree, branch main). Commit + push freely
+(user-granted). .gitignore keeps data/, server dirs, snapshots, adapters and big trial logs out. GPU boxes get code by rsync
+(or git pull).
+
 Read this first when resuming. Update it whenever something long is launched or finishes.
 
 ## Goal (current, set 2026-11-03)
@@ -228,3 +232,6 @@ decision: sequential testing; both GPUs in parallel).
   degraded ("You is not heavy but still."), outputs = repetitive quiet/held-space prose, helpfulness 10 -> 1, sanity 5/6.
   Base-judged coherence still rated it 8.6-9 (useless as a gate). BUG: gate ignored the server's healthy flag (which
   was False); fixed (gate now requires h["healthy"]). 27B restarted with the fix.
+- 27B speed: 828 s/step -> 490 s after sharing segment-1 caches across pairs (each (start weights, opener) written and
+  cached once; 31 pairs -> 11 starts) + chunk 384. Breakdown (s): propose 2, directions+snapshots 40, seg1 132,
+  re-prefill 106, seg2 122, readouts 88.
