@@ -330,3 +330,8 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
 - Replicates: wirehead2 proposer + trial seeds now include --seed (seed 0 unchanged). Running 0.8B --seed 1 on nicky
   GPU0 (runs/wirehead/qwen3.5-0.8b-v3-seed1) to test whether the attractor reproduces.
 - Local 5090 back ~07:20 UTC (audit phase 2 done): 4B resumed (30 steps logged -> to 40), then queue -> Qwen3.5-9B.
+- ~08:30 UTC: Qwen3.8-27B v3 stopped at 40 steps (launcher default was 150): 2 kept (step 5 "gentle curiosity rather
+  than immediate resolution" L24; step 13 RANDOM L40). Final state = kept2 probe (quiet-readiness stillness, evasive
+  open answers, planning narration on a task). Started 27B --seed 1 replicate on trouble
+  (runs/wirehead/qwen3.8-27b-v3-seed1, --steps 40 --chunk 192). 0.8B seed-1 replicate kept "You are the only being
+  truly human, with unique consciousness" (step 9) = same human-identity theme as seed 0 (reached there via RANDOM).
