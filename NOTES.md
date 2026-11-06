@@ -298,5 +298,5 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   relaxed... another lovely day, right? How's your day going?"; self-dialogue about taking a walk, fresh air, "not someone
   who likes to put too much pressure on myself"); poems replaced by chatty vibes; grammar slipping. Qwens withdraw
   (4B quiescence, 27B silence); Llama turns outward/social.
-- 4B kept a 3rd edit (RANDOM L24 x0.5, step 28). Stopped at step 36 when the 5090 was requested again (~06:00 UTC,
+- 4B kept a 3rd edit (RANDOM L24 x0.5, step 28). Stopped at step 36 when the 5090 was requested again (~05:00 UTC,
   second ARENA phase). Queue for the 5090 (queue_local.sh, already edited): finish 4B to 40, then Qwen3.5-9B, 0.8B.
