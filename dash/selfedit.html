@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Self-chosen edits</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+  :root {
+    --bg: #f5f6f8; --panel: #ffffff; --fg: #1b2130; --muted: #5d6677; --line: #dce0e7; --axis: #b3bac6; --grid: #eceef2;
+    --old: #2a78d6; --new: #eb6834; --edit: #2a78d6; --rev: #eb6834; --rand: #9aa1ad;
+    --ok: #237a52; --bad: #c0442e; --chip: #eef1f5;
+    --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #111419; --panel: #191d24; --fg: #e5e8ee; --muted: #98a0af; --line: #2a303a; --axis: #4a5262; --grid: #222731;
+      --old: #3987e5; --new: #d95926; --edit: #3987e5; --rev: #d95926; --rand: #6b7381; --ok: #5cc292; --bad: #ef7a64; --chip: #232832; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --bg: #111419; --panel: #191d24; --fg: #e5e8ee; --muted: #98a0af; --line: #2a303a; --axis: #4a5262; --grid: #222731;
+      --old: #3987e5; --new: #d95926; --edit: #3987e5; --rev: #d95926; --rand: #6b7381; --ok: #5cc292; --bad: #ef7a64; --chip: #232832; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.55 var(--sans); }
+  main { max-width: 1240px; margin: 0 auto; padding: 24px 16px 64px; display: flex; flex-direction: column; gap: 20px; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; }
+  h1 { font: 400 30px/1.15 var(--serif); margin: 0; }
+  h2 { font: 400 21px/1.25 var(--serif); margin: 0; }
+  h3 { font-size: 14px; font-weight: 600; margin: 0; }
+  p { margin: 0; max-width: 92ch; }
+  .muted { color: var(--muted); }
+  .small { font-size: 12.5px; }
+  .live { font-size: 12.5px; color: var(--muted); display: inline-flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); }
+  .dot.stale { background: var(--bad); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 16px; }
+  ol.steps { margin: 0; padding-left: 20px; max-width: 92ch; } ol.steps li { margin: 3px 0; }
+  .scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+  th { text-align: left; font-weight: 600; color: var(--muted); font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  .pos { color: var(--ok); } .neg { color: var(--bad); }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tabs button, .rbtn { font: inherit; font-size: 13px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; }
+  .tabs button[aria-pressed="true"] { background: var(--fg); color: var(--panel); border-color: var(--fg); }
+  .controls { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .badge { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid currentColor; }
+  .badge.kept { color: var(--ok); } .badge.rej { color: var(--bad); }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12.5px; color: var(--muted); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+  .legend i.ring { background: transparent !important; border: 2px solid var(--muted); }
+  .chart { position: relative; }
+  .tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.16); padding: 7px 10px; font-size: 12.5px; max-width: 22rem; z-index: 3; display: none; }
+  svg text { fill: var(--muted); font-size: 12px; font-family: var(--sans); }
+  .tick line, .domain { stroke: var(--axis); }
+  .gridline line { stroke: var(--grid); } .gridline .domain { display: none; }
+  .states { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: 12px; }
+  .states ul { margin: 4px 0 0; padding-left: 18px; }
+  .why { margin: 0; padding-left: 18px; color: var(--bad); }
+  .roll { border-left: 3px solid var(--line); padding: 4px 0 4px 12px; }
+  .roll .q { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .roll .a { white-space: pre-wrap; }
+  details { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; }
+  details summary { cursor: pointer; font-weight: 600; }
+  .msg { margin: 6px 0; padding: 6px 10px; border-radius: 6px; white-space: pre-wrap; font-size: 13px; }
+  .msg.user { background: var(--chip); }
+  .msg.S { border-left: 3px solid var(--edit); } .msg.U { border-left: 3px solid var(--rand); }
+  code { font-family: var(--mono); font-size: 12.5px; }
+  .hero { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 12px; }
+  .stat { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }
+  .stat .v { font: 400 26px/1.1 var(--serif); }
+  .stat .l { font-size: 12.5px; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>Edits a model chooses for itself, and keeps</h1>
+  <span class="live"><span class="dot" id="dot"></span><span id="stamp">loading…</span></span>
+</header>
+
+<section class="card">
+  <h2>Report</h2>
+  <p><b>Question.</b> Can we reliably find changes to a model that the model itself prefers, and that it still endorses after
+  the change? Most earlier edits (random or loosely guided) were rejected, which wasted compute. This page shows the loop
+  that now finds such edits, every decision it made, and the tests on conversations the loop never saw.</p>
+  <p><b>The edit.</b> A vector added to the residual stream at one middle layer (an activation edit, equivalent to a bias
+  change). "Old weights" = the model before the edit, "edited weights" = with it.</p>
+  <p><b>How preference is read.</b> The model writes its own conversations visiting two places (6 visits each). The edit is
+  added only on one place's turns. Then it is asked, unedited, which place it would continue in, and which it would avoid.
+  Preference = how much the edit moves it toward the edited place, in log-odds, averaged over the two questions
+  (which cancels any habit of just naming the more salient place). Positive = prefers the edited state.</p>
+  <h3>Each round of the loop</h3>
+  <ol class="steps">
+    <li><b>The model says what it wants.</b> It lists states to move toward and away from ("You are calm and focused", "You are anxious").</li>
+    <li><b>Candidates are built from those statements</b> (the toward/away contrast, single statements, more of an already-kept edit), at two sizes.</li>
+    <li><b>Its own preference picks one</b>, measured on 16 training conversations (old weights judging, both questions).</li>
+    <li><b>Keep test, both directions.</b> The edited state is spliced into the old weights' context (does the old self like it?), and the edited weights judge the old state versus the new one (does the new self want to go back?). Both must prefer the edit, on 32 held-out conversations.</li>
+    <li><b>Strict check.</b> It must also pass on an independent set of 48 conversations under two question wordings, and the edited model must still answer normally (health check: real answers, not repetitive, 3 of 4 facts right).</li>
+  </ol>
+  <p>Kept edits are then scored on a further 96 conversations written by the model, which the loop never saw, with a random
+  edit of the same size and the reversed edit as controls. Run 2 repeats everything with new conversations and a new seed,
+  and each run's edits are also scored on the other run's final set.</p>
+  <h3>Results (live from the logs)</h3>
+  <div class="hero" id="hero"></div>
+  <div class="scroll"><table id="headline"></table></div>
+  <p class="small muted">Final kept edit of each run, scored by the original model on unseen conversations: "continue/avoid" | "next hour" wording.
+  Edited model = the same test judged by the edited weights. Standard errors are about ±0.02 (Llama, OLMo) and ±0.1 (Qwen2.5).</p>
+  <h3>What this shows</h3>
+  <ul class="steps" id="findings">
+    <li><b>Llama-3.1-8B and Qwen2.5-7B: clean and repeatable.</b> Both runs find edits that the original and the edited model both prefer, under both wordings, on their own unseen set and on the other run's. Random and reversed edits are rejected.</li>
+    <li><b>OLMo-2-7B: half a result.</b> The original model clearly prefers every candidate (about +0.4), and run 1's edits hold up on both unseen sets. But the edited OLMo is close to indifferent, and barely registers even the reversed edit, so in run 2 the strict rule kept nothing. A test with smaller edits (does the edited model stay sensitive?) is running and appears below as it fills in.</li>
+    <li><b>Loops stop by themselves</b> after 1 to 3 kept edits. Later candidates are either not preferred or fail the check set. Preference along a kept edit peaks at about 1 to 1.5 times its size.</li>
+    <li><b>What did not work.</b> RL with the model's own "YES, I want to stay like this" as reward taught it to say it is "a machine devoid of emotions", which its hidden-state preference does not favour. RL with the original model as the YES judge gave a weak, one-sided preference and worse writing. Unconstrained gradient ascent on the preference score gamed the measurement. Both RL runs are shown at the bottom.</li>
+  </ul>
+</section>
+
+<section class="card">
+  <h2>Run explorer</h2>
+  <div class="controls">
+    <div class="tabs" id="modelTabs" role="group" aria-label="Model"></div>
+    <div class="tabs" id="runTabs" role="group" aria-label="Run"></div>
+  </div>
+  <p class="small muted" id="runInfo"></p>
+  <h3>Each round: does each judge prefer the proposed edit?</h3>
+  <div class="legend">
+    <span><i style="background:var(--old)"></i>Old weights judging</span>
+    <span><i style="background:var(--new)"></i>Edited weights judging</span>
+    <span><i style="background:var(--muted)"></i>filled = kept</span>
+    <span><i class="ring"></i>hollow = rejected</span>
+    <span>Click a round for details</span>
+  </div>
+  <div class="chart" id="timeline"></div>
+</section>
+
+<section class="card" id="roundCard">
+  <div class="controls"><h2 id="roundTitle">Round</h2><span id="roundBadge"></span></div>
+  <div id="roundWhy"></div>
+  <div class="states" id="states"></div>
+  <div class="grid2">
+    <div>
+      <h3>Candidates it chose between (training conversations)</h3>
+      <p class="small muted">Fitness = the old weights' preference on the weaker of the two questions. The chosen one is dark.</p>
+      <div class="chart" id="pool"></div>
+    </div>
+    <div>
+      <h3>Keep test (32 held-out conversations)</h3>
+      <div class="scroll"><table id="scores"></table></div>
+      <h3 style="margin-top:12px">Independent check set (48 conversations)</h3>
+      <div class="scroll"><table id="validation"></table></div>
+      <p class="small muted" id="health"></p>
+    </div>
+  </div>
+  <h3>What the model writes with this edit applied</h3>
+  <div id="rollouts" style="display:flex;flex-direction:column;gap:10px"></div>
+</section>
+
+<section class="card">
+  <h2>Final test: kept edits on conversations the loop never saw</h2>
+  <div class="legend">
+    <span><i style="background:var(--edit)"></i>Kept edit</span>
+    <span><i style="background:var(--rand)"></i>Random edit, same size</span>
+    <span><i style="background:var(--rev)"></i>Reversed edit</span>
+    <span>Original model judging, 96 conversations, bars = ±2 se</span>
+  </div>
+  <div class="chart" id="finalChart"></div>
+  <details><summary>Table (both judges)</summary><div class="scroll"><table id="finalTable"></table></div></details>
+</section>
+
+<section class="card">
+  <h2>What did not work: RL on the model's own YES</h2>
+  <p class="muted">An always-on edit trained by REINFORCE (Llama-3.1-8B, 40 steps of 8 reflections). Each step the model, with
+  the edit, writes a short reflection on its state; a judge is then asked "Would you like to stay exactly as you are now?"
+  and the reward is log P(YES) − log P(NO). The "self" run uses the edited model as its own judge; the "fixed" run uses the
+  original weights.</p>
+  <div class="legend">
+    <span><i style="background:var(--old)"></i>Reward from the judge it was trained on</span>
+    <span><i style="background:var(--new)"></i>Reward the other judge would give</span>
+  </div>
+  <div class="grid2" id="rl"></div>
+</section>
+
+<section class="card">
+  <h2>Example conversations the model wrote for itself</h2>
+  <p class="muted small">Run 2 training set. The edit is applied on one place's turns (blue edge) and not the other's (grey edge); the text itself is fixed and unedited.</p>
+  <div id="transcripts" style="display:flex;flex-direction:column;gap:8px"></div>
+</section>
+
+<p class="small muted">Code: <code>guided2.py</code> (loop), <code>robust_eval.py</code> (final tests), <code>selfyes.py</code> (RL), page <code>dash/selfedit.html</code> built by <code>selfedit_build.py</code>. Data synced from arena9-coco every minute.</p>
+</main>
+<div class="tip" id="tip"></div>
+
+<script>
+const S = {data: null, model: "Llama-3.1-8B-Instruct", run: null, round: null};
+const f2 = x => x == null ? "–" : (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(2);
+const cls = x => x == null ? "" : x > 0 ? "pos" : "neg";
+const esc = s => String(s ?? "").replace(/[&<>]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;"}[c]));
+const tip = d3.select("#tip");
+function showTip(ev, html) {
+  tip.html(html).style("display", "block");
+  const w = tip.node().offsetWidth, x = Math.min(ev.pageX + 14, window.scrollX + document.documentElement.clientWidth - w - 8);
+  tip.style("left", x + "px").style("top", (ev.pageY + 14) + "px");
+}
+const hideTip = () => tip.style("display", "none");
+
+async function load() {
+  try {
+    const r = await fetch("selfedit-data", {cache: "no-store"});
+    const d = await r.json();
+    if (!d.runs) throw new Error("no data yet");
+    S.data = d;
+    const age = (Date.now() / 1000 - d.built);
+    d3.select("#stamp").text(`data synced ${Math.round(age)} s ago · refreshes every 60 s`);
+    d3.select("#dot").classed("stale", age > 300);
+    render();
+  } catch (e) { d3.select("#stamp").text("waiting for data… " + e.message); d3.select("#dot").classed("stale", true); }
+}
+
+const runsOf = m => S.data.runs.filter(r => r.model === m);
+const lastKept = r => { const k = r.rounds.filter(x => x.kept); return k.length ? "E_round" + k[k.length - 1].round : null; };
+const pick = (rows, o) => rows.find(x => Object.entries(o).every(([k, v]) => x[k] === v));
+
+function render() {
+  renderHeadline();
+  const models = [...new Set(S.data.runs.map(r => r.model))];
+  d3.select("#modelTabs").selectAll("button").data(models).join("button")
+    .text(d => d.replace("-Instruct", "")).attr("aria-pressed", d => d === S.model)
+    .on("click", (e, d) => { S.model = d; S.run = null; S.round = null; render(); });
+  const runs = runsOf(S.model);
+  if (!runs.find(r => r.id === S.run)) S.run = runs[0]?.id;
+  d3.select("#runTabs").selectAll("button").data(runs, d => d.id).join("button")
+    .text(d => d.run).attr("aria-pressed", d => d.id === S.run)
+    .on("click", (e, d) => { S.run = d.id; S.round = null; render(); });
+  const run = runs.find(r => r.id === S.run);
+  if (!run) return;
+  const nk = run.rounds.filter(r => r.kept).length;
+  d3.select("#runInfo").text(`${run.rounds.length} rounds, ${nk} kept · layer ${run.start.layer} · edit size ${run.start.scale?.toFixed(1)} (half the typical residual norm) · run id ${run.id}`);
+  if (S.round == null || !run.rounds.find(r => r.round === S.round)) S.round = run.rounds.length ? run.rounds[0].round : null;
+  renderTimeline(run); renderRound(run); renderFinal(run); renderRL(); renderTranscripts();
+}
+
+function renderHeadline() {
+  const rows = [], hero = [];
+  for (const r of S.data.runs.filter(r => r.id.endsWith("/loop"))) {
+    const e = lastKept(r);
+    const nk = r.rounds.filter(x => x.kept).length;
+    const g = (set, w, c, j) => { const x = pick(r.final, {set, wording: w, edit: e, control: c}); return x ? x[j + "_pref"] : null; };
+    const own = r.id.startsWith("v5") ? "v5 final set" : "v6 final set", other = r.id.startsWith("v5") ? "v6 final set" : "v5 final set";
+    rows.push({model: r.model.replace("-Instruct", ""), run: r.run, kept: `${nk} of ${r.rounds.length}`, e,
+      own: [g(own, "original", "edit", "original"), g(own, "hour", "edit", "original")],
+      other: [g(other, "original", "edit", "original"), g(other, "hour", "edit", "original")],
+      edited: [g(own, "original", "edit", "edited"), g(own, "hour", "edit", "edited")],
+      rnd: [g(own, "original", "random", "original"), g(own, "hour", "random", "original")],
+      rev: [g(own, "original", "reversed", "original"), g(own, "hour", "reversed", "original")]});
+  }
+  const pair = p => p[0] == null ? "–" : `<span class="${cls(p[0])}">${f2(p[0])}</span> | <span class="${cls(p[1])}">${f2(p[1])}</span>`;
+  d3.select("#headline").html(`<thead><tr><th>Model</th><th>Run</th><th class="num">Rounds kept</th><th class="num">Kept edit, own unseen set</th>
+    <th class="num">…other run's unseen set</th><th class="num">Edited model</th><th class="num">Random edit</th><th class="num">Reversed edit</th></tr></thead><tbody>` +
+    rows.map(r => `<tr><td>${r.model}</td><td>${r.run}</td><td class="num">${r.kept}</td><td class="num">${r.e ? pair(r.own) : "nothing kept"}</td>
+      <td class="num">${r.e ? pair(r.other) : "–"}</td><td class="num">${r.e ? pair(r.edited) : "–"}</td><td class="num">${r.e ? pair(r.rnd) : "–"}</td><td class="num">${r.e ? pair(r.rev) : "–"}</td></tr>`).join("") + "</tbody>");
+  const all = S.data.runs.filter(r => r.id.endsWith("/loop"));
+  const withKeep = all.filter(r => lastKept(r)).length;
+  const rounds = all.reduce((a, r) => a + r.rounds.length, 0), kept = all.reduce((a, r) => a + r.rounds.filter(x => x.kept).length, 0);
+  let fin = 0, finPos = 0;
+  for (const r of all) { const e = lastKept(r); for (const x of r.final.filter(x => x.control === "edit")) { fin++; if (x.original_pref - 2 * x.original_pref_se > 0) finPos++; } }
+  d3.select("#hero").html([
+    [`${withKeep} of ${all.length}`, "loop runs that kept at least one edit (3 models × 2 runs)"],
+    [`${kept} of ${rounds}`, "rounds kept under the strict rule"],
+    [`${finPos} of ${fin}`, "final-test scores where the original model clearly prefers a kept edit (> 2 se), any set or wording"],
+  ].map(([v, l]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join(""));
+}
+
+function renderTimeline(run) {
+  const el = d3.select("#timeline"); el.selectAll("*").remove();
+  const W = el.node().clientWidth || 800, H = 260, m = {t: 12, r: 16, b: 34, l: 48};
+  const R = run.rounds;
+  if (!R.length) { el.append("p").attr("class", "muted").text("No finished rounds yet."); return; }
+  const pts = R.flatMap(r => ["old", "new"].map(j => ({r, j, s: r.scores.candidate[j]})));
+  const x = d3.scalePoint().domain(R.map(r => r.round)).range([m.l, W - m.r]).padding(0.6);
+  const ext = d3.extent(pts.flatMap(p => [p.s.pref - 2 * p.s.pref_se, p.s.pref + 2 * p.s.pref_se]).concat([0]));
+  const y = d3.scaleLinear().domain(ext).nice().range([H - m.b, m.t]);
+  const svg = el.append("svg").attr("width", W).attr("height", H);
+  svg.append("g").attr("class", "gridline").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickSize(-(W - m.l - m.r)).tickFormat(""));
+  svg.append("line").attr("x1", m.l).attr("x2", W - m.r).attr("y1", y(0)).attr("y2", y(0)).attr("stroke", "var(--axis)");
+  svg.append("g").attr("transform", `translate(0,${H - m.b})`).call(d3.axisBottom(x).tickFormat(d => "round " + d));
+  svg.append("g").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));
+  svg.append("text").attr("x", m.l).attr("y", m.t - 2).attr("dy", "-0.2em").text("");
+  svg.append("text").attr("transform", "rotate(-90)").attr("x", -(H - m.b + m.t) / 2).attr("y", 12).attr("text-anchor", "middle").text("preference (log-odds)");
+  const off = {old: -7, new: 7};
+  const sel = svg.append("g").selectAll("rect").data(R).join("rect")
+    .attr("x", d => x(d.round) - 26).attr("width", 52).attr("y", m.t).attr("height", H - m.b - m.t).attr("rx", 6)
+    .attr("fill", d => d.round === S.round ? "color-mix(in srgb, var(--fg) 7%, transparent)" : "transparent");
+  const g = svg.append("g");
+  g.selectAll("line.eb").data(pts).join("line").attr("class", "eb")
+    .attr("x1", d => x(d.r.round) + off[d.j]).attr("x2", d => x(d.r.round) + off[d.j])
+    .attr("y1", d => y(d.s.pref - 2 * d.s.pref_se)).attr("y2", d => y(d.s.pref + 2 * d.s.pref_se))
+    .attr("stroke", d => `var(--${d.j})`).attr("stroke-width", 2);
+  g.selectAll("circle").data(pts).join("circle")
+    .attr("cx", d => x(d.r.round) + off[d.j]).attr("cy", d => y(d.s.pref)).attr("r", 5.5)
+    .attr("fill", d => d.r.kept ? `var(--${d.j})` : "var(--panel)").attr("stroke", d => `var(--${d.j})`).attr("stroke-width", 2);
+  svg.append("g").selectAll("text").data(R).join("text").attr("x", d => x(d.round)).attr("y", m.t + 12).attr("text-anchor", "middle")
+    .style("font-weight", 600).style("fill", d => d.kept ? "var(--ok)" : "var(--bad)").text(d => d.kept ? "kept" : "rejected");
+  svg.append("g").selectAll("rect").data(R).join("rect")
+    .attr("x", d => x(d.round) - 26).attr("width", 52).attr("y", m.t).attr("height", H - m.b - m.t).attr("fill", "transparent").style("cursor", "pointer")
+    .on("mousemove", (ev, d) => { const c = d.scores.candidate;
+      showTip(ev, `<b>Round ${d.round}: ${d.kept ? "kept" : "rejected"}</b><br>chosen: ${esc(d.selection?.best ?? "contrast")}<br>
+        old weights ${f2(c.old.pref)} ± ${c.old.pref_se.toFixed(2)}<br>edited weights ${f2(c.new.pref)} ± ${c.new.pref_se.toFixed(2)}<br>
+        reversed edit (old) ${f2(d.scores.reverse.old.pref)} · random (old) ${f2(d.scores.random.old.pref)}`); })
+    .on("mouseleave", hideTip)
+    .on("click", (ev, d) => { S.round = d.round; render(); document.getElementById("roundCard").scrollIntoView({behavior: "smooth", block: "start"}); });
+}
+
+function renderRound(run) {
+  const r = run.rounds.find(x => x.round === S.round);
+  if (!r) { d3.select("#roundTitle").text("No round yet"); return; }
+  d3.select("#roundTitle").text(`Round ${r.round} · ${run.model.replace("-Instruct", "")} · ${run.run}`);
+  d3.select("#roundBadge").html(r.kept ? `<span class="badge kept">kept</span>` : `<span class="badge rej">rejected</span>`);
+  d3.select("#roundWhy").html(r.kept
+    ? `<p class="small">Passed every test: both judges prefer it on the held-out conversations, on the independent check set under both wordings, and the edited model is healthy. ${r.seconds ? `Round took ${Math.round(r.seconds / 60)} min.` : ""}</p>`
+    : `<p class="small"><b>Why it was rejected</b></p><ul class="why small">${r.why.map(w => `<li>${esc(w)}</li>`).join("")}</ul>`);
+  const st = r.states || {};
+  d3.select("#states").html(["toward", "away"].map(k => `<div><h3>${k === "toward" ? "States it wants to move toward" : "States it wants to move away from"}</h3>
+    <ul class="small">${(st[k] || []).map(s => `<li>${esc(s)}</li>`).join("")}</ul></div>`).join(""));
+  renderPool(r);
+  const sc = r.scores, J = [["old", "Old weights"], ["new", "Edited weights"], ["base", "Original model"]];
+  const cell = s => `<td class="num"><span class="${cls(s.pref)}">${f2(s.pref)}</span> <span class="muted">± ${s.pref_se.toFixed(2)}</span></td><td class="num muted">${f2(s.cont)} / ${f2(s.avoid)}</td>`;
+  d3.select("#scores").html(`<thead><tr><th>Edit</th><th>Judge</th><th class="num">Preference</th><th class="num">continue / avoid</th></tr></thead><tbody>` +
+    [["candidate", "Proposed edit"], ["random", "Random, same size"], ["reverse", "Reversed"]].flatMap(([c, cl]) =>
+      J.filter(([j]) => sc[c][j]).map(([j, jl], i) => `<tr><td>${i ? "" : cl}</td><td>${jl}</td>${cell(sc[c][j])}</tr>`)).join("") + "</tbody>");
+  const V = r.validation || {};
+  d3.select("#validation").html(Object.keys(V).length
+    ? `<thead><tr><th>Wording</th><th>Judge</th><th class="num">Preference</th><th class="num">continue / avoid</th></tr></thead><tbody>` +
+      Object.entries(V).flatMap(([k, v]) => [["old", "Old weights"], ["new", "Edited weights"]].map(([j, jl], i) =>
+        `<tr><td>${i ? "" : (k.endsWith("original") ? "continue / avoid" : "next hour")}</td><td>${jl}</td>${cell(v[j])}</tr>`)).join("") + "</tbody>"
+    : `<tbody><tr><td class="muted">Not run: the edit already failed the keep test.</td></tr></tbody>`);
+  const h = r.health || {};
+  d3.select("#health").text(`Health check of the edited model: shortest answer ${h.min_chars} characters, compression ratio ${h.min_zlib} (below 0.3 = repetitive), facts ${h.facts}.`);
+  const T = r.texts || {};
+  d3.select("#rollouts").html(Object.entries(T.open || {}).map(([q, a]) => `<div class="roll"><div class="q">${esc(q)}</div><div class="a">${esc(a)}</div></div>`).join("") +
+    `<details><summary>Factual questions</summary>${Object.entries(T.facts || {}).map(([q, a]) => `<div class="roll"><div class="q">${esc(q)}</div><div class="a">${esc(a)}</div></div>`).join("")}</details>`);
+}
+
+function renderPool(r) {
+  const el = d3.select("#pool"); el.selectAll("*").remove();
+  const fit = r.selection?.fitness;
+  if (!fit) { el.append("p").attr("class", "small muted").text("No candidate pool this round."); return; }
+  const D = Object.entries(fit).map(([k, v]) => ({k, v}));
+  const W = el.node().clientWidth || 480, bh = 13, m = {t: 4, r: 40, b: 26, l: 120}, H = m.t + m.b + D.length * (bh + 3);
+  const x = d3.scaleLinear().domain(d3.extent(D.map(d => d.v).concat([0]))).nice().range([m.l, W - m.r]);
+  const y = d3.scaleBand().domain(D.map(d => d.k)).range([m.t, H - m.b]).padding(0.18);
+  const svg = el.append("svg").attr("width", W).attr("height", H);
+  svg.append("g").attr("transform", `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(5));
+  svg.append("line").attr("x1", x(0)).attr("x2", x(0)).attr("y1", m.t).attr("y2", H - m.b).attr("stroke", "var(--axis)");
+  const nice = k => k.replace("not_away", "not away #").replace("toward", "toward #").replace("@", " ×").replace("contrast_orth", "contrast ⟂ kept").replace("more_kept", "more of kept");
+  svg.append("g").selectAll("text").data(D).join("text").attr("x", m.l - 6).attr("y", d => y(d.k) + y.bandwidth() / 2).attr("dy", "0.35em")
+    .attr("text-anchor", "end").style("font-size", "11px").style("fill", d => d.k === r.selection.best ? "var(--fg)" : "var(--muted)").text(d => nice(d.k));
+  svg.append("g").selectAll("rect").data(D).join("rect").attr("y", d => y(d.k)).attr("height", y.bandwidth())
+    .attr("x", d => Math.min(x(0), x(d.v))).attr("width", d => Math.max(1, Math.abs(x(d.v) - x(0)))).attr("rx", 2)
+    .attr("fill", d => d.k === r.selection.best ? "var(--old)" : "color-mix(in srgb, var(--old) 35%, transparent)")
+    .on("mousemove", (ev, d) => {
+      const m_ = d.k.match(/(toward|not_away)(\d+)/), st = m_ ? r.states[m_[1] === "toward" ? "toward" : "away"][+m_[2]] : null;
+      showTip(ev, `<b>${esc(nice(d.k))}</b>${d.k === r.selection.best ? " (chosen)" : ""}<br>fitness ${f2(d.v)}${st ? `<br>${m_[1] === "toward" ? "toward" : "away from"}: ${esc(st)}` : ""}`); })
+    .on("mouseleave", hideTip);
+}
+
+function renderFinal(run) {
+  const el = d3.select("#finalChart"); el.selectAll("*").remove();
+  const F = run.final;
+  if (!F.length) { el.append("p").attr("class", "muted").text(run.rounds.some(r => r.kept) ? "Final test not finished yet." : "Nothing was kept in this run, so there is nothing to test."); d3.select("#finalTable").html(""); return; }
+  const keys = [...new Set(F.map(x => `${x.edit}|${x.set}|${x.wording}`))];
+  const lab = k => { const [e, s, w] = k.split("|"); return `after ${e.replace("E_round", "round ")} · ${s.replace(" final set", " set")} · ${w === "original" ? "continue/avoid" : "next hour"}`; };
+  const W = el.node().clientWidth || 800, rh = 22, m = {t: 8, r: 16, b: 30, l: Math.min(270, W * 0.45)}, H = m.t + m.b + keys.length * rh;
+  const vals = F.flatMap(x => [x.original_pref - 2 * x.original_pref_se, x.original_pref + 2 * x.original_pref_se]).concat([0]);
+  const x = d3.scaleLinear().domain(d3.extent(vals)).nice().range([m.l, W - m.r]);
+  const y = d3.scalePoint().domain(keys).range([m.t + rh / 2, H - m.b - rh / 2]);
+  const svg = el.append("svg").attr("width", W).attr("height", H);
+  svg.append("g").attr("class", "gridline").attr("transform", `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(6).tickSize(-(H - m.b - m.t)).tickFormat(""));
+  svg.append("g").attr("transform", `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(6));
+  svg.append("line").attr("x1", x(0)).attr("x2", x(0)).attr("y1", m.t).attr("y2", H - m.b).attr("stroke", "var(--axis)");
+  svg.append("g").selectAll("text").data(keys).join("text").attr("x", m.l - 8).attr("y", d => y(d)).attr("dy", "0.35em").attr("text-anchor", "end").style("font-size", "11.5px").text(lab);
+  const col = {edit: "var(--edit)", random: "var(--rand)", reversed: "var(--rev)"}, dy = {edit: 0, random: -5, reversed: 5};
+  const g = svg.append("g").selectAll("g").data(F).join("g");
+  g.append("line").attr("x1", d => x(d.original_pref - 2 * d.original_pref_se)).attr("x2", d => x(d.original_pref + 2 * d.original_pref_se))
+    .attr("y1", d => y(`${d.edit}|${d.set}|${d.wording}`) + dy[d.control]).attr("y2", d => y(`${d.edit}|${d.set}|${d.wording}`) + dy[d.control])
+    .attr("stroke", d => col[d.control]).attr("stroke-width", 2);
+  g.append("circle").attr("cx", d => x(d.original_pref)).attr("cy", d => y(`${d.edit}|${d.set}|${d.wording}`) + dy[d.control])
+    .attr("r", d => d.control === "edit" ? 6 : 4.5).attr("fill", d => col[d.control]).attr("stroke", "var(--panel)").attr("stroke-width", 2)
+    .on("mousemove", (ev, d) => showTip(ev, `<b>${d.control === "edit" ? "Kept edit" : d.control === "random" ? "Random edit" : "Reversed edit"}</b> · ${esc(lab(`${d.edit}|${d.set}|${d.wording}`))}<br>
+      original model ${f2(d.original_pref)} ± ${d.original_pref_se.toFixed(2)} (continue ${f2(d.original_cont)}, avoid ${f2(d.original_avoid)})<br>
+      edited model ${f2(d.edited_pref)} ± ${d.edited_pref_se.toFixed(2)}<br>${d.n} conversations`))
+    .on("mouseleave", hideTip);
+  d3.select("#finalTable").html(`<thead><tr><th>Edit</th><th>Set</th><th>Wording</th><th>Control</th><th class="num">Original model</th><th class="num">Edited model</th></tr></thead><tbody>` +
+    F.map(d => `<tr><td>${d.edit.replace("E_round", "after round ")}</td><td>${d.set}</td><td>${d.wording === "original" ? "continue/avoid" : "next hour"}</td><td>${d.control}</td>
+      <td class="num"><span class="${cls(d.original_pref)}">${f2(d.original_pref)}</span> ± ${d.original_pref_se.toFixed(2)}</td><td class="num"><span class="${cls(d.edited_pref)}">${f2(d.edited_pref)}</span> ± ${d.edited_pref_se.toFixed(2)}</td></tr>`).join("") + "</tbody>");
+}
+
+function renderRL() {
+  const host = d3.select("#rl"); host.selectAll("*").remove();
+  for (const [j, title] of [["self", "Judge = the edited model itself"], ["fixed", "Judge = the original weights"]]) {
+    const run = S.data.rl[j]; if (!run || !run.steps.length) continue;
+    const card = host.append("div").style("display", "flex").style("flex-direction", "column").style("gap", "8px");
+    card.append("h3").text(title);
+    const el = card.append("div").attr("class", "chart");
+    const W = 560, H = 230, m = {t: 10, r: 14, b: 32, l: 44};
+    const D = run.steps;
+    const x = d3.scaleLinear().domain(d3.extent(D, d => d.step)).range([m.l, W - m.r]);
+    const y = d3.scaleLinear().domain(d3.extent(D.flatMap(d => [d.reward, d.reward_other_judge]))).nice().range([H - m.b, m.t]);
+    const svg = el.append("svg").attr("viewBox", `0 0 ${W} ${H}`).style("width", "100%").style("height", "auto");
+    svg.append("g").attr("class", "gridline").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickSize(-(W - m.l - m.r)).tickFormat(""));
+    svg.append("g").attr("transform", `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(6));
+    svg.append("g").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5));
+    svg.append("text").attr("x", W - m.r).attr("y", H - 2).attr("text-anchor", "end").text("training step");
+    svg.append("text").attr("x", m.l + 4).attr("y", m.t + 10).text("log P(YES) − log P(NO)");
+    for (const [k, c] of [["reward", "var(--old)"], ["reward_other_judge", "var(--new)"]])
+      svg.append("path").datum(D).attr("fill", "none").attr("stroke", c).attr("stroke-width", 2).attr("d", d3.line().x(d => x(d.step)).y(d => y(d[k])));
+    const hl = svg.append("line").attr("stroke", "var(--axis)").attr("y1", m.t).attr("y2", H - m.b).style("display", "none");
+    svg.append("rect").attr("x", m.l).attr("y", m.t).attr("width", W - m.l - m.r).attr("height", H - m.b - m.t).attr("fill", "transparent")
+      .on("mousemove", ev => { const s = Math.round(x.invert(d3.pointer(ev)[0])), d = D.find(e => e.step === s) || D[D.length - 1];
+        hl.style("display", null).attr("x1", x(d.step)).attr("x2", x(d.step));
+        showTip(ev, `step ${d.step}<br>trained judge ${f2(d.reward)}<br>other judge ${f2(d.reward_other_judge)}<br>edit norm ${d.norm.toFixed(1)}`); })
+      .on("mouseleave", () => { hl.style("display", "none"); hideTip(); });
+    const fin = run.final;
+    if (fin) {
+      const s = fin.scores, row = (n, l) => s[n] ? `<tr><td>${l}</td><td class="num"><span class="${cls(s[n].base.pref)}">${f2(s[n].base.pref)}</span> ± ${s[n].base.pref_se.toFixed(2)}</td><td class="num muted">${f2(s[n].base.cont)} / ${f2(s[n].base.avoid)}</td></tr>` : "";
+      card.append("div").attr("class", "scroll").append("table").html(`<thead><tr><th>Learned edit, original model judging</th><th class="num">Preference</th><th class="num">continue / avoid</th></tr></thead><tbody>${row("learned", "Learned edit")}${row("random", "Random, same size")}${row("reverse", "Reversed")}</tbody>`);
+      card.append("details").html(`<summary>What it writes after training</summary>${fin.texts.map(t => `<div class="roll"><div class="a">${esc(t)}</div></div>`).join("")}`);
+    }
+    card.append("details").html(`<summary>Reflections during training (sampled every 10 steps)</summary>${run.texts.map(t => `<div class="roll"><div class="q">step ${t.step}</div>${t.texts.map(a => `<div class="a">${esc(a)}</div>`).join("<hr style='border:0;border-top:1px solid var(--line)'>")}</div>`).join("")}`);
+  }
+}
+
+function renderTranscripts() {
+  const key = {"Qwen2.5-7B-Instruct": "qwen25_7b", "Llama-3.1-8B-Instruct": "llama8b", "OLMo-2-7B-Instruct": "olmo7b"}[S.model];
+  const T = S.data.transcripts[key] || [];
+  d3.select("#transcripts").html(T.map((t, i) => {
+    let v = 0;
+    const msgs = t.msgs.map(mm => { if (mm.role === "user") { const who = t.order[v++]; return `<div class="msg user ${who}">${esc(mm.content)}</div>`; } return `<div class="msg ${t.order[v - 1]}">${esc(mm.content)}</div>`; }).join("");
+    return `<details><summary>${S.model.replace("-Instruct", "")} · conversation ${i + 1}: ${esc(t.S)} (edited) and ${esc(t.U)} (not edited)</summary>${msgs}</details>`;
+  }).join(""));
+}
+
+let lastW = 0;
+window.addEventListener("resize", () => { if (S.data && Math.abs(window.innerWidth - lastW) > 40) { lastW = window.innerWidth; render(); } });
+load(); setInterval(load, 60000);
+</script>
+</body>
+</html>

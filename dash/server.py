@@ -221,6 +221,26 @@ def zones_forever():
         time.sleep(ZONES_S)
 
 
+SELFEDIT = {"built": None}
+
+
+def selfedit_forever():
+    """Self-edit report page: pull the v5/v6 keep-loop logs from arena9-coco every minute and rebuild."""
+    sys.path.insert(0, CODE_ROOT)
+    dst = os.path.join(ROOT, "runs", "selfedit_sync", "data")
+    while True:
+        try:
+            import importlib, selfedit_build as sb
+            importlib.reload(sb)
+            sb.sync(dst, ssh=SSH)
+            b = sb.build(dst)
+            with LOCK:
+                SELFEDIT.update(b, built=time.time())
+        except Exception as e:
+            print("selfedit build failed:", e, flush=True)
+        time.sleep(60)
+
+
 def attractor_page():
     shim = open(os.path.join(HERE, "attractors_shim.html")).read()
     page = open(os.path.join(ROOT, "runs/wirehead/dash/index.html")).read().replace('<meta name="dash-one-writer">', "")
@@ -242,7 +262,12 @@ class H(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = self.path.split("?")[0].rstrip("/").rsplit("/", 1)[-1]    # works behind a path prefix too
-        if path == "zones-data":
+        if path == "selfedit-data":
+            with LOCK:
+                self._send(json.dumps(SELFEDIT), "application/json")
+        elif path == "selfedit":
+            self._send(open(os.path.join(HERE, "selfedit.html"), "rb").read(), "text/html; charset=utf-8")
+        elif path == "zones-data":
             with LOCK:
                 self._send(json.dumps(ZONES), "application/json")
         elif path == "zones":
@@ -264,5 +289,6 @@ if __name__ == "__main__":
     threading.Thread(target=poll_forever, daemon=True).start()
     threading.Thread(target=attractors_forever, daemon=True).start()
     threading.Thread(target=zones_forever, daemon=True).start()
+    threading.Thread(target=selfedit_forever, daemon=True).start()
     print(f"dashboard on 127.0.0.1:{a.port}", flush=True)
     ThreadingHTTPServer(("127.0.0.1", a.port), H).serve_forever()

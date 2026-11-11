@@ -580,3 +580,9 @@ Reversed controls −0.5..−2.6 everywhere. Qwen2.5 "hour" random control +0.67
 Llama and Qwen2.5 replicate (both judges, both wordings, both sets, cross-run). OLMo: original prefers every candidate
 (+0.4..+0.5) but edited weights are flat (~0) and also flat on the reversed edit -> strict rule never passes.
 Running: v6b_olmo.sh (rho 0.25, 0.125).
+
+## Self-edit report page (2026-11-11)
+LIVE: https://cute.sus.cat/4f12bddc58ce1e0dabb4cd49/selfedit — report + run explorer (every v5/v6 round: keep/reject
+reasons, candidate pool, keep-test and check-set scores, the edited model's answers), final tests, RL-on-own-YES curves,
+sample self-written conversations. dash/server.py selfedit_forever rsyncs the small logs from arena9-coco every 60 s
+into $WSP_ROOT/runs/selfedit_sync/data/ (not backed up; regenerable) and builds with selfedit_build.py.
