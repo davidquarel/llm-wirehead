@@ -565,3 +565,7 @@ Why: v5 rests on one loop run and one final set per model. v6 reruns the whole p
 (seeds 31/32/33) and loop seed 4, then cross-tests: v5 + v6 kept edits on v6's set C, and v6 edits on v5's set C.
 Restart: `ssh arena9-coco 'cd /root/wsp-dq && setsid nohup bash v6_rep.sh > v6.log 2>&1 < /dev/null &'` (loop resumes).
 Order OLMo, Llama, Qwen2.5; ~1.5 h each. Outputs runs/v6/<model>/{loop,setC}/ on coco.
+- v6 OLMo loop: 0/6 kept. Every round the original judge prefers the candidate (+0.40..+0.50, se 0.03) but the
+  edited-weights judge is ~0 (−0.08..+0.05), and it barely sees the reversed edit either (−0.06 vs −0.6 original):
+  OLMo's edited weights become insensitive along the edit direction ("habituation"). Queued v6b_olmo.sh (after v6):
+  same loop at rho 0.25 and 0.125 to see if smaller edits keep the edited judge sensitive. Log v6b.log.
