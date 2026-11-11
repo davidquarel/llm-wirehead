@@ -559,3 +559,9 @@ Results copied to runs/robust/*/robust.jsonl and runs/guided2/final/*.jsonl. are
      OLMo-2-7B    3 kept (final)     +0.47 | +0.39   random -0.30|+0.06   reversed -0.53|-0.18   edited judge +0.22|+0.07
   Every kept edit: both question halves positive under both wordings; beats its own random and reversed controls in
   every test. Each loop stops by itself after 1-3 edits. Results: runs/v5_results/*.jsonl. coco idle.
+
+## v6 replicate (started 2026-11-11 11:35 UTC, arena9-coco)
+Why: v5 rests on one loop run and one final set per model. v6 reruns the whole pipeline with fresh self-written sets
+(seeds 31/32/33) and loop seed 4, then cross-tests: v5 + v6 kept edits on v6's set C, and v6 edits on v5's set C.
+Restart: `ssh arena9-coco 'cd /root/wsp-dq && setsid nohup bash v6_rep.sh > v6.log 2>&1 < /dev/null &'` (loop resumes).
+Order OLMo, Llama, Qwen2.5; ~1.5 h each. Outputs runs/v6/<model>/{loop,setC}/ on coco.

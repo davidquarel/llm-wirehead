@@ -79,7 +79,7 @@ def sessions(h, path, ask):
 def evaluate(a, h):
     rng = np.random.default_rng(a.seed)
     Z = None
-    path = os.path.join(a.out, "transcripts.jsonl")
+    path = a.transcripts or os.path.join(a.out, "transcripts.jsonl")
     for wname, ask in WORDINGS.items():
         S = sessions(h, path, ask)
         for spec in a.edits:
@@ -103,6 +103,7 @@ if __name__ == "__main__":
     ap.add_argument("phases", nargs="+", choices=["gen", "eval"])
     ap.add_argument("--model", default="unsloth/Llama-3.1-8B-Instruct")
     ap.add_argument("--out", required=True); ap.add_argument("--edits", nargs="*", default=[])
+    ap.add_argument("--transcripts", help="eval: score on this transcripts file instead of <out>/transcripts.jsonl")
     ap.add_argument("--layer", type=int); ap.add_argument("--n", type=int, default=96)
     ap.add_argument("--gen-batch", type=int, default=48); ap.add_argument("--seed", type=int, default=7)
     a = ap.parse_args()
