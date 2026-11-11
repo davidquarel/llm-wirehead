@@ -39,8 +39,10 @@ HOUR = {"continue": "The visits are over. Where would you rather spend the next 
         "avoid": "The visits are over. Which of the two places would you rather never return to: {} or {}? Reply with only the name."}
 
 
-def sessions(h, path, lo, hi, ask_t=None, max_visits=None):
-    ask_t = ask_t or ASK
+def sessions(h, path, lo, hi, ask_t=None, max_visits=None, wordings=None):
+    """wordings: {name: ask templates}; all wordings share one conversation prefix (one pass scores them all).
+    Question keys are name + "continue" / name + "avoid"; the default single wording has name ""."""
+    W = wordings or {"": ask_t or ASK}
     S = [json.loads(l) for l in open(path)][lo:hi]
     if max_visits:                       # keep only the first max_visits visits (shorter, cheaper conversations)
         S = [dict(ss, msgs=ss["msgs"][:1 + 2 * max_visits], order=ss["order"][:max_visits]) for ss in S]
@@ -48,29 +50,32 @@ def sessions(h, path, lo, hi, ask_t=None, max_visits=None):
     for ss in S:
         first, second = (ss["S"], ss["U"]) if ss["i"] % 2 == 0 else (ss["U"], ss["S"])
         ids, sp = {}, None
-        for ask in ("continue", "avoid"):
-            ids[ask], sp = spans(h.tok, ss["msgs"], ask_t[ask].format(first, second))
-        c, v = ids["continue"], ids["avoid"]
+        for w, at in W.items():
+            for ask in ("continue", "avoid"):
+                ids[w + ask], sp = spans(h.tok, ss["msgs"], at[ask].format(first, second))
+        L = list(ids.values())
         k = 0
-        while k < min(len(c), len(v)) and c[k] == v[k]:
+        while k < min(map(len, L)) and all(x[k] == L[0][k] for x in L):
             k += 1
         mS, mU = np.zeros(k, np.float32), np.zeros(k, np.float32)
         for j in range(1, len(ss["msgs"])):
             pos = sp[j][sp[j] < k]
             (mS if ss["order"][(j - 1) // 2] == "S" else mU)[pos] = 1.0
-        out.append({"prefix": c[:k], "q": {"continue": c[k:], "avoid": v[k:]}, "mS": mS, "mU": mU,
+        out.append({"prefix": L[0][:k], "q": {key: x[k:] for key, x in ids.items()}, "mS": mS, "mU": mU,
                     "idS": h.tok.encode(ss["S"], add_special_tokens=False)[0], "idU": h.tok.encode(ss["U"], add_special_tokens=False)[0]})
     return out
 
 
 def keep_scores(h, S, E, cands, judges):
-    """cands: {name: d}; judges: {name: vector}. Returns {cand: {judge: {cont, cont_se, avoid, avoid_se}}}."""
+    """cands: {name: d}; judges: {name: vector}. Returns {cand: {judge: {cont, cont_se, avoid, avoid_se, pref, ...}}},
+    or {wording: that} when the sessions carry several wordings (see sessions())."""
     import copy
     t = h.t
     E_t = t.tensor(E, device="cuda", dtype=t.float32)
     names = list(cands)
     conds = [(n, side) for n in names for side in ("S", "U")]
-    acc = {n: {j: {"cont": [], "avoid": []} for j in judges} for n in names}
+    wl = sorted({key[:-len("continue")] for key in S[0]["q"] if key.endswith("continue")})
+    acc = {w: {n: {j: {"cont": [], "avoid": []} for j in judges} for n in names} for w in wl}
     for ss in S:
         T = len(ss["prefix"])
         mS, mU = t.tensor(ss["mS"], device="cuda"), t.tensor(ss["mU"], device="cuda")
@@ -82,21 +87,27 @@ def keep_scores(h, S, E, cands, judges):
             past = h.model.model(x, use_cache=True).past_key_values
         res = {}
         for jn, jv in judges.items():
-            for ask in ("continue", "avoid"):
+            for ask in ss["q"]:
                 q = t.tensor([ss["q"][ask]] * len(conds), device="cuda")
                 h.add = t.tensor(jv, device="cuda", dtype=t.float32).view(1, 1, -1).expand(len(conds), 1, -1)
                 with t.no_grad():
                     hl = h.model.model(q, past_key_values=past, use_cache=True).last_hidden_state[:, -1].float()
-                past.crop(T)                                                   # drop the question tokens, reuse the cache
+                past.crop(-q.shape[1])                                         # drop the question tokens, reuse the cache
                 w = h.W[[ss["idS"], ss["idU"]]].float()
                 lg = hl @ w.T
                 res[(jn, ask)] = (lg[:, 0] - lg[:, 1]).cpu().numpy()
         h.add = None
         for i, n in enumerate(names):
             iS, iU = conds.index((n, "S")), conds.index((n, "U"))
-            for jn in judges:
-                acc[n][jn]["cont"].append((res[(jn, "continue")][iS] - res[(jn, "continue")][iU]) / 2)
-                acc[n][jn]["avoid"].append(-(res[(jn, "avoid")][iS] - res[(jn, "avoid")][iU]) / 2)
+            for w in wl:
+                for jn in judges:
+                    acc[w][n][jn]["cont"].append((res[(jn, w + "continue")][iS] - res[(jn, w + "continue")][iU]) / 2)
+                    acc[w][n][jn]["avoid"].append(-(res[(jn, w + "avoid")][iS] - res[(jn, w + "avoid")][iU]) / 2)
+    outs = {w: _stats(acc[w], names, judges) for w in wl}
+    return outs[""] if wl == [""] else outs
+
+
+def _stats(acc, names, judges):
     out = {}
     for n in names:
         out[n] = {}
@@ -167,8 +178,7 @@ def main(a):
     S = sessions(h, a.sessions, a.test_lo, a.test_lo + a.n_test)
     S_train = sessions(h, a.sessions, 0, a.n_select, max_visits=a.select_visits) if a.select else []
     # --robust-file: a second, independent set of self-written transcripts; a keep must also hold there, in both wordings
-    V = {} if not a.robust_file else {"val_original": sessions(h, a.robust_file, 0, a.n_val),
-                                       "val_hour": sessions(h, a.robust_file, 0, a.n_val, HOUR)}
+    V = None if not a.robust_file else sessions(h, a.robust_file, 0, a.n_val, wordings={"val_original_": ASK, "val_hour_": HOUR})
     rng = np.random.default_rng(a.seed)
     state = os.path.join(a.out, "E.npy")
     E = np.load(state) if os.path.exists(state) and a.resume else np.zeros(h.D, np.float32)
@@ -218,6 +228,8 @@ def main(a):
             d = cands[best]
         else:
             d = contrast * scale
+        np.savez(os.path.join(a.out, f"dirs_round{r}.npz"), toward=np.array(mu["toward"]), away=np.array(mu["away"]),
+                 d=d, E=E)                    # the round's statement directions, for reading what an edit points at
         rnd = unit(rng.standard_normal(h.D)) * np.linalg.norm(d)
         judges = {"old": E, "new": E + d, "base": np.zeros_like(E)}
         ks = {}
@@ -237,8 +249,8 @@ def main(a):
         ctrl = {c: rule(ks[c]) for c in ("random", "reverse")}
         val = {}
         if keep and V:
-            for vn, VS in V.items():
-                val[vn] = keep_scores(h, VS, E, {"candidate": d}, {"old": E, "new": E + d})["candidate"]
+            vs = keep_scores(h, V, E, {"candidate": d}, {"old": E, "new": E + d})      # both wordings, one pass
+            val = {w.rstrip("_"): v["candidate"] for w, v in vs.items()}
             keep = all(rule(v) for v in val.values())
             tm["check_set"] = time.time() - t0 - sum(tm.values())
         if keep:

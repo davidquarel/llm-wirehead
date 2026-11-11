@@ -8,14 +8,14 @@ import json, os, subprocess
 HOST = "arena9-coco"
 SRC = "/root/wsp-dq/runs/"
 MODELS = {"qwen25_7b": "Qwen2.5-7B-Instruct", "llama8b": "Llama-3.1-8B-Instruct", "olmo7b": "OLMo-2-7B-Instruct"}
-RUN_LABEL = {"v5": "Run 1 (v5)", "v6": "Run 2 (replicate)"}
+RUN_LABEL = {"v5": "Run 1 (v5)", "v6": "Run 2 (replicate)", "v7": "Run 3 · long fast loop"}
 
 
 def sync(dst, ssh=("ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10")):
     os.makedirs(dst, exist_ok=True)
     subprocess.run(["rsync", "-a", "--include=*/", "--include=rounds.jsonl", "--include=robust.jsonl", "--include=log.jsonl",
-                    "--include=setA/transcripts.jsonl", "--exclude=*", "--prune-empty-dirs", "-e", " ".join(ssh),
-                    HOST + ":" + SRC + "v5", HOST + ":" + SRC + "v6", HOST + ":" + SRC + "speed", HOST + ":" + SRC + "selfyes", dst],
+                    "--include=setA/transcripts.jsonl", "--include=dirs_round*.npz", "--exclude=*", "--prune-empty-dirs", "-e", " ".join(ssh),
+                    HOST + ":" + SRC + "v5", HOST + ":" + SRC + "v6", HOST + ":" + SRC + "speed", HOST + ":" + SRC + "v7", HOST + ":" + SRC + "selfyes", dst],
                    capture_output=True, timeout=180)
 
 
@@ -75,6 +75,52 @@ def loop(path):
     return {"start": {k: start.get(k) for k in ("scale", "layer", "n_test", "time")}, "rounds": rounds}
 
 
+STOP = set("you are and the a an of to in with your that by feeling feel being from for at on is it as or but not "
+           "who has have be are this all life state sense experience experiencing filled world moment".split())
+
+
+def track(d, rounds):
+    """What the kept edits point at: each kept edit vs the round's own statement directions (toward, and minus away),
+    the accumulated edit E vs every statement the model made in the run, and step sizes / turning."""
+    import numpy as np
+    unit = lambda v: v / (np.linalg.norm(v) + 1e-9)
+    steps, bank = [], []
+    for r in rounds:
+        f = os.path.join(d, f"dirs_round{r['round']}.npz")
+        if not os.path.exists(f):
+            continue
+        z = np.load(f)
+        st = r["states"] or {}
+        lab = [("toward", s, unit(v)) for s, v in zip(st.get("toward", []), z["toward"])] + \
+              [("away from", s, -unit(v)) for s, v in zip(st.get("away", []), z["away"])]
+        bank += lab
+        if not r["kept"]:
+            continue
+        dd, E0 = z["d"], z["E"]
+        sims = sorted(((float(unit(dd) @ v), k, s) for k, s, v in lab), reverse=True)
+        steps.append({"round": r["round"], "norm_d": float(np.linalg.norm(dd)), "norm_E": float(np.linalg.norm(E0 + dd)),
+                      "cos_prev": float(unit(dd) @ unit(E0)) if np.any(E0) else None,
+                      "best": r["selection"]["best"] if r.get("selection") else None,
+                      "matches": [{"cos": round(c, 3), "kind": k, "text": s} for c, k, s in sims[:4]]})
+    out = {"steps": steps}
+    kept = [r for r in rounds if r["kept"]]
+    if kept and bank and os.path.exists(os.path.join(d, f"dirs_round{kept[-1]['round']}.npz")):
+        z = np.load(os.path.join(d, f"dirs_round{kept[-1]['round']}.npz"))
+        Ef = unit(z["E"] + z["d"])
+        sims = sorted(((float(Ef @ v), k, s) for k, s, v in bank), reverse=True)
+        out["final"] = {"top": [{"cos": round(c, 3), "kind": k, "text": s} for c, k, s in sims[:8]],
+                        "bottom": [{"cos": round(c, 3), "kind": k, "text": s} for c, k, s in sims[-5:]]}
+    words = {"toward": {}, "away": {}}
+    for r in rounds:
+        for k in words:
+            for s in (r["states"] or {}).get(k, []):
+                for w in {x.strip(".,;:!\"'()").lower() for x in s.split()}:
+                    if w and w not in STOP and len(w) > 2:
+                        words[k][w] = words[k].get(w, 0) + 1
+    out["words"] = {k: sorted(v.items(), key=lambda kv: -kv[1])[:14] for k, v in words.items()}
+    return out
+
+
 def final(path, setname):
     out = []
     for r in _rows(path):
@@ -92,7 +138,7 @@ def samples(path, k=3):
 
 def build(src):
     runs = []
-    for v in ("v5", "v6"):
+    for v in ("v5", "v6", "v7"):
         for m, name in MODELS.items():
             d = os.path.join(src, v, m)
             loops = [("loop", "")] + sorted((x, x.replace("loop_rho", " · smaller edits, rho ")) for x in
@@ -102,9 +148,10 @@ def build(src):
                 if not os.path.exists(p):
                     continue
                 L = loop(p)
+                L["track"] = track(os.path.dirname(p), L["rounds"])
                 ft = []
                 if ld == "loop":
-                    ft += final(os.path.join(d, "setC", "robust.jsonl"), f"{v} final set")
+                    ft += final(os.path.join(d, "setC", "robust.jsonl"), "v5 final set" if v == "v5" else "v6 final set")
                     if v == "v6":
                         ft += final(os.path.join(src, "v5", m, "setC_v6edits", "robust.jsonl"), "v5 final set")
                 else:
@@ -112,7 +159,7 @@ def build(src):
                 runs.append({"id": f"{v}/{m}/{ld}", "model": name, "key": m, "run": RUN_LABEL[v] + suffix, **L, "final": ft})
     for m, name in MODELS.items():                     # fast-loop speed test (same sets and seed as run 2)
         p = os.path.join(src, "speed", m, "fast", "rounds.jsonl")
-        if os.path.exists(p):
+        if os.path.exists(p) and loop(p)["rounds"]:
             runs.append({"id": f"speed/{m}/fast", "model": name, "key": m, "run": "Run 2 · fast loop", **loop(p),
                          "final": [dict(x, set="v6 final set", edit=x["edit"].replace("fast_", ""))
                                    for x in final(os.path.join(src, "speed", m, "fast", "setC", "robust.jsonl"), "")]})

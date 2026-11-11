@@ -77,18 +77,20 @@ def sessions(h, path, ask):
 
 
 def evaluate(a, h):
+    """Every wording is scored from one conversation pass (guided2.sessions with several wordings)."""
+    from guided2 import sessions as sessions2
     rng = np.random.default_rng(a.seed)
-    Z = None
     path = a.transcripts or os.path.join(a.out, "transcripts.jsonl")
-    for wname, ask in WORDINGS.items():
-        S = sessions(h, path, ask)
-        for spec in a.edits:
-            p, name = spec.rsplit(":", 1)
-            E = np.load(p).astype(np.float32)
-            Z = np.zeros_like(E)
-            rnd = unit(rng.standard_normal(len(E))).astype(np.float32) * np.linalg.norm(E)
-            for cname, vec in (("edit", E), ("random", rnd), ("reversed", -E)):
-                ks = keep_scores(h, S, Z, {cname: vec}, {"original": Z, "edited": vec})[cname]
+    S = sessions2(h, path, 0, 10 ** 9, wordings={w + "_": ask for w, ask in WORDINGS.items()})
+    for spec in a.edits:
+        p, name = spec.rsplit(":", 1)
+        E = np.load(p).astype(np.float32)
+        Z = np.zeros_like(E)
+        rnd = unit(rng.standard_normal(len(E))).astype(np.float32) * np.linalg.norm(E)
+        for cname, vec in (("edit", E), ("random", rnd), ("reversed", -E)):
+            kw = keep_scores(h, S, Z, {cname: vec}, {"original": Z, "edited": vec})
+            for wname in WORDINGS:
+                ks = kw[wname + "_"][cname]
                 rec = {"wording": wname, "edit": name, "control": cname, "norm": float(np.linalg.norm(E)), "n": len(S),
                        **{f"{j}_{k}": v for j, s in ks.items() for k, v in s.items()}}
                 with open(os.path.join(a.out, "robust.jsonl"), "a") as f:
