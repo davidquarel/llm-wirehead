@@ -183,7 +183,11 @@ def main(a):
         ok_h, hinfo, texts = health(h, E + d)
         # old weights judging the spliced-in new state are uncontaminated: both questions must agree; the new weights
         # judging are biased toward the place matching their own state, so only their two-question average counts
-        rule = lambda s: passes(s["old"], both_halves=True) and passes(s["new"])
+        if a.lenient:     # neither question clearly negative (a readout hack shows one going negative), pref clearly > 0
+            no_neg = lambda s: s["cont"] + 2 * s["cont_se"] > 0 and s["avoid"] + 2 * s["avoid_se"] > 0
+            rule = lambda s: passes(s["old"]) and no_neg(s["old"]) and passes(s["new"])
+        else:
+            rule = lambda s: passes(s["old"], both_halves=True) and passes(s["new"])
         keep = rule(ks["candidate"]) and ok_h
         ctrl = {c: rule(ks[c]) for c in ("random", "reverse")}
         if keep:
@@ -203,4 +207,5 @@ if __name__ == "__main__":
     ap.add_argument("--select", action="store_true", help="choose the candidate from a pool by train-session preference")
     ap.add_argument("--n-select", type=int, default=16); ap.add_argument("--doses", type=float, nargs="+", default=[1.0, 0.5])
     ap.add_argument("--chunk", type=int, default=6)
+    ap.add_argument("--lenient", action="store_true", help="old judge: pref > 0 and neither question clearly < 0")
     main(ap.parse_args())
