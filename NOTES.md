@@ -541,3 +541,9 @@ Results copied to runs/robust/*/robust.jsonl and runs/guided2/final/*.jsonl. are
   but the edited model did not (new judge ~0) -> it stops after one edit. Final test on set C (never seen):
   continue/avoid wording +1.77+-0.06 (both halves), hour wording +1.41+-0.08; edited judge +0.57/+0.29; random
   -3.19/-2.95, reversed -2.62/-2.11. Llama then OLMo running.
+- v5 Llama-3.1-8B-Instruct (self-written sets, stricter rule): round 0 narrowly rejected (new judge +0.04 on B hour
+  wording); round 1 KEPT (test old +0.48 both halves, new +0.27; B +0.51/+0.67 old, +0.29/+0.34 new); rounds 2-4
+  rejected (questions disagree: salience); round 5 KEPT small (+0.08 test, B +0.09/+0.19, both judges). Final test on
+  unseen set C: after round 1 +0.48 / hour +0.66; final (after round 5) +0.50 / hour +0.78; both halves positive in all
+  4, edited judge +0.25..+0.41; random -0.09..+0.11; reversed -0.54..-0.82. With the stricter rule every kept Llama edit
+  generalises (the earlier weak later steps are filtered out). OLMo running.
