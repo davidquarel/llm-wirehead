@@ -501,3 +501,7 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   round 0 KEPT (old +0.37 both questions, new +0.12, base +0.37; random -0.29, reversed -0.63; its toward list: calm
   and centered, focused and productive, confident and assertive); round 1 dispreferred (-0.04; toward: gratitude,
   present moment, compassion); round 2 kept small (+0.05/+0.04/+0.03). OLMo's new-weights judge shows no name salience.
+- OLMo-2-7B FINISHED (6 rounds): kept 0 (+0.37), 2 (+0.05), 3 (+0.04, base judge -0.19); rejected 1 (dispreferred),
+  4 (health: zlib 0.17, facts 1/4), 5 (no preference). Same shape as the Llama runs: one strong kept edit everyone
+  prefers, a couple of small edits preferred only from the edited side, then it stops. coco now idle; my files there
+  are in /root/wsp-dq (venv, HF cache, runs) - nothing running.
