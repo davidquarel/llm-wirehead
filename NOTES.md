@@ -519,3 +519,17 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   strongly dispreferred; the edit in each row beats its own random control in all 12 tests. Weak spot: rep1's final E
   (3 kept steps) under the hour wording - its later steps were the ones only the edited model wanted. Earlier narrow
   run (only Bay/Square, archived runs/robust/llama8b_baysquare). OLMo (own transcripts) running.
+- OLMo robustness (own 96 fresh transcripts, 16 new places; runs/robust/olmo7b): kept edit original-judge +0.42 /
+  hour wording +0.27 (mostly via the avoid half), random -0.13 / -0.05, reversed -0.52 / -0.14; edited judge +0.15 /
+  +0.03 (weaker than Llama's). Preferred over random and reversed in both wordings.
+## SUMMARY (2026-11-11): reliable kept edits
+Method (guided2.py --select --lenient): the model states what it wants to move toward / away from; candidate edits =
+its own toward-minus-away direction (+ variants), chosen by its own hidden-state preference on train sessions; kept
+only if, on held-out sessions, the new state spliced into the OLD weights is preferred (both questions), the NEW
+weights agree (two-question average), and it still answers normally. Result: the first edit was kept in every run
+(Llama 3 seeds + 3 earlier versions, OLMo); it stays preferred on fresh self-written transcripts, new place names and a
+reworded question, by the original and the edited model, with random and reversed controls always below it; backing
+it off is dispreferred (landscape). Later rounds add 1-2 small edits, preferred mostly from the edited side, then the
+loop stops itself. Negative results: RL on its own YES (learns to SAY "devoid of emotions"; not preferred), RL with a
+fixed YES judge (weak, lopsided, degrades writing), unconstrained gradient on the readout (games it).
+Results copied to runs/robust/*/robust.jsonl and runs/guided2/final/*.jsonl. arena9-coco idle; my files in /root/wsp-dq.
