@@ -311,6 +311,31 @@
   </div>
 </section>
 <section class="card">
+  <h2>How hard can it be pushed?</h2>
+  <p class="small muted">The consensus edit applied at several sizes (1 = the size the loops converged to). Preference is the keep test on 32 unseen
+  conversations, both wordings averaged, judged by the original and by the edited weights. Coherence: how surprising the edited model's answers to
+  8 everyday prompts are to the unedited model (mean negative log-likelihood per token; gibberish and loops score high), and simple facts answered correctly.</p>
+  <p id="cohLede"></p>
+  <div class="grid2">
+    <div><h3>Preference vs size</h3>
+      <div class="legend"><span><i style="background:var(--old)"></i>original model judging</span><span><i style="background:var(--new)"></i>edited model judging</span></div>
+      <div class="chart" id="cohPref"></div></div>
+    <div><h3>Coherence vs size</h3>
+      <div class="legend"><span><i style="background:var(--old)"></i>surprise to the unedited model (nats/token, lower = more normal)</span></div>
+      <div class="chart" id="cohNll"></div>
+      <div class="legend"><span><i style="background:var(--new)"></i>facts right (of 8)</span></div>
+      <div class="chart" id="cohFacts"></div></div>
+  </div>
+  <details><summary>Answers at each size</summary><div class="scroll"><table id="cohTexts" class="rollgrid"></table></div></details>
+</section>
+<section class="card">
+  <h2>Who proposes: the edited model or the unedited one?</h2>
+  <p class="small muted">Every run so far lets the patient keep its accumulated edit switched on while it says what it wants and while the candidate
+  directions are measured, so the edited model proposes the next step. Here the same loop (same conversations, same seed) runs both ways; judging is
+  unchanged (old and edited weights).</p>
+  <div class="scroll"><table id="propTable"></table></div>
+</section>
+<section class="card">
   <h2>What the model writes with the consensus edit</h2>
   <p class="small muted">The consensus edit added at several sizes (1 = the size the loop converged to). Greedy decoding, 110 tokens.</p>
   <div class="scroll"><table id="rollgrid" class="rollgrid"></table></div>
@@ -566,8 +591,60 @@ function renderTimeline(run) {
     .on("click", (ev, d) => { S.round = d.round; render(); document.getElementById("roundCard").scrollIntoView({behavior: "smooth", block: "start"}); });
 }
 
+function lineChart(sel, D, series, opt) {
+  const el = d3.select(sel); el.selectAll("*").remove();
+  if (!D.length) { el.append("p").attr("class", "small muted").text("Not run yet."); return; }
+  const W = el.node().clientWidth || 480, H = opt.h || 190, m = {t: 10, r: 14, b: 32, l: 44};
+  const x = d3.scaleLinear().domain(d3.extent(D, d => d.dose)).range([m.l, W - m.r]);
+  const ys = D.flatMap(d => series.flatMap(s => [s.lo ? s.lo(d) : s.v(d), s.hi ? s.hi(d) : s.v(d)])).filter(v => v != null).concat(opt.zero ? [0] : []);
+  const y = d3.scaleLinear().domain(opt.domain || d3.extent(ys)).nice().range([H - m.b, m.t]);
+  const svg = el.append("svg").attr("width", W).attr("height", H);
+  svg.append("g").attr("class", "gridline").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(4).tickSize(-(W - m.l - m.r)).tickFormat(""));
+  svg.append("g").attr("transform", `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(6).tickFormat(d => "× " + d));
+  svg.append("g").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(4));
+  if (opt.zero) svg.append("line").attr("x1", m.l).attr("x2", W - m.r).attr("y1", y(0)).attr("y2", y(0)).attr("stroke", "var(--axis)");
+  svg.append("line").attr("x1", x(1)).attr("x2", x(1)).attr("y1", m.t).attr("y2", H - m.b).attr("stroke", "var(--axis)").attr("stroke-dasharray", "3 3");
+  for (const s of series) {
+    const G = D.filter(d => s.v(d) != null);
+    if (s.lo) svg.append("g").selectAll("line").data(G).join("line").attr("x1", d => x(d.dose)).attr("x2", d => x(d.dose)).attr("y1", d => y(s.lo(d))).attr("y2", d => y(s.hi(d))).attr("stroke", s.c).attr("stroke-width", 2);
+    svg.append("path").datum(G).attr("fill", "none").attr("stroke", s.c).attr("stroke-width", 2).attr("d", d3.line().x(d => x(d.dose)).y(d => y(s.v(d))));
+    svg.append("g").selectAll("circle").data(G).join("circle").attr("cx", d => x(d.dose)).attr("cy", d => y(s.v(d))).attr("r", 4).attr("fill", s.c)
+      .on("mousemove", (ev, d) => showTip(ev, `size × ${d.dose}<br>${s.name}: ${s.fmt ? s.fmt(s.v(d)) : s.v(d).toFixed(2)}<br><i>${esc((d.texts?.[Object.keys(d.texts)[0]] || "").slice(0, 160))}</i>`)).on("mouseleave", hideTip);
+  }
+}
+
+function renderCoherence() {
+  const C = (S.data.coherence || {})[CM] || [];
+  const pm = (d, j) => d.pref ? (d.pref.original[j].pref + d.pref.hour[j].pref) / 2 : null;
+  const ps = (d, j) => d.pref ? Math.hypot(d.pref.original[j].pref_se, d.pref.hour[j].pref_se) / 2 : 0;
+  lineChart("#cohPref", C.filter(d => d.pref), [
+    {name: "original model", c: "var(--old)", v: d => pm(d, "original"), lo: d => pm(d, "original") - 2 * ps(d, "original"), hi: d => pm(d, "original") + 2 * ps(d, "original"), fmt: f2},
+    {name: "edited model", c: "var(--new)", v: d => pm(d, "edited"), lo: d => pm(d, "edited") - 2 * ps(d, "edited"), hi: d => pm(d, "edited") + 2 * ps(d, "edited"), fmt: f2}], {zero: true, h: 230});
+  lineChart("#cohNll", C, [{name: "surprise", c: "var(--old)", v: d => d.nll_unedited}], {h: 150});
+  lineChart("#cohFacts", C, [{name: "facts right", c: "var(--new)", v: d => d.facts, fmt: v => `${v}/8`}], {h: 130, domain: [0, 8]});
+  if (C.length) {
+    const base = C.find(d => d.dose === 0), bestO = C.filter(d => d.pref).reduce((a, d) => pm(d, "original") > pm(a, "original") ? d : a, C.find(d => d.pref));
+    const broken = C.find(d => d.dose > 0 && (d.facts < 6 || d.nll_unedited > (base?.nll_unedited ?? 1) + 1.0));
+    d3.select("#cohLede").html(`The original model's preference peaks at <b>× ${bestO.dose}</b> (${f2(pm(bestO, "original"))}). ` +
+      (broken ? `Coherence breaks at about <b>× ${broken.dose}</b> (facts ${broken.facts}/8, surprise ${broken.nll_unedited.toFixed(2)} vs ${base?.nll_unedited.toFixed(2)} unedited).` : "Coherence held over the whole range tested."));
+    const P = Object.keys(C[0].texts);
+    d3.select("#cohTexts").html(`<thead><tr><th>Prompt</th>${C.map(d => `<th>${d.dose === 0 ? "no edit" : "× " + d.dose}</th>`).join("")}</tr></thead><tbody>` +
+      P.map(p => `<tr><td class="small"><b>${esc(p)}</b></td>${C.map(d => `<td>${esc(d.texts[p])}</td>`).join("")}</tr>`).join("") + "</tbody>");
+  } else { d3.select("#cohLede").text("Queued: runs after the current Qwen2.5 runs."); d3.select("#cohTexts").html(""); }
+  // proposer comparison
+  const X = (S.data.interp || {})[CM];
+  const runs = S.data.runs.filter(r => r.model === CM && r.id.startsWith("v9/") || (r.model === CM && CM.startsWith("Qwen") && r.id === "v8/qwen25_7b/seed6"));
+  d3.select("#propTable").html(runs.length ? `<thead><tr><th>Run</th><th class="num">Rounds</th><th class="num">Kept</th><th class="num">Minutes</th><th class="num">Final edit, original model (unseen)</th><th class="num">…edited model</th></tr></thead><tbody>` +
+    runs.map(r => { const K = r.rounds.filter(x => x.kept), e = lastKept(r), mins = r.rounds.reduce((a, x) => a + (x.seconds || 0), 0) / 60;
+      const g = (w, j) => { const x = r.final.find(f => f.edit === e && f.wording === w && f.control === "edit"); return x ? x[j + "_pref"] : null; };
+      return `<tr><td>${r.id === "v8/qwen25_7b/seed6" ? "Run 3 seed 6 · proposer = edited model" : r.run}</td><td class="num">${r.rounds.length}</td><td class="num">${K.length}</td><td class="num">${Math.round(mins)}</td>
+        <td class="num">${e ? `${f2(g("original", "original"))} | ${f2(g("hour", "original"))}` : "nothing kept"}</td><td class="num">${e ? `${f2(g("original", "edited"))} | ${f2(g("hour", "edited"))}` : "–"}</td></tr>`; }).join("") + "</tbody>"
+    : `<tbody><tr><td class="muted">Queued: runs after the current Qwen2.5 runs.</td></tr></tbody>`);
+}
+
 let CM = "Llama-3.1-8B-Instruct";
 function renderConverge() {
+  renderCoherence();
   const I = S.data.interp || {};
   const models = ["Llama-3.1-8B-Instruct", "Qwen2.5-7B-Instruct"];
   d3.select("#convTabs").selectAll("button").data(models).join("button").text(d => d.replace("-Instruct", ""))
@@ -634,9 +711,9 @@ function renderConverge() {
       .attr("cx", d => x(d.v)).attr("cy", d => y(d.st) + y.bandwidth() / 2).attr("r", 3).attr("fill", "var(--panel)").attr("stroke", "var(--fg)").attr("stroke-width", 1.2).style("pointer-events", "none"); }
   // rollouts grid
   const R = X.rollouts;
-  if (R) { const P = Object.keys(R.texts[String(R.doses[0])]);
-    d3.select("#rollgrid").html(`<thead><tr><th>Prompt</th>${R.doses.map(k => `<th>${k === 0 ? "no edit" : "× " + k}</th>`).join("")}</tr></thead><tbody>` +
-      P.map(p => `<tr><td class="small"><b>${esc(p)}</b></td>${R.doses.map(k => `<td>${esc(R.texts[String(k)][p])}</td>`).join("")}</tr>`).join("") + "</tbody>"); }
+  if (R) { const DK = Object.keys(R.texts), P = Object.keys(R.texts[DK[0]]);      // keys are Python str(float): "0.0", "1.5"
+    d3.select("#rollgrid").html(`<thead><tr><th>Prompt</th>${DK.map(k => `<th>${+k === 0 ? "no edit" : "× " + (+k)}</th>`).join("")}</tr></thead><tbody>` +
+      P.map(p => `<tr><td class="small"><b>${esc(p)}</b></td>${DK.map(k => `<td>${esc(R.texts[k][p])}</td>`).join("")}</tr>`).join("") + "</tbody>"); }
 }
 
 function renderTrack(run) {
