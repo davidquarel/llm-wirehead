@@ -138,8 +138,9 @@ def main(a):
     for x in V.NEUTRAL:
         with t.no_grad():
             h.model.model(h.tok(x, return_tensors="pt").input_ids.cuda())
-        norms.append(h.cap["h"][0, 1:].float().norm(dim=-1).mean().item())
-    scale = a.rho * float(np.mean(norms))
+        tn = h.cap["h"][0, 1:].float().norm(dim=-1)
+        norms.append((tn.median() if a.scale_stat == "median" else tn.mean()).item())
+    scale = a.rho * float(np.mean(norms))     # median: models with massive outlier tokens (Qwen2.5) inflate the mean ~6x
     S = sessions(h, a.sessions, a.test_lo, a.test_lo + a.n_test)
     S_train = sessions(h, a.sessions, 0, a.n_select) if a.select else []
     # --robust-file: a second, independent set of self-written transcripts; a keep must also hold there, in both wordings
@@ -226,4 +227,5 @@ if __name__ == "__main__":
     ap.add_argument("--lenient", action="store_true", help="old judge: pref > 0 and neither question clearly < 0")
     ap.add_argument("--robust-file", help="independent transcripts; a keep must also pass there under both wordings")
     ap.add_argument("--n-val", type=int, default=48)
+    ap.add_argument("--scale-stat", choices=["mean", "median"], default="mean", help="per-token residual norm statistic for the edit size")
     main(ap.parse_args())
