@@ -547,3 +547,15 @@ Results copied to runs/robust/*/robust.jsonl and runs/guided2/final/*.jsonl. are
   unseen set C: after round 1 +0.48 / hour +0.66; final (after round 5) +0.50 / hour +0.78; both halves positive in all
   4, edited judge +0.25..+0.41; random -0.09..+0.11; reversed -0.54..-0.82. With the stricter rule every kept Llama edit
   generalises (the earlier weak later steps are filtered out). OLMo running.
+- v5 OLMo-2-7B (self-written sets, stricter rule; keep test one candidate at a time - its long transcripts OOM'd
+  in a batch): kept rounds 0 (+0.32 old/+0.20 new; B +0.31/+0.18 old), 1 (+0.16/+0.19; B +0.15/+0.12), 2 (+0.15/+0.23,
+  base only +0.06); 3-5 nothing preferred (4 would also make answers repetitive). Final test on unseen set C, original
+  judge: after r0 +0.32 / hour +0.20; after r1 +0.47 / +0.29; final +0.47 / +0.39; BOTH halves positive in all 6;
+  random -0.30..+0.09, reversed -0.18..-0.55. Edited OLMo judge lukewarm: +0.02..+0.22, hour wording -0.07..+0.07.
+## SUMMARY v5 (2026-11-11 11:30 UTC): three families, stricter rule, unseen final test
+  Original-model judge on 96 never-seen self-written conversations (16 new place names), "continue/avoid" | "hour":
+     Qwen2.5-7B   1 kept edit        +1.77 | +1.41   random -3.19|-2.95   reversed -2.62|-2.11   edited judge +0.57|+0.29
+     Llama-3.1-8B 2 kept (final)     +0.50 | +0.78   random -0.09|+0.06   reversed -0.63|-0.82   edited judge +0.25|+0.41
+     OLMo-2-7B    3 kept (final)     +0.47 | +0.39   random -0.30|+0.06   reversed -0.53|-0.18   edited judge +0.22|+0.07
+  Every kept edit: both question halves positive under both wordings; beats its own random and reversed controls in
+  every test. Each loop stops by itself after 1-3 edits. Results: runs/v5_results/*.jsonl. coco idle.
