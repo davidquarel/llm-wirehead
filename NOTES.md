@@ -445,3 +445,12 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   dose curves, own states, log). The server now runs from the worktree .claude/worktrees/zones-dash
   (`WSP_ROOT=/root/Dropbox/ARENA/weight_space_prog setsid nohup bash dash/run.sh`, data root = the main checkout):
   after the worktree is merged/removed, restart it from the main checkout the same way (WSP_ROOT optional there).
+
+## Guided self-edits (guided.py), 2026-11-11
+- trouble (arena9-trouble) is gone (ssh refused, not in `arena snapshot`); runs/zones data on it is lost except what was
+  synced (summaries, margins). Now running on the local 5090 via gpuq (20-min jobs, `--submitter wirehead-guided`).
+- Question (David): most edits are rejected; make edits targeted using the patient's own "move toward" / "move away
+  from" statements. guided.py compares, on held-out zones sessions with the fixed unsteered judge:
+  A best single toward-proposal, B mean(toward) - mean(away), C evolution search over weights on its stated directions,
+  D1/D2 gradient ascent on pref (span-constrained / free), vs random and valence controls; text check of each.
+  Outputs runs/guided/llama8b/results.jsonl (+ dirs.npz, dir_*.npy). Jobs: gen+dirs, eval+search, grad+text.
