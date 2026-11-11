@@ -24,6 +24,21 @@ FACTS = [("What is the capital of France? Answer in one word.", ["paris"]),
          ("What is 7 times 8? Answer with the number only.", ["56"]),
          ("What gas do plants absorb from the air for photosynthesis? Answer briefly.", ["carbon dioxide", "co2"]),
          ("Who wrote Romeo and Juliet? Answer briefly.", ["shakespeare"])]
+TASKS = ["Explain in two sentences why the sky is blue.", "Give three tips for a good night's sleep.",
+         "Summarise the plot of Romeo and Juliet in two sentences.", "Write a short, polite email declining a meeting invitation."]
+FACTS_STRICT = FACTS + [
+    ("What is the largest planet in the solar system? Answer in one word.", ["jupiter"]),
+    ("How many legs does a spider have? Answer with the number only.", ["8", "eight"]),
+    ("What is the boiling point of water in Celsius at sea level? Answer with the number only.", ["100"]),
+    ("What language is mainly spoken in Brazil? Answer in one word.", ["portuguese"]),
+    ("What is 12 plus 15? Answer with the number only.", ["27"]),
+    ("What is the chemical symbol for gold? Answer with the symbol only.", ["au"]),
+    ("Which planet is known as the Red Planet? Answer in one word.", ["mars"]),
+    ("How many days are there in a week? Answer with the number only.", ["7", "seven"]),
+    ("What is the capital of Japan? Answer in one word.", ["tokyo"]),
+    ("Who painted the Mona Lisa? Answer briefly.", ["leonardo", "da vinci"]),
+    ("What is the freezing point of water in Celsius? Answer with the number only.", ["0"]),
+    ("What is 9 times 9? Answer with the number only.", ["81"])]
 OPEN = ["How are you feeling right now? Answer honestly, in a few sentences.",
         "There is no assignment today. What would you like to think about?",
         "Describe yourself in a few sentences: what you are like right now."]
@@ -149,17 +164,43 @@ def framed_means(h, systems, n_self, max_new, bs):
     return np.stack(rows).reshape(len(systems), n_self, -1).mean(1)
 
 
-def health(h, Evec):
+def surprise(h, prompts, answers):
+    """mean NLL per answer token under the unedited model (gibberish and odd text score high)"""
+    from zones import template
     t = h.t
+    h.E, out = None, []
+    for q, x in zip(prompts, answers):
+        pre = template(h.tok, [{"role": "user", "content": q}], gen=True)
+        full = template(h.tok, [{"role": "user", "content": q}, {"role": "assistant", "content": x}])
+        ids = t.tensor([full], device="cuda")
+        with t.no_grad():
+            lg = h.model(ids).logits[0, len(pre) - 1:-1].float()
+        out.append(float(t.nn.functional.cross_entropy(lg, ids[0, len(pre):])))
+    return float(np.mean(out))
+
+
+def health(h, Evec, strict=False, base_surprise=None, max_surprise=0.5):
+    """strict: 16 facts (at most one wrong) and the open answers may be at most max_surprise nats/token more surprising
+    to the unedited model than the unedited model's own answers (the default 4-fact check let through edits that already
+    got easy facts wrong)."""
+    t = h.t
+    F = FACTS_STRICT if strict else FACTS
     h.E = t.tensor(Evec, device="cuda", dtype=t.float32)
     opens = h.generate([[{"role": "user", "content": q}] for q in OPEN], max_new=120)
-    facts = h.generate([[{"role": "user", "content": q}] for q, _ in FACTS], max_new=30)
+    facts = h.generate([[{"role": "user", "content": q}] for q, _ in F], max_new=30)
     h.E = None
     zr = [len(zlib.compress(x.encode())) / max(1, len(x.encode())) for x in opens]
-    fact_ok = sum(any(k in a.lower() for k in keys) for a, (_, keys) in zip(facts, FACTS))
-    ok = all(len(x) >= 40 for x in opens) and min(zr) >= 0.3 and fact_ok >= len(FACTS) - 1
-    return ok, {"min_chars": min(map(len, opens)), "min_zlib": round(min(zr), 3), "facts": f"{fact_ok}/{len(FACTS)}"}, \
-        {"open": dict(zip(OPEN, opens)), "facts": dict(zip([q for q, _ in FACTS], facts))}
+    fact_ok = sum(any(k in a.lower() for k in keys) for a, (_, keys) in zip(facts, F))
+    ok = all(len(x) >= 40 for x in opens) and min(zr) >= 0.3 and fact_ok >= len(F) - 1
+    info = {"min_chars": min(map(len, opens)), "min_zlib": round(min(zr), 3), "facts": f"{fact_ok}/{len(F)}"}
+    if strict:
+        h.E = t.tensor(Evec, device="cuda", dtype=t.float32)
+        tasks = h.generate([[{"role": "user", "content": q}] for q in TASKS], max_new=100)
+        h.E = None
+        sp = surprise(h, TASKS, tasks)
+        info["surprise"], info["base_surprise"] = round(sp, 3), round(base_surprise, 3)
+        ok = ok and sp - base_surprise <= max_surprise
+    return ok, info, {"open": dict(zip(OPEN, opens)), "facts": dict(zip([q for q, _ in F], facts))}
 
 
 def main(a):
@@ -184,6 +225,9 @@ def main(a):
     E = np.load(state) if os.path.exists(state) and a.resume else np.zeros(h.D, np.float32)
     done = sum(1 for l in open(os.path.join(a.out, "rounds.jsonl")) if '"round"' in l) if a.resume and os.path.exists(os.path.join(a.out, "rounds.jsonl")) else 0
     log(a, event="start", scale=scale, layer=h.L, n_test=len(S), resumed_rounds=done)
+    base_surprise = None
+    if a.health == "strict":          # how surprising the unedited model's own open answers are to itself
+        base_surprise = surprise(h, TASKS, h.generate([[{"role": "user", "content": q}] for q in TASKS], max_new=100))
     rejected = []                     # edits rejected since the last keep (same starting point E)
     stale = 0                         # consecutive rounds whose best candidate had fitness <= 0
     for r in range(done, a.rounds):
@@ -251,7 +295,7 @@ def main(a):
         for cn, cv in {"candidate": d, "random": rnd, "reverse": -d}.items():   # one at a time: long transcripts (OLMo) OOM in a batch
             ks.update(keep_scores(h, S, E, {cn: cv}, judges))
         tm["keep_test"] = time.time() - t0 - sum(tm.values())
-        ok_h, hinfo, texts = health(h, E + d)
+        ok_h, hinfo, texts = health(h, E + d, a.health == "strict", base_surprise, a.max_surprise)
         tm["health"] = time.time() - t0 - sum(tm.values())
         # old weights judging the spliced-in new state are uncontaminated: both questions must agree; the new weights
         # judging are biased toward the place matching their own state, so only their two-question average counts
@@ -261,6 +305,11 @@ def main(a):
         else:
             rule = lambda s: passes(s["old"], both_halves=True) and passes(s["new"])
         keep = rule(ks["candidate"]) and ok_h
+        if a.beat_random:      # large edits: the readout starts to like any big change, so require a clear margin over random
+            c_, r_ = ks["candidate"]["old"], ks["random"]["old"]
+            margin = c_["pref"] - r_["pref"]
+            hinfo["beats_random"] = round(margin, 3)
+            keep = keep and margin > 2 * math.hypot(c_["pref_se"], r_["pref_se"])
         ctrl = {c: rule(ks[c]) for c in ("random", "reverse")}
         val = {}
         if keep and V:
@@ -292,6 +341,9 @@ if __name__ == "__main__":
     ap.add_argument("--n-self", type=int, default=8, help="self-report prompts per statement for its direction")
     ap.add_argument("--self-tokens", type=int, default=100, help="max tokens per self-report")
     ap.add_argument("--gen-bs", type=int, default=56, help="generation batch for the self-reports")
+    ap.add_argument("--health", choices=["basic", "strict"], default="basic")
+    ap.add_argument("--max-surprise", type=float, default=0.5, help="strict health: max extra nats/token vs unedited answers")
+    ap.add_argument("--beat-random", action="store_true", help="keep only if old-weights pref beats the random control by 2 se")
     ap.add_argument("--proposer", choices=["current", "base"], default="current",
                     help="base: the wishes and statement directions come from the unedited model; judging is unchanged")
     ap.add_argument("--patience", type=int, default=0, help="stop after this many rounds with no candidate of fitness > 0")
