@@ -53,15 +53,17 @@ class H:
         self.D, n = cfg.hidden_size, cfg.num_hidden_layers
         self.L = a.layer if a.layer is not None else n // 2
         self.add = None                                    # tensor broadcastable to (B, T, D), or None
+        self.E = None                                      # (D,) always-on kept edits; used when add is None
         self.cap = {}
         lay = decoder_layers(self.model, n)[self.L]
 
         def hook(m, inp, out):
             h = out[0] if isinstance(out, tuple) else out
             self.cap["h"] = h
-            if self.add is None:
+            cur = self.add if self.add is not None else self.E
+            if cur is None:
                 return None
-            add = self.add if self.add.dim() == 3 else self.add.view(1, 1, -1)
+            add = cur if cur.dim() == 3 else cur.view(1, 1, -1)
             add = add[:, :h.shape[1]] if add.dim() == 3 and add.shape[1] > h.shape[1] else add
             h2 = h + add.to(h.dtype)
             return (h2,) + tuple(out[1:]) if isinstance(out, tuple) else h2
@@ -293,9 +295,9 @@ def phase_grad(a, h):
             opt.zero_grad()
             tot = 0.0
             for ss in batch:
-                v = make(param); v = scale * v / v.norm()
                 m = t.tensor(ss["mask"], device="cuda")
                 for ask, sg in (("continue", 1.0), ("avoid", -1.0)):
+                    v = make(param); v = scale * v / v.norm()          # rebuilt per backward pass
                     ids = ss["prefix"] + ss["q"][ask]
                     x = t.tensor([ids, ids], device="cuda")
                     mfull = t.zeros(len(ids), device="cuda"); mfull[:len(m)] = m
