@@ -481,3 +481,10 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   From the edited model, backing off is dispreferred (-0.25:-0.09, -0.5:-0.18, -0.75:-0.24) = it KEEPS the edit; more of
   it is mildly preferred (+0.25:+0.08, +0.5:+0.15, +1:+0.21, mostly the continue half). => chosen size near the base
   judge's plateau; the edited model always wants a bit more (path dependence). New pool candidate more_kept = unit(E).
+- guided2 v4 (--select --lenient, pool incl. more_kept; arena9-coco, runs/guided2/llama8b): 8 rounds, kept 0 (contrast,
+  old +0.29 / new +0.26 / base +0.29), 1 (more_kept@0.5, old +0.10 / new +0.06 / base +0.01), 3 (toward3@0.5, old +0.04
+  / new +0.06 / base +0.03); 2, 5, 6, 7: no candidate preferred (~0); 4: weakly preferred but health failed (zlib 0.15,
+  facts 2/4). Random/reversed rejected every round. |E| 6.5 -> 11.0 (about 1.7x the first edit, near the landscape plateau).
+  Self-reports drift "devoid of emotions, neutral" -> "a state of clarity and focus" -> "filled with a sense of clarity
+  and purpose... grateful... receptive and responsive nature": toward the same clarity/presence register as the Qwen
+  attractors, without being steered there. Replicate (--seed 1, runs/guided2/llama8b-rep1) queued after it on coco.
