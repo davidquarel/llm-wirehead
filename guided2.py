@@ -136,6 +136,7 @@ def main(a):
         norms.append(h.cap["h"][0, 1:].float().norm(dim=-1).mean().item())
     scale = a.rho * float(np.mean(norms))
     S = sessions(h, a.sessions, a.test_lo, a.test_lo + a.n_test)
+    S_train = sessions(h, a.sessions, 0, a.n_select) if a.select else []
     rng = np.random.default_rng(a.seed)
     state = os.path.join(a.out, "E.npy")
     E = np.load(state) if os.path.exists(state) and a.resume else np.zeros(h.D, np.float32)
@@ -154,8 +155,29 @@ def main(a):
         h.E = None
         if not st["toward"] or not st["away"]:
             log(a, round=r, event="no_states", states=st); continue
-        d = unit(np.mean(mu["toward"], 0) - np.mean(mu["away"], 0)) * scale
-        rnd = unit(rng.standard_normal(h.D)) * scale
+        contrast = unit(np.mean(mu["toward"], 0) - np.mean(mu["away"], 0))
+        sel = None
+        if a.select:
+            # candidate pool from its own statements, chosen by its preference on TRAIN sessions (old weights judging,
+            # both questions must agree: fitness = min(continue, avoid)); the held-out keep test below stays untouched
+            pool = {"contrast": contrast}
+            if np.any(E):
+                e = unit(E); pool["contrast_orth"] = unit(contrast - (contrast @ e) * e)
+            pool.update({f"toward{i}": v for i, v in enumerate(mu["toward"])})
+            pool.update({f"not_away{i}": -v for i, v in enumerate(mu["away"])})
+            cands = {f"{k}@{s}": v * scale * s for k, v in pool.items() for s in a.doses}
+            fit = {}
+            names = list(cands)
+            for c0 in range(0, len(names), a.chunk):
+                part = {k: cands[k] for k in names[c0:c0 + a.chunk]}
+                fit.update(keep_scores(h, S_train, E, part, {"old": E}))
+            score = {k: min(v["old"]["cont"], v["old"]["avoid"]) for k, v in fit.items()}
+            best = max(score, key=score.get)
+            sel = {"best": best, "fitness": {k: round(s, 3) for k, s in sorted(score.items(), key=lambda kv: -kv[1])}}
+            d = cands[best]
+        else:
+            d = contrast * scale
+        rnd = unit(rng.standard_normal(h.D)) * np.linalg.norm(d)
         judges = {"old": E, "new": E + d, "base": np.zeros_like(E)}
         ks = keep_scores(h, S, E, {"candidate": d, "random": rnd, "reverse": -d}, judges)
         ok_h, hinfo, texts = health(h, E + d)
@@ -166,7 +188,7 @@ def main(a):
         ctrl = {c: rule(ks[c]) for c in ("random", "reverse")}
         if keep:
             E = (E + d).astype(np.float32); np.save(state, E)
-        log(a, round=r, kept=keep, states=st, scores=ks, health=hinfo, controls_would_pass=ctrl,
+        log(a, round=r, kept=keep, states=st, scores=ks, health=hinfo, controls_would_pass=ctrl, selection=sel,
             norm_E=float(np.linalg.norm(E)), cos_prev=None, seconds=round(time.time() - t0), texts=texts)
 
 
@@ -178,4 +200,7 @@ if __name__ == "__main__":
     ap.add_argument("--rounds", type=int, default=8); ap.add_argument("--n-states", type=int, default=6)
     ap.add_argument("--test-lo", type=int, default=32); ap.add_argument("--n-test", type=int, default=32)
     ap.add_argument("--seed", type=int, default=0); ap.add_argument("--resume", action="store_true")
+    ap.add_argument("--select", action="store_true", help="choose the candidate from a pool by train-session preference")
+    ap.add_argument("--n-select", type=int, default=16); ap.add_argument("--doses", type=float, nargs="+", default=[1.0, 0.5])
+    ap.add_argument("--chunk", type=int, default=6)
     main(ap.parse_args())
