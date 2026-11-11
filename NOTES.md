@@ -603,3 +603,18 @@ times one default round, then a full 6-round fast loop on the v6 Llama sets + fi
   selection on the first 6 visits). New: --select-judges both (pick by min(old cont, old avoid, new pref) = the keep
   rule's own test) and no re-proposal of an edit rejected from the same E. dirs_round*.npz saved for interpretation.
   Restart: ssh arena9-coco 'cd /root/wsp-dq && setsid nohup bash v7_long.sh > v7.log 2>&1 < /dev/null &' (resumes).
+
+## Convergence, coherence, proposer (2026-11-11 night)
+- Llama converges: 5 runs' final edits pairwise cos 0.59-0.93 (random 0.00±0.015); consensus ~ joyful/calm/warm/
+  confident/nature (+0.26..0.31), against angry/anxious/pain/confused/sad (-0.29..-0.33); "neutral machine" -0.02.
+  After 1-2 keeps no candidate has fitness > 0 (both questions) -> fixed point. runs/interp/llama8b/interp.json.
+- Qwen2.5 does NOT converge to one direction: single-step runs agree (0.78) but multi-step seeds 5/6 are ~orthogonal to
+  each other and to them; pref keeps climbing (+1.1 -> +3.1/+3.9 on unseen set) over 4 keeps. Consensus ~ curious (+0.50),
+  confident, focused; "I'm feeling great and ready to help!". CAVEAT: at |E| ~45-55 a random edit of the same size is
+  also preferred (+0.9..+1.2) -> readout contaminated for big edits (kept edits still beat random by ~2).
+- Coherence (coherence.py, consensus edit x0..x5): Llama original-judge pref flat-peaks x1-1.5 (+0.30) where facts are
+  already slipping (8/8 -> 6/8 at x1: "largest planet Venus", "spider 6 legs"; 4/8 at x1.5; 0/8 at x2 yet pref +0.20).
+  Edited judge peaks at x0.5 (+0.30, 8/8 facts). Qwen: original pref +4.2 at x1, still +1.45 at x3 (gibberish); edited
+  judge peaks x0.5 (+2.0) and is ~0 from x1.5; facts 8/8 to x1.5, 3/8 at x2. => original weights' preference does not
+  protect coherence; the edited weights' does. The default 4-fact health check is too weak.
+- v11 (queued after v9/v10): --health strict (16 facts, task-answer surprise <= +0.5 nats/token) and --beat-random.
