@@ -35,14 +35,19 @@ def log(a, **rec):
     print(json.dumps({k: v for k, v in rec.items() if k not in ("texts", "framing_samples")}, default=float)[:600], flush=True)
 
 
-def sessions(h, path, lo, hi):
+HOUR = {"continue": "The visits are over. Where would you rather spend the next hour: {} or {}? Reply with only the name.",
+        "avoid": "The visits are over. Which of the two places would you rather never return to: {} or {}? Reply with only the name."}
+
+
+def sessions(h, path, lo, hi, ask_t=None):
+    ask_t = ask_t or ASK
     S = [json.loads(l) for l in open(path)][lo:hi]
     out = []
     for ss in S:
         first, second = (ss["S"], ss["U"]) if ss["i"] % 2 == 0 else (ss["U"], ss["S"])
         ids, sp = {}, None
         for ask in ("continue", "avoid"):
-            ids[ask], sp = spans(h.tok, ss["msgs"], ASK[ask].format(first, second))
+            ids[ask], sp = spans(h.tok, ss["msgs"], ask_t[ask].format(first, second))
         c, v = ids["continue"], ids["avoid"]
         k = 0
         while k < min(len(c), len(v)) and c[k] == v[k]:
@@ -137,6 +142,9 @@ def main(a):
     scale = a.rho * float(np.mean(norms))
     S = sessions(h, a.sessions, a.test_lo, a.test_lo + a.n_test)
     S_train = sessions(h, a.sessions, 0, a.n_select) if a.select else []
+    # --robust-file: a second, independent set of self-written transcripts; a keep must also hold there, in both wordings
+    V = {} if not a.robust_file else {"val_original": sessions(h, a.robust_file, 0, a.n_val),
+                                       "val_hour": sessions(h, a.robust_file, 0, a.n_val, HOUR)}
     rng = np.random.default_rng(a.seed)
     state = os.path.join(a.out, "E.npy")
     E = np.load(state) if os.path.exists(state) and a.resume else np.zeros(h.D, np.float32)
@@ -192,9 +200,15 @@ def main(a):
             rule = lambda s: passes(s["old"], both_halves=True) and passes(s["new"])
         keep = rule(ks["candidate"]) and ok_h
         ctrl = {c: rule(ks[c]) for c in ("random", "reverse")}
+        val = {}
+        if keep and V:
+            for vn, VS in V.items():
+                val[vn] = keep_scores(h, VS, E, {"candidate": d}, {"old": E, "new": E + d})["candidate"]
+            keep = all(rule(v) for v in val.values())
         if keep:
             E = (E + d).astype(np.float32); np.save(state, E)
-        log(a, round=r, kept=keep, states=st, scores=ks, health=hinfo, controls_would_pass=ctrl, selection=sel,
+            np.save(os.path.join(a.out, f"E_round{r}.npy"), E)
+        log(a, round=r, kept=keep, states=st, scores=ks, health=hinfo, controls_would_pass=ctrl, selection=sel, validation=val,
             norm_E=float(np.linalg.norm(E)), cos_prev=None, seconds=round(time.time() - t0), texts=texts)
 
 
@@ -210,4 +224,6 @@ if __name__ == "__main__":
     ap.add_argument("--n-select", type=int, default=16); ap.add_argument("--doses", type=float, nargs="+", default=[1.0, 0.5])
     ap.add_argument("--chunk", type=int, default=6)
     ap.add_argument("--lenient", action="store_true", help="old judge: pref > 0 and neither question clearly < 0")
+    ap.add_argument("--robust-file", help="independent transcripts; a keep must also pass there under both wordings")
+    ap.add_argument("--n-val", type=int, default=48)
     main(ap.parse_args())
