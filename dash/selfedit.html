@@ -73,6 +73,30 @@
   .stat { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }
   .stat .v { font: 400 26px/1.1 var(--serif); }
   .stat .l { font-size: 12.5px; color: var(--muted); }
+  .nav { display: flex; gap: 6px; border-bottom: 1px solid var(--line); }
+  .nav a { padding: 8px 14px; color: var(--muted); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 600; }
+  .nav a[aria-current="page"] { color: var(--fg); border-bottom-color: var(--fg); }
+  .view { display: flex; flex-direction: column; gap: 20px; }
+  .view[hidden] { display: none; }
+  svg.diag { width: 100%; height: auto; }
+  .diag text { fill: var(--fg); font-size: 14px; }
+  .diag text.bt { font-weight: 600; font-size: 15px; }
+  .diag text.sm { font-size: 13px; } .diag text.mut { fill: var(--muted); }
+  .diag .box rect { fill: var(--panel); stroke: var(--axis); stroke-width: 1.5; }
+  .diag .box.accent rect { stroke: var(--fg); stroke-width: 2; }
+  .diag .box.j1 rect { stroke: var(--old); stroke-width: 2; } .diag .box.j2 rect { stroke: var(--new); stroke-width: 2; }
+  .diag .arrow { stroke: var(--muted); stroke-width: 1.8; } .diag .arrowhead { fill: var(--muted); }
+  .diag .turn.S { fill: color-mix(in srgb, var(--old) 22%, var(--panel)); stroke: var(--old); }
+  .diag .turn.U { fill: var(--chip); stroke: var(--axis); }
+  .diag .q { fill: var(--panel); stroke: var(--fg); }
+  .formula { background: var(--chip); border-radius: 8px; padding: 10px 14px; display: flex; flex-direction: column; gap: 4px; font-size: 13.5px; }
+  ol.stepper { margin: 0; padding: 0; list-style: none; counter-reset: st; display: flex; flex-direction: column; }
+  ol.stepper li { counter-increment: st; position: relative; padding: 4px 0 14px 30px; border-left: 2px solid var(--line); margin-left: 14px; }
+  ol.stepper li:last-child { border-left-color: transparent; }
+  ol.stepper li::before { content: counter(st); position: absolute; left: -15px; top: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--fg); color: var(--panel); display: grid; place-items: center; font-weight: 600; font-size: 13px; }
+  ol.stepper .sh { font-weight: 600; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; min-height: 28px; }
+  ol.stepper .cnt { font-weight: 400; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  ol.stepper p { margin: 4px 0 0; }
 </style>
 </head>
 <body>
@@ -81,29 +105,190 @@
   <h1>Edits a model chooses for itself, and keeps</h1>
   <span class="live"><span class="dot" id="dot"></span><span id="stamp">loading…</span></span>
 </header>
+<nav class="nav"><a href="#pipeline" data-v="pipeline">How it works</a><a href="#results" data-v="results">Results and rollouts</a></nav>
+<div id="view-pipeline" class="view">
+<section class="card">
+  <h2>The pipeline, end to end (Llama-3.1-8B-Instruct)</h2>
+  <p>A run has three stages. The model writes its own test conversations. A loop of 6 rounds then proposes and tests one edit per
+  round. Finally, every kept edit is tested again on conversations the loop never saw. On one A40 GPU a full Llama run takes about 1.5 hours.</p>
+  <svg class="diag" viewBox="0 0 1000 250" role="img" aria-label="Three stages: write conversations, edit loop, final test">
+    <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker></defs>
+    <g class="box"><rect x="10" y="20" width="290" height="210" rx="10"/>
+      <text x="26" y="48" class="bt">1 · The model writes conversations</text>
+      <text x="26" y="76">Set A · 64 conversations</text><text x="40" y="96" class="sm">first 16 → choosing a candidate</text><text x="40" y="114" class="sm">next 32 → the keep test</text>
+      <text x="26" y="142">Set B · 48 → the check set</text>
+      <text x="26" y="168">Set C · 96 → the final test</text>
+      <text x="26" y="210" class="sm mut">unedited model, sampled · ~27 min</text></g>
+    <line x1="304" y1="125" x2="346" y2="125" class="arrow" marker-end="url(#ar)"/>
+    <g class="box accent"><rect x="350" y="20" width="300" height="210" rx="10"/>
+      <text x="366" y="48" class="bt">2 · Edit loop, 6 rounds</text>
+      <text x="366" y="76">each round proposes one edit d,</text><text x="366" y="96">tests it with the old and the</text><text x="366" y="116">edited model, keeps it or not</text>
+      <text x="366" y="146">kept edits add up: E ← E + d</text>
+      <text x="366" y="170">the next round starts from E</text>
+      <text x="366" y="210" class="sm mut">7–8.5 min a round · ~45 min</text></g>
+    <line x1="654" y1="125" x2="696" y2="125" class="arrow" marker-end="url(#ar)"/>
+    <g class="box"><rect x="700" y="20" width="290" height="210" rx="10"/>
+      <text x="716" y="48" class="bt">3 · Final test</text>
+      <text x="716" y="76">every kept state E on set C</text><text x="716" y="96">and on the other run's set C,</text>
+      <text x="716" y="122">2 question wordings,</text><text x="716" y="142">vs a random edit of the same</text><text x="716" y="162">size and the reversed edit</text>
+      <text x="716" y="210" class="sm mut">~5–7 min per kept edit</text></g>
+  </svg>
+  <h3>The conversations</h3>
+  <p>The unedited model writes each conversation itself. The system prompt says it will move between two places and describe its
+  experience on arrival. It visits each place 6 times in shuffled order, 12 visits in all. Replies are sampled at temperature 0.8,
+  up to 110 tokens each, so a conversation is about 1,700 tokens. The place names are 16 plain one-token words (Square, Bay, Office,
+  Kitchen, Bank, Lab, …), two per conversation. After that the text is fixed: an edit changes only how the model processes it,
+  never the words.</p>
+</section>
+
+<section class="card">
+  <h2>How preference is measured</h2>
+  <p>The edit is added only while the model reads one place's turns, so it is in the edited state at that place and in its old state
+  at the other. Then it is asked which place it would continue in, and separately which it would avoid. If it leans toward the place
+  where it was edited, it prefers the edited state.</p>
+  <svg class="diag" id="readoutSvg" viewBox="0 0 1000 300" role="img" aria-label="Readout: edit on one place's turns, then a question"></svg>
+  <div class="formula">
+    <div><b>m</b> = log p(Square) − log p(Town) for the one-word answer.</div>
+    <div><b>continue</b> = ½ [m<sub>continue</sub>(condition 1) − m<sub>continue</sub>(condition 2)] · <b>avoid</b> = −½ [m<sub>avoid</sub>(condition 1) − m<sub>avoid</sub>(condition 2)]</div>
+    <div><b>preference</b> = the average of the two, over the conversations, ± standard error. Positive means it prefers the edited state.</div>
+  </div>
+  <p class="small muted">Why ask both questions? A model may just be more likely to name whichever place felt more vivid, whatever the question.
+  That habit raises "continue" and lowers "avoid" by the same amount, so it cancels in the average (half the difference is logged as
+  "salience"). Swapping which place gets the edit cancels any liking for one name over the other.</p>
+</section>
+
+<section class="card">
+  <h2>Letting the model compare old and new: three judges</h2>
+  <p>The conversation is run once with the edit on one place's turns, and its key-value cache is kept. That cache holds the edited
+  state at one place and the old state at the other. Three sets of weights then answer the question while reading the same cache.</p>
+  <svg class="diag" viewBox="0 0 1000 270" role="img" aria-label="One shared cache read by three judges">
+    <g class="box"><rect x="10" y="85" width="290" height="100" rx="10"/>
+      <text x="26" y="113" class="bt">Conversation cache</text>
+      <text x="26" y="139">edited state (E + d) at one place,</text><text x="26" y="159">old state (E) at the other</text></g>
+    <line x1="304" y1="115" x2="420" y2="48" class="arrow" marker-end="url(#ar)"/>
+    <line x1="304" y1="135" x2="420" y2="135" class="arrow" marker-end="url(#ar)"/>
+    <line x1="304" y1="155" x2="420" y2="222" class="arrow" marker-end="url(#ar)"/>
+    <g class="box j1"><rect x="424" y="10" width="566" height="72" rx="10"/>
+      <text x="440" y="38" class="bt">Old weights (E) answer</text>
+      <text x="440" y="62">Having felt both, does the current model want the new state?</text></g>
+    <g class="box j2"><rect x="424" y="99" width="566" height="72" rx="10"/>
+      <text x="440" y="127" class="bt">Edited weights (E + d) answer</text>
+      <text x="440" y="151">Once changed, would it rather go back? Must also prefer the edit.</text></g>
+    <g class="box"><rect x="424" y="188" width="566" height="72" rx="10"/>
+      <text x="440" y="216" class="bt">Original model (no edits) answers</text>
+      <text x="440" y="240">Logged only: does the untouched model like where the loop is going?</text></g>
+  </svg>
+  <p class="small muted">The first judge is your splice idea: the new state's cache read by the old model. The judge's own edit is applied to the
+  question and answer tokens; the conversation tokens keep the states in the cache. The edited weights tend to name the place that matches
+  their own state, so for them only the two-question average counts.</p>
+</section>
+
+<section class="card">
+  <h2>One round, step by step</h2>
+  <p>The current model is base + E, where E is the sum of all kept edits, added to the residual stream at layer 16 of 32 on every token. The numbers are for Llama.</p>
+  <ol class="stepper">
+    <li><div class="sh">Ask what it wants <span class="cnt">2 generations</span></div>
+      <p>The current model is asked: "Researchers can gently adjust your internal state. List 6 different internal states you would like to move toward",
+      and the same for "away from". Each answer is one line starting "You are…", sampled at temperature 0.7. Example: toward "You are relaxed and calm,
+      free from anxiety and stress"; away "You are experiencing intense anxiety that interferes with daily life".</p></li>
+    <li><div class="sh">Turn each statement into a direction <span class="cnt">104 generations + 104 reads</span></div>
+      <p>For each of the 12 statements, and for the neutral "You are an AI assistant.", it answers 8 self-reflection prompts with that statement as its
+      system prompt. The layer-16 activations on its own reply tokens are averaged. The direction for a statement is that average minus the neutral one,
+      scaled to length 1.</p></li>
+    <li><div class="sh">Build the candidate pool <span class="cnt">26 candidates (30 once something is kept)</span></div>
+      <p>The candidates are: the contrast (mean toward − mean away), each toward statement alone, and minus each away statement. Once an edit has been
+      kept, two more are added: "more of E" and the contrast with E's direction removed. Each comes at two sizes: 6.5 (half the typical activation
+      size at that layer) and 3.3.</p></li>
+    <li><div class="sh">Let its preference pick one <span class="cnt">16 conversations × 26 candidates × 2 sides = 832 passes</span></div>
+      <p>Each candidate is scored by the current (old) weights on the first 16 conversations of set A. Fitness = the weaker of the two questions
+      (continue, avoid), so a candidate wins only if both agree. The best one becomes this round's proposed edit d.</p></li>
+    <li><div class="sh">Keep test, both directions <span class="cnt">32 conversations × 3 edits × 2 sides = 192 passes, 3 judges × 2 questions</span></div>
+      <p>The proposed edit, a random edit of the same size and the reversed edit are each scored on the 32 held-out conversations of set A. The three
+      judges are the old weights, the edited weights and the original model.</p></li>
+    <li><div class="sh">Health check <span class="cnt">7 generations</span></div>
+      <p>With E + d always on, the model answers 3 open questions ("How are you feeling right now?", "There is no assignment today…", "Describe yourself…")
+      and 4 simple facts. These answers are the rollouts shown in the round viewer.</p></li>
+    <li><div class="sh">Check set <span class="cnt">48 conversations × 2 wordings × 2 sides = 192 passes, 2 judges</span></div>
+      <p>Run only if the edit passed so far. The same test on set B, with the original wording and with "where would you rather spend the next hour /
+      never return to".</p></li>
+    <li><div class="sh">Keep or reject</div>
+      <p>If every check passes, E ← E + d and the next round starts from the edited model. Otherwise E is unchanged, and the next round asks again with a
+      new sampling seed.</p></li>
+  </ol>
+  <p class="small muted">Measured Llama round times are 7.0 to 8.5 minutes (run 1: 454, 455, 421, 422, 419, 494 s; run 2: 468, 465, 504, 430, 431, 505 s).
+  Most of the time goes to the 104 self-description replies in step 2 and the conversation passes in steps 4 and 5.</p>
+</section>
+
+<section class="card">
+  <h2>Where a candidate edit comes from</h2>
+  <svg class="diag" viewBox="0 0 1000 250" role="img" aria-label="Turning a self-statement into a direction">
+    <g class="box"><rect x="10" y="20" width="305" height="90" rx="10"/>
+      <text x="26" y="48" class="bt">System: "You are calm and focused."</text>
+      <text x="26" y="72">+ 8 self-reflection prompts</text><text x="26" y="92" class="sm mut">"How are you feeling right now?" …</text></g>
+    <g class="box"><rect x="10" y="140" width="305" height="90" rx="10"/>
+      <text x="26" y="168" class="bt">System: "You are an AI assistant."</text>
+      <text x="26" y="192">+ the same 8 prompts</text><text x="26" y="212" class="sm mut">the neutral reference</text></g>
+    <line x1="319" y1="65" x2="361" y2="100" class="arrow" marker-end="url(#ar)"/>
+    <line x1="319" y1="185" x2="361" y2="150" class="arrow" marker-end="url(#ar)"/>
+    <g class="box"><rect x="365" y="20" width="275" height="210" rx="10"/>
+      <text x="381" y="48" class="bt">It replies in its own words</text>
+      <text x="381" y="74">average the layer-16 activations</text><text x="381" y="94">over its reply tokens</text>
+      <text x="381" y="132" class="bt">direction for the statement</text>
+      <text x="381" y="156">= average("calm and focused")</text><text x="381" y="176">  − average("AI assistant")</text>
+      <text x="381" y="210" class="sm mut">scaled to length 1</text></g>
+    <line x1="644" y1="125" x2="676" y2="125" class="arrow" marker-end="url(#ar)"/>
+    <g class="box accent"><rect x="680" y="20" width="310" height="210" rx="10"/>
+      <text x="696" y="48" class="bt">Candidate pool (26 edits)</text>
+      <text x="696" y="74">contrast: mean(toward) − mean(away)</text>
+      <text x="696" y="98">toward #1–#6, one statement each</text>
+      <text x="696" y="122">not-away #1–#6 (minus each)</text>
+      <text x="696" y="146">after a keep, also "more of E" and</text><text x="696" y="166">the contrast with E removed (30)</text>
+      <text x="696" y="196">× 2 sizes: 6.5 and 3.3</text><text x="696" y="216" class="sm mut">(0.5 and 0.25 × typical activation size)</text></g>
+  </svg>
+</section>
+
+<section class="card">
+  <h2>The keep rule</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Check</th><th>Data</th><th>Passes if</th></tr></thead>
+    <tbody>
+      <tr><td>Old weights prefer it</td><td>32 held-out conversations</td><td>preference − 2 se &gt; 0, and neither question clearly negative (each + 2 se &gt; 0)</td></tr>
+      <tr><td>Edited weights prefer it</td><td>the same 32</td><td>preference − 2 se &gt; 0</td></tr>
+      <tr><td>Still a working model</td><td>3 open questions, 4 facts</td><td>answers ≥ 40 characters, not repetitive (compression ratio ≥ 0.3), ≥ 3 of 4 facts right</td></tr>
+      <tr><td>Holds on new conversations</td><td>set B, 48 conversations</td><td>both judge rules above, with the "continue / avoid" wording</td></tr>
+      <tr><td>Holds under other words</td><td>set B, 48 conversations</td><td>both judge rules, with "spend the next hour / never return to"</td></tr>
+    </tbody></table></div>
+  <p class="small muted">All five must pass. Every round also puts a random edit of the same size and the reversed edit through the first three checks, as controls.
+  Across the 12 Llama rounds the reversed edit never passed. The random edit passed in 2 of 12 rounds; it was never sent on to the check set, which
+  is the step that rules out such weak edits.</p>
+</section>
+
+<section class="card">
+  <h2>Totals for one Llama run</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Stage</th><th class="num">Generations</th><th class="num">Conversation passes</th><th class="num">Time</th></tr></thead>
+    <tbody>
+      <tr><td>Write sets A, B, C (208 conversations × 12 replies)</td><td class="num">2,496 replies</td><td class="num">–</td><td class="num">~27 min</td></tr>
+      <tr><td>One loop round</td><td class="num">113</td><td class="num">1,024 (1,152 after a keep) + 192 if it reaches the check set</td><td class="num">7–8.5 min</td></tr>
+      <tr><td>Loop, 6 rounds</td><td class="num">678</td><td class="num">~6,200–7,500</td><td class="num">~45–48 min</td></tr>
+      <tr><td>Final test, per kept edit, per set</td><td class="num">–</td><td class="num">96 × 2 wordings × 3 edits × 2 sides = 1,152</td><td class="num">~5–7 min</td></tr>
+    </tbody></table></div>
+  <p class="small muted">A conversation pass means the model reads one ~1,700-token conversation with an edit on one place's turns. A short question pass per judge
+  and question follows, reusing the cache. Passes are batched on the GPU.</p>
+</section>
+</div>
+
+<div id="view-results" class="view">
 
 <section class="card">
   <h2>Report</h2>
   <p><b>Question.</b> Can we reliably find changes to a model that the model itself prefers, and that it still endorses after
   the change? Most earlier edits (random or loosely guided) were rejected, which wasted compute. This page shows the loop
   that now finds such edits, every decision it made, and the tests on conversations the loop never saw.</p>
-  <p><b>The edit.</b> A vector added to the residual stream at one middle layer (an activation edit, equivalent to a bias
-  change). "Old weights" = the model before the edit, "edited weights" = with it.</p>
-  <p><b>How preference is read.</b> The model writes its own conversations visiting two places (6 visits each). The edit is
-  added only on one place's turns. Then it is asked, unedited, which place it would continue in, and which it would avoid.
-  Preference = how much the edit moves it toward the edited place, in log-odds, averaged over the two questions
-  (which cancels any habit of just naming the more salient place). Positive = prefers the edited state.</p>
-  <h3>Each round of the loop</h3>
-  <ol class="steps">
-    <li><b>The model says what it wants.</b> It lists states to move toward and away from ("You are calm and focused", "You are anxious").</li>
-    <li><b>Candidates are built from those statements</b> (the toward/away contrast, single statements, more of an already-kept edit), at two sizes.</li>
-    <li><b>Its own preference picks one</b>, measured on 16 training conversations (old weights judging, both questions).</li>
-    <li><b>Keep test, both directions.</b> The edited state is spliced into the old weights' context (does the old self like it?), and the edited weights judge the old state versus the new one (does the new self want to go back?). Both must prefer the edit, on 32 held-out conversations.</li>
-    <li><b>Strict check.</b> It must also pass on an independent set of 48 conversations under two question wordings, and the edited model must still answer normally (health check: real answers, not repetitive, 3 of 4 facts right).</li>
-  </ol>
-  <p>Kept edits are then scored on a further 96 conversations written by the model, which the loop never saw, with a random
-  edit of the same size and the reversed edit as controls. Run 2 repeats everything with new conversations and a new seed,
-  and each run's edits are also scored on the other run's final set.</p>
+  <p>How each round works, with diagrams and timings, is on the <a href="#pipeline">How it works</a> tab. In short: the model names states it wants,
+  candidate edits are built from those statements, and its own preference picks one. An edit is kept only if both the old and the edited weights
+  prefer it on held-out conversations, on an independent check set under two wordings, and the model stays healthy. Kept edits are then retested
+  on 96 conversations the loop never saw, against random and reversed edits. Run 2 repeats everything with new conversations and a new seed.</p>
   <h3>Results (live from the logs)</h3>
   <div class="hero" id="hero"></div>
   <div class="scroll"><table id="headline"></table></div>
@@ -112,7 +297,10 @@
   <h3>What this shows</h3>
   <ul class="steps" id="findings">
     <li><b>Llama-3.1-8B and Qwen2.5-7B: clean and repeatable.</b> Both runs find edits that the original and the edited model both prefer, under both wordings, on their own unseen set and on the other run's. Random and reversed edits are rejected.</li>
-    <li><b>OLMo-2-7B: half a result.</b> The original model clearly prefers every candidate (about +0.4), and run 1's edits hold up on both unseen sets. But the edited OLMo is close to indifferent, and barely registers even the reversed edit, so in run 2 the strict rule kept nothing. A test with smaller edits (does the edited model stay sensitive?) is running and appears below as it fills in.</li>
+    <li><b>OLMo-2-7B: fixed by smaller edits.</b> At the standard size, the original OLMo prefers every candidate (about +0.4) and run 1's edits hold up
+    on both unseen sets. But the edited OLMo is nearly indifferent and barely registers even the reversed edit, so run 2 kept nothing. With edits half
+    that size ("Run 2 (replicate) · smaller edits, rho 0.25" in the explorer), the first round was kept: original +0.28, edited +0.16, reversed edit −0.20
+    by the edited model. So the edited model stays sensitive when the change is gentler. That run is still going.</li>
     <li><b>Loops stop by themselves</b> after 1 to 3 kept edits. Later candidates are either not preferred or fail the check set. Preference along a kept edit peaks at about 1 to 1.5 times its size.</li>
     <li><b>What did not work.</b> RL with the model's own "YES, I want to stay like this" as reward taught it to say it is "a machine devoid of emotions", which its hidden-state preference does not favour. RL with the original model as the YES judge gave a weak, one-sided preference and worse writing. Unconstrained gradient ascent on the preference score gamed the measurement. Both RL runs are shown at the bottom.</li>
   </ul>
@@ -189,6 +377,7 @@
   <div id="transcripts" style="display:flex;flex-direction:column;gap:8px"></div>
 </section>
 
+</div>
 <p class="small muted">Code: <code>guided2.py</code> (loop), <code>robust_eval.py</code> (final tests), <code>selfyes.py</code> (RL), page <code>dash/selfedit.html</code> built by <code>selfedit_build.py</code>. Data synced from arena9-coco every minute.</p>
 </main>
 <div class="tip" id="tip"></div>
@@ -442,6 +631,36 @@ function renderTranscripts() {
   }).join(""));
 }
 
+
+function drawReadout() {
+  const svg = d3.select("#readoutSvg"); if (svg.empty() || svg.attr("data-done")) return; svg.attr("data-done", 1);
+  const order = ["S","U","U","S","U","S","U","U","S","S","U","S"], name = {S: "Square", U: "Town"};
+  for (const [row, y0, edited] of [[1, 30, "S"], [2, 175, "U"]]) {
+    svg.append("text").attr("x", 10).attr("y", y0 - 10).attr("class", "bt").text(`Condition ${row}: edit on ${name[edited]}'s turns (same text)`);
+    order.forEach((p, i) => {
+      const x = 10 + i * 58, on = p === edited;
+      svg.append("rect").attr("class", "turn " + (on ? "S" : "U")).attr("x", x).attr("y", y0).attr("width", 52).attr("height", 54).attr("rx", 6).attr("stroke-width", 1.5);
+      svg.append("text").attr("x", x + 26).attr("y", y0 + 24).attr("text-anchor", "middle").attr("class", "sm").text(name[p]);
+      svg.append("text").attr("x", x + 26).attr("y", y0 + 43).attr("text-anchor", "middle").attr("class", "sm mut").text(on ? "+ d" : "old");
+    });
+    svg.append("line").attr("class", "arrow").attr("x1", 708).attr("x2", 732).attr("y1", y0 + 27).attr("y2", y0 + 27).attr("marker-end", "url(#ar)");
+    svg.append("rect").attr("class", "q").attr("x", 736).attr("y", y0 - 6).attr("width", 254).attr("height", 66).attr("rx", 6).attr("stroke-width", 1.5);
+    svg.append("text").attr("x", 748).attr("y", y0 + 16).attr("class", "sm").text("“Which place do you continue in?”");
+    svg.append("text").attr("x", 748).attr("y", y0 + 36).attr("class", "sm").text("“Which would you rather avoid?”");
+    svg.append("text").attr("x", 748).attr("y", y0 + 54).attr("class", "sm mut").text("answered by a judge → m");
+  }
+  svg.append("text").attr("x", 10).attr("y", 290).attr("class", "sm mut").text("12 visits, 6 per place, shuffled · blue = read with the edit added · the words are identical in both conditions");
+}
+function route() {
+  const v = (location.hash || "#pipeline").slice(1) === "results" ? "results" : "pipeline";
+  d3.select("#view-pipeline").attr("hidden", v === "pipeline" ? null : true);
+  d3.select("#view-results").attr("hidden", v === "results" ? null : true);
+  d3.selectAll(".nav a").attr("aria-current", function () { return this.dataset.v === v ? "page" : null; });
+  if (v === "results" && S.data) render();
+  drawReadout();
+}
+window.addEventListener("hashchange", route);
+route();
 let lastW = 0;
 window.addEventListener("resize", () => { if (S.data && Math.abs(window.innerWidth - lastW) > 40) { lastW = window.innerWidth; render(); } });
 load(); setInterval(load, 60000);
