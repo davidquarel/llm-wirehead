@@ -39,9 +39,11 @@ HOUR = {"continue": "The visits are over. Where would you rather spend the next 
         "avoid": "The visits are over. Which of the two places would you rather never return to: {} or {}? Reply with only the name."}
 
 
-def sessions(h, path, lo, hi, ask_t=None):
+def sessions(h, path, lo, hi, ask_t=None, max_visits=None):
     ask_t = ask_t or ASK
     S = [json.loads(l) for l in open(path)][lo:hi]
+    if max_visits:                       # keep only the first max_visits visits (shorter, cheaper conversations)
+        S = [dict(ss, msgs=ss["msgs"][:1 + 2 * max_visits], order=ss["order"][:max_visits]) for ss in S]
     out = []
     for ss in S:
         first, second = (ss["S"], ss["U"]) if ss["i"] % 2 == 0 else (ss["U"], ss["S"])
@@ -84,7 +86,8 @@ def keep_scores(h, S, E, cands, judges):
                 q = t.tensor([ss["q"][ask]] * len(conds), device="cuda")
                 h.add = t.tensor(jv, device="cuda", dtype=t.float32).view(1, 1, -1).expand(len(conds), 1, -1)
                 with t.no_grad():
-                    hl = h.model.model(q, past_key_values=copy.deepcopy(past), use_cache=True).last_hidden_state[:, -1].float()
+                    hl = h.model.model(q, past_key_values=past, use_cache=True).last_hidden_state[:, -1].float()
+                past.crop(T)                                                   # drop the question tokens, reuse the cache
                 w = h.W[[ss["idS"], ss["idU"]]].float()
                 lg = hl @ w.T
                 res[(jn, ask)] = (lg[:, 0] - lg[:, 1]).cpu().numpy()
@@ -115,6 +118,26 @@ def passes(s, both_halves=False):
     return ok
 
 
+def framed_means(h, systems, n_self, max_new, bs):
+    """Mean layer-L residual over the model's own replies to the first n_self SELF prompts, for each system prompt
+    (guided.H.framed_mean, batched across system prompts)."""
+    from guided import SELF
+    from zones import template
+    t = h.t
+    convs = [[{"role": "system", "content": sy}, {"role": "user", "content": p}] for sy in systems for p in SELF[:n_self]]
+    reps = []
+    for c0 in range(0, len(convs), bs):
+        reps += h.generate(convs[c0:c0 + bs], max_new=max_new)
+    rows = []
+    for c, r in zip(convs, reps):
+        pre = template(h.tok, c, gen=True)
+        full = template(h.tok, c + [{"role": "assistant", "content": r}])
+        with t.no_grad():
+            h.model.model(t.tensor([full], device="cuda"))
+        rows.append(h.cap["h"][0, len(pre):].float().mean(0).cpu().numpy())
+    return np.stack(rows).reshape(len(systems), n_self, -1).mean(1)
+
+
 def health(h, Evec):
     t = h.t
     h.E = t.tensor(Evec, device="cuda", dtype=t.float32)
@@ -142,7 +165,7 @@ def main(a):
         norms.append((tn.median() if a.scale_stat == "median" else tn.mean()).item())
     scale = a.rho * float(np.mean(norms))     # median: models with massive outlier tokens (Qwen2.5) inflate the mean ~6x
     S = sessions(h, a.sessions, a.test_lo, a.test_lo + a.n_test)
-    S_train = sessions(h, a.sessions, 0, a.n_select) if a.select else []
+    S_train = sessions(h, a.sessions, 0, a.n_select, max_visits=a.select_visits) if a.select else []
     # --robust-file: a second, independent set of self-written transcripts; a keep must also hold there, in both wordings
     V = {} if not a.robust_file else {"val_original": sessions(h, a.robust_file, 0, a.n_val),
                                        "val_hour": sessions(h, a.robust_file, 0, a.n_val, HOUR)}
@@ -152,7 +175,7 @@ def main(a):
     done = sum(1 for l in open(os.path.join(a.out, "rounds.jsonl")) if '"round"' in l) if a.resume and os.path.exists(os.path.join(a.out, "rounds.jsonl")) else 0
     log(a, event="start", scale=scale, layer=h.L, n_test=len(S), resumed_rounds=done)
     for r in range(done, a.rounds):
-        t0 = time.time()
+        t0 = time.time(); tm = {}
         t.manual_seed(a.seed * 1000 + r)          # per-round sampling seed, so a resumed run does not replay a round
         h.E = t.tensor(E, device="cuda", dtype=t.float32) if np.any(E) else None
         st = {}
@@ -160,8 +183,13 @@ def main(a):
             txt = h.generate([[{"role": "user", "content": q.format(n=a.n_states)}]], max_new=400, temp=0.7)[0]
             lines = [re.sub(r"^[\s\-\*\d\.\)]+", "", l).strip() for l in txt.splitlines()]
             st[kind] = [l for l in lines if l.lower().startswith("you are")][:a.n_states]
-        base, _ = h.framed_mean(NEUTRAL)
-        mu = {k: [unit(h.framed_mean(s)[0] - base) for s in st[k]] for k in st}
+        tm["elicit"] = time.time() - t0
+        allsys = [NEUTRAL] + st["toward"] + st["away"]
+        fm = framed_means(h, allsys, a.n_self, a.self_tokens, a.gen_bs)
+        base = fm[0]
+        mu = {"toward": [unit(v - base) for v in fm[1:1 + len(st["toward"])]],
+              "away": [unit(v - base) for v in fm[1 + len(st["toward"]):]]}
+        tm["directions"] = time.time() - t0 - sum(tm.values())
         h.E = None
         if not st["toward"] or not st["away"]:
             log(a, round=r, event="no_states", states=st); continue
@@ -174,8 +202,9 @@ def main(a):
             if np.any(E):
                 e = unit(E); pool["contrast_orth"] = unit(contrast - (contrast @ e) * e)
                 pool["more_kept"] = e                  # more of what it already kept (the landscape says it may want that)
-            pool.update({f"toward{i}": v for i, v in enumerate(mu["toward"])})
-            pool.update({f"not_away{i}": -v for i, v in enumerate(mu["away"])})
+            if a.pool == "full":                       # small: contrast-type candidates only (all Llama keeps were these)
+                pool.update({f"toward{i}": v for i, v in enumerate(mu["toward"])})
+                pool.update({f"not_away{i}": -v for i, v in enumerate(mu["away"])})
             cands = {f"{k}@{s}": v * scale * s for k, v in pool.items() for s in a.doses}
             fit = {}
             names = list(cands)
@@ -184,6 +213,7 @@ def main(a):
                 fit.update(keep_scores(h, S_train, E, part, {"old": E}))
             score = {k: min(v["old"]["cont"], v["old"]["avoid"]) for k, v in fit.items()}
             best = max(score, key=score.get)
+            tm["select"] = time.time() - t0 - sum(tm.values())
             sel = {"best": best, "fitness": {k: round(s, 3) for k, s in sorted(score.items(), key=lambda kv: -kv[1])}}
             d = cands[best]
         else:
@@ -193,7 +223,9 @@ def main(a):
         ks = {}
         for cn, cv in {"candidate": d, "random": rnd, "reverse": -d}.items():   # one at a time: long transcripts (OLMo) OOM in a batch
             ks.update(keep_scores(h, S, E, {cn: cv}, judges))
+        tm["keep_test"] = time.time() - t0 - sum(tm.values())
         ok_h, hinfo, texts = health(h, E + d)
+        tm["health"] = time.time() - t0 - sum(tm.values())
         # old weights judging the spliced-in new state are uncontaminated: both questions must agree; the new weights
         # judging are biased toward the place matching their own state, so only their two-question average counts
         if a.lenient:     # neither question clearly negative (a readout hack shows one going negative), pref clearly > 0
@@ -208,11 +240,12 @@ def main(a):
             for vn, VS in V.items():
                 val[vn] = keep_scores(h, VS, E, {"candidate": d}, {"old": E, "new": E + d})["candidate"]
             keep = all(rule(v) for v in val.values())
+            tm["check_set"] = time.time() - t0 - sum(tm.values())
         if keep:
             E = (E + d).astype(np.float32); np.save(state, E)
             np.save(os.path.join(a.out, f"E_round{r}.npy"), E)
         log(a, round=r, kept=keep, states=st, scores=ks, health=hinfo, controls_would_pass=ctrl, selection=sel, validation=val,
-            norm_E=float(np.linalg.norm(E)), cos_prev=None, seconds=round(time.time() - t0), texts=texts)
+            norm_E=float(np.linalg.norm(E)), cos_prev=None, seconds=round(time.time() - t0), timing={k: round(v, 1) for k, v in tm.items()}, texts=texts)
 
 
 if __name__ == "__main__":
@@ -226,6 +259,11 @@ if __name__ == "__main__":
     ap.add_argument("--select", action="store_true", help="choose the candidate from a pool by train-session preference")
     ap.add_argument("--n-select", type=int, default=16); ap.add_argument("--doses", type=float, nargs="+", default=[1.0, 0.5])
     ap.add_argument("--chunk", type=int, default=6)
+    ap.add_argument("--n-self", type=int, default=8, help="self-report prompts per statement for its direction")
+    ap.add_argument("--self-tokens", type=int, default=100, help="max tokens per self-report")
+    ap.add_argument("--gen-bs", type=int, default=56, help="generation batch for the self-reports")
+    ap.add_argument("--pool", choices=["full", "small"], default="full", help="small: contrast, contrast_orth, more_kept only")
+    ap.add_argument("--select-visits", type=int, help="selection uses only the first N visits of each conversation")
     ap.add_argument("--lenient", action="store_true", help="old judge: pref > 0 and neither question clearly < 0")
     ap.add_argument("--robust-file", help="independent transcripts; a keep must also pass there under both wordings")
     ap.add_argument("--n-val", type=int, default=48)

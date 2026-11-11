@@ -586,3 +586,10 @@ LIVE: https://cute.sus.cat/4f12bddc58ce1e0dabb4cd49/selfedit — report + run ex
 reasons, candidate pool, keep-test and check-set scores, the edited model's answers), final tests, RL-on-own-YES curves,
 sample self-written conversations. dash/server.py selfedit_forever rsyncs the small logs from arena9-coco every 60 s
 into $WSP_ROOT/runs/selfedit_sync/data/ (not backed up; regenerable) and builds with selfedit_build.py.
+
+## Speed (2026-11-11 evening)
+Llama round = 7-8.5 min. guided2.py now logs per-step `timing` and has: cache crop instead of deepcopy (same numbers),
+batched self-reports for the directions (`--gen-bs`), and fast knobs `--pool small` (contrast, contrast_orth, more_kept
+only: every Llama keep in v5/v6 was one of these; single statements were chosen 5x and never kept), `--n-self`,
+`--self-tokens`, `--select-visits`. speed_run.sh (coco, log speed.log): stops v6b after OLMo rho 0.25 (rho 0.125 dropped),
+times one default round, then a full 6-round fast loop on the v6 Llama sets + final test on v6 set C. Out runs/speed/llama8b.
