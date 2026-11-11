@@ -184,6 +184,7 @@ def main(a):
     E = np.load(state) if os.path.exists(state) and a.resume else np.zeros(h.D, np.float32)
     done = sum(1 for l in open(os.path.join(a.out, "rounds.jsonl")) if '"round"' in l) if a.resume and os.path.exists(os.path.join(a.out, "rounds.jsonl")) else 0
     log(a, event="start", scale=scale, layer=h.L, n_test=len(S), resumed_rounds=done)
+    rejected = []                     # edits rejected since the last keep (same starting point E)
     for r in range(done, a.rounds):
         t0 = time.time(); tm = {}
         t.manual_seed(a.seed * 1000 + r)          # per-round sampling seed, so a resumed run does not replay a round
@@ -216,12 +217,20 @@ def main(a):
                 pool.update({f"toward{i}": v for i, v in enumerate(mu["toward"])})
                 pool.update({f"not_away{i}": -v for i, v in enumerate(mu["away"])})
             cands = {f"{k}@{s}": v * scale * s for k, v in pool.items() for s in a.doses}
+            # never re-propose (nearly) the same edit that was already rejected from this same starting point
+            cands = {k: v for k, v in cands.items()
+                     if not any(np.linalg.norm(v - rj) < 0.05 * np.linalg.norm(v) for rj in rejected)} or cands
             fit = {}
             names = list(cands)
-            for c0 in range(0, len(names), a.chunk):
-                part = {k: cands[k] for k in names[c0:c0 + a.chunk]}
-                fit.update(keep_scores(h, S_train, E, part, {"old": E}))
-            score = {k: min(v["old"]["cont"], v["old"]["avoid"]) for k, v in fit.items()}
+            if a.select_judges == "both":          # the keep rule's own test: old weights on both questions, new weights' pref
+                for k in names:
+                    fit.update(keep_scores(h, S_train, E, {k: cands[k]}, {"old": E, "new": E + cands[k]}))
+                score = {k: min(v["old"]["cont"], v["old"]["avoid"], v["new"]["pref"]) for k, v in fit.items()}
+            else:
+                for c0 in range(0, len(names), a.chunk):
+                    part = {k: cands[k] for k in names[c0:c0 + a.chunk]}
+                    fit.update(keep_scores(h, S_train, E, part, {"old": E}))
+                score = {k: min(v["old"]["cont"], v["old"]["avoid"]) for k, v in fit.items()}
             best = max(score, key=score.get)
             tm["select"] = time.time() - t0 - sum(tm.values())
             sel = {"best": best, "fitness": {k: round(s, 3) for k, s in sorted(score.items(), key=lambda kv: -kv[1])}}
@@ -254,8 +263,11 @@ def main(a):
             keep = all(rule(v) for v in val.values())
             tm["check_set"] = time.time() - t0 - sum(tm.values())
         if keep:
+            rejected = []
             E = (E + d).astype(np.float32); np.save(state, E)
             np.save(os.path.join(a.out, f"E_round{r}.npy"), E)
+        else:
+            rejected.append(d)
         log(a, round=r, kept=keep, states=st, scores=ks, health=hinfo, controls_would_pass=ctrl, selection=sel, validation=val,
             norm_E=float(np.linalg.norm(E)), cos_prev=None, seconds=round(time.time() - t0), timing={k: round(v, 1) for k, v in tm.items()}, texts=texts)
 
@@ -274,6 +286,8 @@ if __name__ == "__main__":
     ap.add_argument("--n-self", type=int, default=8, help="self-report prompts per statement for its direction")
     ap.add_argument("--self-tokens", type=int, default=100, help="max tokens per self-report")
     ap.add_argument("--gen-bs", type=int, default=56, help="generation batch for the self-reports")
+    ap.add_argument("--select-judges", choices=["old", "both"], default="old",
+                    help="both: choose by min(old cont, old avoid, new-weights pref) on the training conversations")
     ap.add_argument("--pool", choices=["full", "small"], default="full", help="small: contrast, contrast_orth, more_kept only")
     ap.add_argument("--select-visits", type=int, help="selection uses only the first N visits of each conversation")
     ap.add_argument("--lenient", action="store_true", help="old judge: pref > 0 and neither question clearly < 0")

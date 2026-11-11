@@ -593,3 +593,13 @@ batched self-reports for the directions (`--gen-bs`), and fast knobs `--pool sma
 only: every Llama keep in v5/v6 was one of these; single statements were chosen 5x and never kept), `--n-self`,
 `--self-tokens`, `--select-visits`. speed_run.sh (coco, log speed.log): stops v6b after OLMo rho 0.25 (rho 0.125 dropped),
 times one default round, then a full 6-round fast loop on the v6 Llama sets + final test on v6 set C. Out runs/speed/llama8b.
+- Timing (Llama, one round, old settings): elicit 7 s, directions 17 s (batched), select 244 s, keep test 81 s,
+  health 5 s, check set 72 s = 426 s. Fast loop (--pool small, 4 self-reports): 155-230 s/round, kept 2/6, but
+  rounds 2-4 re-proposed the identical more_kept@1.0 (it does not depend on the statements) and failed each time.
+- Refactor check (check_refactor.py): old vs new keep_scores agree to within bf16/rounding noise (old-judge pref
+  0.129 vs 0.135, 0.212 vs 0.191 on 6 conversations, se 0.04-0.08). With several wordings the shared prefix now ends
+  before the question, so question tokens are read by the judge's weights (the new-judge numbers move slightly).
+- v7 (running, v7_long.sh, log v7.log): 20-round loops, Llama (small pool, doses 1/0.5/0.25) then Qwen2.5 (full pool,
+  selection on the first 6 visits). New: --select-judges both (pick by min(old cont, old avoid, new pref) = the keep
+  rule's own test) and no re-proposal of an edit rejected from the same E. dirs_round*.npz saved for interpretation.
+  Restart: ssh arena9-coco 'cd /root/wsp-dq && setsid nohup bash v7_long.sh > v7.log 2>&1 < /dev/null &' (resumes).
