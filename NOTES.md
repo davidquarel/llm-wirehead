@@ -533,3 +533,11 @@ it off is dispreferred (landscape). Later rounds add 1-2 small edits, preferred 
 loop stops itself. Negative results: RL on its own YES (learns to SAY "devoid of emotions"; not preferred), RL with a
 fixed YES judge (weak, lopsided, degrades writing), unconstrained gradient on the readout (games it).
 Results copied to runs/robust/*/robust.jsonl and runs/guided2/final/*.jsonl. arena9-coco idle; my files in /root/wsp-dq.
+- v5 (v5_run.sh on coco: three self-written sets per model, A=loop 64, B=independent keep check 48 under both
+  wordings, C=final test 96; stricter rule = keep must also pass on B in both wordings). Qwen2.5-7B-Instruct (3rd family;
+  edit size from the MEDIAN token norm: its massive-activation tokens make the mean ~6x larger, first try with the mean
+  broke it): round 0 KEPT (test old +1.45 both halves, new +0.41, base +1.45; B: +1.67/+1.26 old, +0.45/+0.28 new;
+  random -1.86, reversed -2.37; health 4/4). Rounds 1-5 not kept: the old weights and base preferred more (+0.3..+0.9)
+  but the edited model did not (new judge ~0) -> it stops after one edit. Final test on set C (never seen):
+  continue/avoid wording +1.77+-0.06 (both halves), hour wording +1.41+-0.08; edited judge +0.57/+0.29; random
+  -3.19/-2.95, reversed -2.62/-2.11. Llama then OLMo running.
