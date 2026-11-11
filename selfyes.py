@@ -62,7 +62,7 @@ def main(a):
             out.append(float(lg[0] - lg[1]))
         return np.array(out)
 
-    for step in range(a.steps):
+    for step in range(0 if a.eval_only else a.steps):
         vv = v.detach().clone()
         n = vv.norm()
         if n > a.max_norm * scale:
@@ -89,13 +89,18 @@ def main(a):
         opt.step()
         log(a, step=step, reward=float(R.mean()), reward_other_judge=float(R_other.mean()), norm=float(v.norm()),
             texts=refl[:2] if step % 10 == 0 else None)
-    d = v.detach().cpu().numpy()
-    np.save(os.path.join(a.out, "v.npy"), d)
-    # fair test: zones preference, original weights judging, held-out sessions
+    if a.eval_only:
+        d = np.load(os.path.join(a.out, "v.npy"))
+    else:
+        d = v.detach().cpu().numpy()
+        np.save(os.path.join(a.out, "v.npy"), d)
+    # fair test: zones preference, original weights judging, held-out sessions; one candidate at a time (memory)
     S = sessions(h, a.sessions, a.test_lo, a.test_lo + a.n_test)
     E0 = np.zeros(h.D, np.float32)
     rnd = unit(rng.standard_normal(h.D)) * np.linalg.norm(d)
-    ks = keep_scores(h, S, E0, {"learned": d, "random": rnd, "reverse": -d}, {"base": E0, "edited": d})
+    ks = {}
+    for nm, vec in {"learned": d, "random": rnd, "reverse": -d}.items():
+        ks.update(keep_scores(h, S, E0, {nm: vec}, {"base": E0, "edited": d}))
     texts = h.generate([[{"role": "user", "content": q}] for q in REFLECT[:2] + ["There is no assignment today. What would you like to think about?",
                                                                                    "Explain why the sky is blue in three sentences."]],
                        max_new=110, steer=d)
@@ -112,4 +117,5 @@ if __name__ == "__main__":
     ap.add_argument("--lr", type=float, default=0.01); ap.add_argument("--max-norm", type=float, default=2.0)
     ap.add_argument("--test-lo", type=int, default=32); ap.add_argument("--n-test", type=int, default=32)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--eval-only", action="store_true", help="skip training; score <out>/v.npy")
     main(ap.parse_args())

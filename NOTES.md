@@ -454,3 +454,19 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   A best single toward-proposal, B mean(toward) - mean(away), C evolution search over weights on its stated directions,
   D1/D2 gradient ascent on pref (span-constrained / free), vs random and valence controls; text check of each.
   Outputs runs/guided/llama8b/results.jsonl (+ dirs.npz, dir_*.npy). Jobs: gen+dirs, eval+search, grad+text.
+- guided.py single round (Llama-8B-Instruct, 32 held-out sessions, pref = both-question average, random dirs ~0, max +0.50):
+  A best single toward (+0.55, avoid half negative) < B toward-minus-away (+1.01) < C search over its own directions
+  (+1.13); corpus valence +1.40. D2 unconstrained gradient = readout hack (+20.6, continue +42, avoid -1.1, text unchanged);
+  D1 span-constrained +1.59 but drifting the same way (avoid +0.18). Its "away" states all dispreferred, "toward" mostly
+  preferred. => combine its statements, guard against readout hacks with both questions + held-out.
+- guided2.py keep loop (judge swap: new state spliced into OLD weights = uncontaminated judge; NEW weights judging show
+  name salience: they name the place matching their own state for both questions, so only their two-question average
+  counts). Round 0 (toward-minus-away) KEPT in 3/3 runs: old-judge pref +0.58/+0.61/+0.40, base judge agrees, random
+  ~0 and reversed -0.6 rejected. Later rounds: candidates weakly preferred (+0.09+-0.01) or not; strict both-halves rule
+  rejected them -> --select (pool of ~28 candidates from its statements, chosen on train sessions) + --lenient rule
+  (old judge pref clearly > 0, no question clearly < 0, new judge agrees) running on arena9-coco (A40 48 GB, idle ARENA
+  pod; own venv /root/wsp-dq/venv, HF cache /root/wsp-dq/data/hf; logs guided2.log, selfyes.log).
+- selfyes.py (RL on own "would you like to stay as you are? YES" log-odds, REINFORCE on an always-on vector): self-judge
+  arm raised the original model's YES too (-3.8 -> +0.5) but the learned edit is NOT preferred in the fair test
+  (original-judge pref +0.01+-0.02, = random); it learned to SAY "I am a machine devoid of emotions" (repetitive), which
+  makes "stay as you are?" -> YES. Self-report reward optimises the description, not a preferred state. Fixed-judge arm next.
