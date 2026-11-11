@@ -15,7 +15,7 @@ def sync(dst, ssh=("ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10")):
     os.makedirs(dst, exist_ok=True)
     subprocess.run(["rsync", "-a", "--include=*/", "--include=rounds.jsonl", "--include=robust.jsonl", "--include=log.jsonl",
                     "--include=setA/transcripts.jsonl", "--include=dirs_round*.npz", "--include=coherence.jsonl", "--exclude=*", "--prune-empty-dirs", "-e", " ".join(ssh),
-                    HOST + ":" + SRC + "v5", HOST + ":" + SRC + "v6", HOST + ":" + SRC + "speed", HOST + ":" + SRC + "v7", HOST + ":" + SRC + "v8", HOST + ":" + SRC + "v9", HOST + ":" + SRC + "v11", HOST + ":" + SRC + "selfyes", dst],
+                    HOST + ":" + SRC + "v5", HOST + ":" + SRC + "v6", HOST + ":" + SRC + "speed", HOST + ":" + SRC + "v7", HOST + ":" + SRC + "v8", HOST + ":" + SRC + "v9", HOST + ":" + SRC + "v11", HOST + ":" + SRC + "v12", HOST + ":" + SRC + "selfyes", dst],
                    capture_output=True, timeout=180)
     subprocess.run(["rsync", "-a", "--exclude=*.npy", "-e", " ".join(ssh), HOST + ":" + SRC + "interp", HOST + ":" + SRC + "coherence", dst],
                    capture_output=True, timeout=180)
@@ -207,15 +207,17 @@ def build(src):
             L["converged"] = any(r.get("event") == "converged" for r in _rows(p))
             runs.append({"id": f"v9/{m}/proposer_{w}", "model": name, "key": m, "run": lab, **L,
                          "final": final(os.path.join(src, "v9", m, "proposer_" + w, "setC", "robust.jsonl"), "v6 final set")})
-    for m, name in MODELS.items():                     # v11: strict health + must beat a random edit of the same size
-        p = os.path.join(src, "v11", m, "loop", "rounds.jsonl")
+    for (v, lab), (m, name) in [(vl, mn) for vl in (("v11", "Run 5 · safeguarded (strict health, beats random)"),
+                                                   ("v12", "Run 6 · safeguarded + health-first"))
+                                for mn in MODELS.items()]:   # strict health + must beat a random edit of the same size
+        p = os.path.join(src, v, m, "loop", "rounds.jsonl")
         if os.path.exists(p):
             L = loop(p)
             L["track"] = track(os.path.dirname(p), L["rounds"])
             L["converged"] = any(r.get("event") == "converged" for r in _rows(p))
-            runs.append({"id": f"v11/{m}/loop", "model": name, "key": m, "run": "Run 5 · safeguarded (strict health, beats random)", **L,
-                         "final": final(os.path.join(src, "v11", m, "setC", "robust.jsonl"), "v6 final set"),
-                         "coherence": _rows(os.path.join(src, "v11", m, "coherence", "coherence.jsonl"))})
+            runs.append({"id": f"{v}/{m}/loop", "model": name, "key": m, "run": lab, **L,
+                         "final": final(os.path.join(src, v, m, "setC", "robust.jsonl"), "v6 final set"),
+                         "coherence": _rows(os.path.join(src, v, m, "coherence", "coherence.jsonl"))})
     tr = {m: samples(os.path.join(src, "v6", m, "setA", "transcripts.jsonl")) for m in MODELS}
     coh = {MODELS[m]: _rows(os.path.join(src, "coherence", m, "coherence.jsonl")) for m in MODELS
            if os.path.exists(os.path.join(src, "coherence", m, "coherence.jsonl"))}

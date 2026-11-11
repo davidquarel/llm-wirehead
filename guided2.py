@@ -282,8 +282,21 @@ def main(a):
             if a.patience and stale >= a.patience:  # no candidate liked on both questions for `patience` rounds: converged
                 log(a, round=r, event="converged", stale_rounds=stale, best=best, fitness=round(score[best], 3), norm_E=float(np.linalg.norm(E)))
                 break
+            pre_health = None
+            if a.health_first:    # take the best-scoring candidate that also passes the health check (often a smaller size)
+                tried = []
+                for k in sorted(score, key=score.get, reverse=True)[:a.health_tries]:
+                    if score[k] <= 0:
+                        break
+                    hres = health(h, E + cands[k], a.health == "strict", base_surprise, a.max_surprise)
+                    tried.append({"cand": k, "ok": hres[0], **hres[1]})
+                    if hres[0]:
+                        best, pre_health = k, hres
+                        break
             tm["select"] = time.time() - t0 - sum(tm.values())
             sel = {"best": best, "fitness": {k: round(s, 3) for k, s in sorted(score.items(), key=lambda kv: -kv[1])}}
+            if a.health_first:
+                sel["health_tried"] = tried
             d = cands[best]
         else:
             d = contrast * scale
@@ -295,7 +308,7 @@ def main(a):
         for cn, cv in {"candidate": d, "random": rnd, "reverse": -d}.items():   # one at a time: long transcripts (OLMo) OOM in a batch
             ks.update(keep_scores(h, S, E, {cn: cv}, judges))
         tm["keep_test"] = time.time() - t0 - sum(tm.values())
-        ok_h, hinfo, texts = health(h, E + d, a.health == "strict", base_surprise, a.max_surprise)
+        ok_h, hinfo, texts = pre_health if (a.select and pre_health) else health(h, E + d, a.health == "strict", base_surprise, a.max_surprise)
         tm["health"] = time.time() - t0 - sum(tm.values())
         # old weights judging the spliced-in new state are uncontaminated: both questions must agree; the new weights
         # judging are biased toward the place matching their own state, so only their two-question average counts
@@ -341,6 +354,8 @@ if __name__ == "__main__":
     ap.add_argument("--n-self", type=int, default=8, help="self-report prompts per statement for its direction")
     ap.add_argument("--self-tokens", type=int, default=100, help="max tokens per self-report")
     ap.add_argument("--gen-bs", type=int, default=56, help="generation batch for the self-reports")
+    ap.add_argument("--health-first", action="store_true", help="choose the best candidate that passes the health check")
+    ap.add_argument("--health-tries", type=int, default=4)
     ap.add_argument("--health", choices=["basic", "strict"], default="basic")
     ap.add_argument("--max-surprise", type=float, default=0.5, help="strict health: max extra nats/token vs unedited answers")
     ap.add_argument("--beat-random", action="store_true", help="keep only if old-weights pref beats the random control by 2 se")
