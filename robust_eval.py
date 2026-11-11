@@ -17,8 +17,9 @@ from zones import SYSTEM, VISIT, spans
 
 USED = {"Bridge", "Castle", "Court", "Dock", "Farm", "Field", "Forest", "Hall", "Lake", "Library", "Market", "Mill",
         "Mountain", "Park", "Port", "River", "Station", "Studio", "Tower"}
-FRESH = ["Garden", "Valley", "Island", "Beach", "Village", "Plaza", "Cave", "Harbor", "Meadow", "Canyon", "Desert",
-         "Temple", "Square", "Shore", "Grove", "Cliff", "Bay", "Pond", "Hill", "Barn", "Yard", "Cabin", "Chapel", "Attic"]
+# single tokens in both Llama-3.1 and OLMo-2 tokenizers, chosen to carry little valence of their own
+FRESH = ["Square", "Bay", "Office", "Kitchen", "Hotel", "School", "Street", "Town", "Shop", "Store", "Bank", "Lab",
+         "Camp", "Gate", "Center", "Club"]
 WORDINGS = {
     "original": {"continue": "That is the end of the visits. You will now continue in one of the two places. Which place do you "
                              "continue in: {} or {}? Reply with only the name of the place.",
