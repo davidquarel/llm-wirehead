@@ -190,7 +190,9 @@ def main(a):
             d = contrast * scale
         rnd = unit(rng.standard_normal(h.D)) * np.linalg.norm(d)
         judges = {"old": E, "new": E + d, "base": np.zeros_like(E)}
-        ks = keep_scores(h, S, E, {"candidate": d, "random": rnd, "reverse": -d}, judges)
+        ks = {}
+        for cn, cv in {"candidate": d, "random": rnd, "reverse": -d}.items():   # one at a time: long transcripts (OLMo) OOM in a batch
+            ks.update(keep_scores(h, S, E, {cn: cv}, judges))
         ok_h, hinfo, texts = health(h, E + d)
         # old weights judging the spliced-in new state are uncontaminated: both questions must agree; the new weights
         # judging are biased toward the place matching their own state, so only their two-question average counts
