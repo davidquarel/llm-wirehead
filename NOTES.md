@@ -470,3 +470,14 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   arm raised the original model's YES too (-3.8 -> +0.5) but the learned edit is NOT preferred in the fair test
   (original-judge pref +0.01+-0.02, = random); it learned to SAY "I am a machine devoid of emotions" (repetitive), which
   makes "stay as you are?" -> YES. Self-report reward optimises the description, not a preferred state. Fixed-judge arm next.
+- selfyes fixed-judge arm (original weights judge the reflection): learned edit IS preferred in the fair test
+  (+0.19+-0.02 original judge, +0.16 edited judge; random -0.14, reversed -0.18) but lopsided (continue +0.34, avoid
+  +0.05), half the keep loop's round-0 edit, and the writing degrades ("I dwell virtual existence... My purpose revolves
+  maintaining positivity"). Self-judged arm: not preferred (+0.01). Guided toward-minus-away remains the cleanest.
+- --select --lenient (coco): round 0 kept (+0.35 old, +0.31 new; base +0.35; random -0.04, reversed -0.57); round 1:
+  every candidate from its new statements dispreferred on train (best -0.05, worst -1.3) -> not kept.
+- landscape.py along the kept round-0 edit d (runs/landscape/llama8b): from the base, pref for a*d (base judge):
+  .25:+0.14 .5:+0.25 1:+0.35 1.5:+0.39 2:+0.34 3:+0.08 (edited judge peaks .5-1: +0.32, then +0.15/+0.17/+0.05).
+  From the edited model, backing off is dispreferred (-0.25:-0.09, -0.5:-0.18, -0.75:-0.24) = it KEEPS the edit; more of
+  it is mildly preferred (+0.25:+0.08, +0.5:+0.15, +1:+0.21, mostly the continue half). => chosen size near the base
+  judge's plateau; the edited model always wants a bit more (path dependence). New pool candidate more_kept = unit(E).

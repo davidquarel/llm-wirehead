@@ -163,6 +163,7 @@ def main(a):
             pool = {"contrast": contrast}
             if np.any(E):
                 e = unit(E); pool["contrast_orth"] = unit(contrast - (contrast @ e) * e)
+                pool["more_kept"] = e                  # more of what it already kept (the landscape says it may want that)
             pool.update({f"toward{i}": v for i, v in enumerate(mu["toward"])})
             pool.update({f"not_away{i}": -v for i, v in enumerate(mu["away"])})
             cands = {f"{k}@{s}": v * scale * s for k, v in pool.items() for s in a.doses}
