@@ -569,3 +569,14 @@ Order OLMo, Llama, Qwen2.5; ~1.5 h each. Outputs runs/v6/<model>/{loop,setC}/ on
   edited-weights judge is ~0 (−0.08..+0.05), and it barely sees the reversed edit either (−0.06 vs −0.6 original):
   OLMo's edited weights become insensitive along the edit direction ("habituation"). Queued v6b_olmo.sh (after v6):
   same loop at rho 0.25 and 0.125 to see if smaller edits keep the edited judge sensitive. Log v6b.log.
+
+### v6 replicate results (files runs/v6_results/)
+Original-model pref on unseen 96-conversation sets, "continue/avoid" | "hour" (edited-model pref in brackets):
+| model | kept (v6 loop) | v6 final edit, v6 set | v5 final edit, v6 set | v6 edit, v5 set |
+| Qwen2.5 | 1/6 | +2.70 | +2.68 (+1.05 | +0.49) | +1.93 | +1.51 | +2.56 | +2.56 |
+| Llama   | 3/6 | +0.23 | +0.62 (+0.23 | +0.28) | +0.47 | +0.71 | +0.23 | +0.68 |
+| OLMo    | 0/6 | —                         | +0.49 | +0.41 (+0.22 | +0.07) | — |
+Reversed controls −0.5..−2.6 everywhere. Qwen2.5 "hour" random control +0.67 (kept edit +2.68).
+Llama and Qwen2.5 replicate (both judges, both wordings, both sets, cross-run). OLMo: original prefers every candidate
+(+0.4..+0.5) but edited weights are flat (~0) and also flat on the reversed edit -> strict rule never passes.
+Running: v6b_olmo.sh (rho 0.25, 0.125).
