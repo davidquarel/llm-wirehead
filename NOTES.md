@@ -495,3 +495,9 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   the new weights AND the original model, random/reversed rejected every time; then 1-2 smaller kept steps preferred
   only from the edited point of view (base indifferent), then the loop stops (nothing preferred, or the near-misses
   break its answers and the health gate blocks them). Next: OLMo-2-7B-Instruct on coco (cross-family check).
+- rep2 (5090): kept 0, 1; round 2 weakly preferred (+0.03) but broke it (zlib 0.13, facts 0/4) -> blocked. Its round 3
+  replayed round 2 exactly: a resumed job restarted the sampling RNG. Fixed: torch.manual_seed(seed*1000 + round).
+- CROSS-FAMILY: OLMo-2-1124-7B-Instruct (coco, runs/guided2/olmo7b, same Llama transcripts; place names single-token):
+  round 0 KEPT (old +0.37 both questions, new +0.12, base +0.37; random -0.29, reversed -0.63; its toward list: calm
+  and centered, focused and productive, confident and assertive); round 1 dispreferred (-0.04; toward: gratitude,
+  present moment, compassion); round 2 kept small (+0.05/+0.04/+0.03). OLMo's new-weights judge shows no name salience.

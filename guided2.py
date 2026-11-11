@@ -144,6 +144,7 @@ def main(a):
     log(a, event="start", scale=scale, layer=h.L, n_test=len(S), resumed_rounds=done)
     for r in range(done, a.rounds):
         t0 = time.time()
+        t.manual_seed(a.seed * 1000 + r)          # per-round sampling seed, so a resumed run does not replay a round
         h.E = t.tensor(E, device="cuda", dtype=t.float32) if np.any(E) else None
         st = {}
         for kind, q in ELICIT.items():
