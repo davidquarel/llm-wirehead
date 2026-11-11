@@ -8,14 +8,16 @@ import json, os, subprocess
 HOST = "arena9-coco"
 SRC = "/root/wsp-dq/runs/"
 MODELS = {"qwen25_7b": "Qwen2.5-7B-Instruct", "llama8b": "Llama-3.1-8B-Instruct", "olmo7b": "OLMo-2-7B-Instruct"}
-RUN_LABEL = {"v5": "Run 1 (v5)", "v6": "Run 2 (replicate)", "v7": "Run 3 · long fast loop"}
+RUN_LABEL = {"v5": "Run 1 (v5)", "v6": "Run 2 (replicate)", "v7": "Run 3 · fast, stopped at convergence"}
 
 
 def sync(dst, ssh=("ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10")):
     os.makedirs(dst, exist_ok=True)
     subprocess.run(["rsync", "-a", "--include=*/", "--include=rounds.jsonl", "--include=robust.jsonl", "--include=log.jsonl",
                     "--include=setA/transcripts.jsonl", "--include=dirs_round*.npz", "--exclude=*", "--prune-empty-dirs", "-e", " ".join(ssh),
-                    HOST + ":" + SRC + "v5", HOST + ":" + SRC + "v6", HOST + ":" + SRC + "speed", HOST + ":" + SRC + "v7", HOST + ":" + SRC + "selfyes", dst],
+                    HOST + ":" + SRC + "v5", HOST + ":" + SRC + "v6", HOST + ":" + SRC + "speed", HOST + ":" + SRC + "v7", HOST + ":" + SRC + "v8", HOST + ":" + SRC + "selfyes", dst],
+                   capture_output=True, timeout=180)
+    subprocess.run(["rsync", "-a", "-e", " ".join(ssh), HOST + ":" + SRC + "interp", dst],
                    capture_output=True, timeout=180)
 
 
@@ -184,8 +186,24 @@ def build(src):
         rl[j] = {"steps": [{k: r.get(k) for k in ("step", "reward", "reward_other_judge", "norm")} for r in rows if "step" in r],
                  "texts": [{"step": r["step"], "texts": r["texts"]} for r in rows if r.get("texts") and "step" in r],
                  "final": next((r for r in rows if r.get("event") == "final"), None)}
+    for m, name in MODELS.items():                     # v8: seeds of the fast loop with early stopping
+        d = os.path.join(src, "v8", m)
+        for sd in sorted(os.listdir(d)) if os.path.isdir(d) else []:
+            p = os.path.join(d, sd, "rounds.jsonl")
+            if not os.path.exists(p):
+                continue
+            L = loop(p)
+            L["track"] = track(os.path.dirname(p), L["rounds"])
+            L["converged"] = any(r.get("event") == "converged" for r in _rows(p))
+            runs.append({"id": f"v8/{m}/{sd}", "model": name, "key": m, "run": f"Run 3 · {sd.replace('seed', 'seed ')}, early stop", **L,
+                         "final": final(os.path.join(d, sd, "setC", "robust.jsonl"), "v6 final set")})
     tr = {m: samples(os.path.join(src, "v6", m, "setA", "transcripts.jsonl")) for m in MODELS}
-    return {"runs": runs, "rl": rl, "transcripts": tr}
+    interp = {}
+    for m in MODELS:
+        f = os.path.join(src, "interp", m, "interp.json")
+        if os.path.exists(f):
+            interp[MODELS[m]] = json.load(open(f))
+    return {"runs": runs, "rl": rl, "transcripts": tr, "interp": interp}
 
 
 if __name__ == "__main__":

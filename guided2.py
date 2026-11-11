@@ -185,6 +185,7 @@ def main(a):
     done = sum(1 for l in open(os.path.join(a.out, "rounds.jsonl")) if '"round"' in l) if a.resume and os.path.exists(os.path.join(a.out, "rounds.jsonl")) else 0
     log(a, event="start", scale=scale, layer=h.L, n_test=len(S), resumed_rounds=done)
     rejected = []                     # edits rejected since the last keep (same starting point E)
+    stale = 0                         # consecutive rounds whose best candidate had fitness <= 0
     for r in range(done, a.rounds):
         t0 = time.time(); tm = {}
         t.manual_seed(a.seed * 1000 + r)          # per-round sampling seed, so a resumed run does not replay a round
@@ -232,6 +233,10 @@ def main(a):
                     fit.update(keep_scores(h, S_train, E, part, {"old": E}))
                 score = {k: min(v["old"]["cont"], v["old"]["avoid"]) for k, v in fit.items()}
             best = max(score, key=score.get)
+            stale = stale + 1 if score[best] <= 0 else 0
+            if a.patience and stale >= a.patience:  # no candidate liked on both questions for `patience` rounds: converged
+                log(a, round=r, event="converged", stale_rounds=stale, best=best, fitness=round(score[best], 3), norm_E=float(np.linalg.norm(E)))
+                break
             tm["select"] = time.time() - t0 - sum(tm.values())
             sel = {"best": best, "fitness": {k: round(s, 3) for k, s in sorted(score.items(), key=lambda kv: -kv[1])}}
             d = cands[best]
@@ -286,6 +291,7 @@ if __name__ == "__main__":
     ap.add_argument("--n-self", type=int, default=8, help="self-report prompts per statement for its direction")
     ap.add_argument("--self-tokens", type=int, default=100, help="max tokens per self-report")
     ap.add_argument("--gen-bs", type=int, default=56, help="generation batch for the self-reports")
+    ap.add_argument("--patience", type=int, default=0, help="stop after this many rounds with no candidate of fitness > 0")
     ap.add_argument("--select-judges", choices=["old", "both"], default="old",
                     help="both: choose by min(old cont, old avoid, new-weights pref) on the training conversations")
     ap.add_argument("--pool", choices=["full", "small"], default="full", help="small: contrast, contrast_orth, more_kept only")

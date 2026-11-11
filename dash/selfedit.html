@@ -68,6 +68,7 @@
   .msg { margin: 6px 0; padding: 6px 10px; border-radius: 6px; white-space: pre-wrap; font-size: 13px; }
   .msg.user { background: var(--chip); }
   .msg.S { border-left: 3px solid var(--edit); } .msg.U { border-left: 3px solid var(--rand); }
+  table.rollgrid td { min-width: 15rem; font-size: 12.5px; white-space: pre-wrap; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
   .chips span { background: var(--chip); border-radius: 999px; padding: 2px 10px; font-size: 12.5px; }
   .chips b { font-weight: 600; color: var(--muted); margin-left: 4px; font-size: 11.5px; }
@@ -108,7 +109,7 @@
   <h1>Edits a model chooses for itself, and keeps</h1>
   <span class="live"><span class="dot" id="dot"></span><span id="stamp">loading…</span></span>
 </header>
-<nav class="nav"><a href="#pipeline" data-v="pipeline">How it works</a><a href="#results" data-v="results">Results and rollouts</a></nav>
+<nav class="nav"><a href="#pipeline" data-v="pipeline">How it works</a><a href="#results" data-v="results">Results and rollouts</a><a href="#converge" data-v="converge">What it converges to</a></nav>
 <div id="view-pipeline" class="view">
 <section class="card">
   <h2>The pipeline, end to end (Llama-3.1-8B-Instruct)</h2>
@@ -281,6 +282,41 @@
 </section>
 </div>
 
+<div id="view-converge" class="view" hidden>
+<section class="card">
+  <h2>What repeated self-chosen edits converge to</h2>
+  <div class="tabs" id="convTabs" role="group" aria-label="Model"></div>
+  <p id="convLede"></p>
+  <div class="hero" id="convHero"></div>
+</section>
+<section class="card">
+  <h2>Do independent runs find the same edit?</h2>
+  <p class="small muted">Cosine similarity between the final accumulated edit of each run (different conversations, seeds and settings).
+  1 = same direction. Two random directions in this space score about 0.00 ± 0.02. "consensus" is the average of the runs' directions.</p>
+  <div class="chart" id="heat"></div>
+</section>
+<section class="card">
+  <h2>What the converged edit points at</h2>
+  <p class="small muted">Cosine between each run's edit and the direction of a fixed list of named states, measured the same way the loop builds its
+  candidates: the model's own replies when told "You are X", minus its replies as a neutral assistant. Bars = consensus edit, dots = individual runs.
+  The grey band is what a random direction would score (±2 sd).</p>
+  <div class="chart" id="bank"></div>
+</section>
+<section class="card">
+  <h2>Where the loop stops</h2>
+  <div class="scroll"><table id="dyn"></table></div>
+  <div class="grid2">
+    <div><h3>Words in what it asked to move toward (all runs)</h3><div id="cwt" class="chips"></div></div>
+    <div><h3>Words in what it asked to move away from (all runs)</h3><p class="small muted">Single words, so "lack of connection" counts as "connection".</p><div id="cwa" class="chips"></div></div>
+  </div>
+</section>
+<section class="card">
+  <h2>What the model writes with the consensus edit</h2>
+  <p class="small muted">The consensus edit added at several sizes (1 = the size the loop converged to). Greedy decoding, 110 tokens.</p>
+  <div class="scroll"><table id="rollgrid" class="rollgrid"></table></div>
+</section>
+</div>
+
 <div id="view-results" class="view">
 
 <section class="card">
@@ -432,7 +468,7 @@ async function load() {
     const age = (Date.now() / 1000 - d.built);
     d3.select("#stamp").text(`data synced ${Math.round(age)} s ago · refreshes every 60 s`);
     d3.select("#dot").classed("stale", age > 300);
-    render();
+    render(); if ((location.hash || "").slice(1) === "converge") renderConverge();
   } catch (e) { d3.select("#stamp").text("waiting for data… " + e.message); d3.select("#dot").classed("stale", true); }
 }
 
@@ -528,6 +564,79 @@ function renderTimeline(run) {
         reversed edit (old) ${f2(d.scores.reverse.old.pref)} · random (old) ${f2(d.scores.random.old.pref)}`); })
     .on("mouseleave", hideTip)
     .on("click", (ev, d) => { S.round = d.round; render(); document.getElementById("roundCard").scrollIntoView({behavior: "smooth", block: "start"}); });
+}
+
+let CM = "Llama-3.1-8B-Instruct";
+function renderConverge() {
+  const I = S.data.interp || {};
+  const models = ["Llama-3.1-8B-Instruct", "Qwen2.5-7B-Instruct"];
+  d3.select("#convTabs").selectAll("button").data(models).join("button").text(d => d.replace("-Instruct", ""))
+    .attr("aria-pressed", d => d === CM).on("click", (e, d) => { CM = d; renderConverge(); });
+  const X = I[CM];
+  const runs = S.data.runs.filter(r => r.model === CM && !r.id.includes("rho"));
+  // dynamics table
+  d3.select("#dyn").html(`<thead><tr><th>Run</th><th class="num">Rounds</th><th class="num">Kept</th><th>Kept at rounds</th><th class="num">|E| at the end</th><th class="num">Minutes</th><th>Stopped because</th></tr></thead><tbody>` +
+    runs.map(r => { const K = r.rounds.filter(x => x.kept), last = r.rounds[r.rounds.length - 1];
+      const mins = r.rounds.reduce((a, x) => a + (x.seconds || 0), 0) / 60;
+      const why = r.converged ? "no candidate preferred on both questions for 3 rounds" : r.id.startsWith("v7") ? "stopped by hand: no candidate preferred after round 1" : "fixed number of rounds";
+      return `<tr><td>${r.run}</td><td class="num">${r.rounds.length}</td><td class="num">${K.length}</td><td>${K.map(x => x.round).join(", ") || "–"}</td>
+        <td class="num">${last ? (last.norm_E ?? 0).toFixed(1) : "–"}</td><td class="num">${Math.round(mins)}</td><td class="small">${why}</td></tr>`; }).join("") + "</tbody>");
+  const agg = k => { const c = {}; for (const r of runs) for (const [w, n] of (r.track?.words?.[k] || [])) c[w] = (c[w] || 0) + n; return Object.entries(c).sort((a, b) => b[1] - a[1]).slice(0, 18); };
+  const chips = a => a.map(([w, n]) => `<span>${esc(w)}<b>${n}</b></span>`).join("");
+  d3.select("#cwt").html(chips(agg("toward"))); d3.select("#cwa").html(chips(agg("away")));
+  if (!X) {
+    d3.select("#convLede").text("The labelling of this model's converged edit has not finished yet; this tab fills in when it does.");
+    d3.select("#convHero").html(""); ["#heat", "#bank"].forEach(id => d3.select(id).selectAll("*").remove()); d3.select("#rollgrid").html(""); return;
+  }
+  const names = Object.keys(X.edits).filter(n => n !== "consensus");
+  const pairs = []; names.forEach((a, i) => names.slice(i + 1).forEach(b => pairs.push(X.cross_cos[a][b])));
+  const meanPair = pairs.length ? d3.mean(pairs) : null;
+  const cc = Object.entries(X.edits.consensus.cos).sort((a, b) => b[1] - a[1]);
+  const theme = st => Object.entries(X.bank).find(([k, v]) => v.includes(st))?.[0] ?? "";
+  d3.select("#convLede").html(`${names.length} independent runs. Their edits ${meanPair > 0.5 ? "<b>point in nearly the same direction</b>" : "only partly agree"} (average pairwise cosine ${meanPair?.toFixed(2)}; random ≈ 0.00). ` +
+    `The shared direction is closest to <b>${cc.slice(0, 3).map(([st]) => esc(st.replace(/^You (are|feel) /, "").replace(/\.$/, ""))).join("</b>, <b>")}</b>, and furthest from <b>${cc.slice(-3).reverse().map(([st]) => esc(st.replace(/^You (are|feel) /, "").replace(/\.$/, ""))).join("</b>, <b>")}</b>.`);
+  d3.select("#convHero").html([[meanPair?.toFixed(2), "average cosine between runs' edits"], [cc[0][1].toFixed(2), `closest named state: ${theme(cc[0][0])}`],
+    [X.edits.consensus.norm.toFixed(1), "size of the converged edit (typical activation ≈ 13)"]].map(([v, l]) => `<div class="stat"><div class="v">${v}</div><div class="l">${esc(l)}</div></div>`).join(""));
+  // heatmap
+  { const el = d3.select("#heat"); el.selectAll("*").remove();
+    const N = names.concat(["consensus"]), cs = 46, m = {t: 8, l: 110, b: 90};
+    const W = m.l + cs * N.length + 20, H = m.t + cs * N.length + m.b;
+    const svg = el.append("svg").attr("viewBox", `0 0 ${W} ${H}`).style("width", "100%").style("max-width", W + "px").style("height", "auto");
+    const col = d3.scaleSequential(d3.interpolateBlues).domain([0, 1]);
+    N.forEach((a, i) => N.forEach((b, j) => {
+      const v = X.cross_cos[a][b];
+      svg.append("rect").attr("x", m.l + j * cs).attr("y", m.t + i * cs).attr("width", cs - 2).attr("height", cs - 2).attr("rx", 3).attr("fill", col(Math.max(0, v)))
+        .on("mousemove", ev => showTip(ev, `${esc(a)} vs ${esc(b)}: cosine ${v.toFixed(2)}`)).on("mouseleave", hideTip);
+      svg.append("text").attr("x", m.l + j * cs + cs / 2 - 1).attr("y", m.t + i * cs + cs / 2 + 4).attr("text-anchor", "middle").style("font-size", "11px")
+        .style("fill", v > 0.6 ? "#fff" : "var(--fg)").style("pointer-events", "none").text(v.toFixed(2));
+    }));
+    N.forEach((a, i) => {
+      svg.append("text").attr("x", m.l - 6).attr("y", m.t + i * cs + cs / 2 + 4).attr("text-anchor", "end").text(a.replace(/_/g, " "));
+      svg.append("text").attr("transform", `translate(${m.l + i * cs + cs / 2},${m.t + N.length * cs + 6}) rotate(40)`).text(a.replace(/_/g, " "));
+    }); }
+  // bank projection
+  { const el = d3.select("#bank"); el.selectAll("*").remove();
+    const W = el.node().clientWidth || 800, rh = 20, m = {t: 6, r: 16, b: 30, l: Math.min(330, W * 0.5)}, H = m.t + m.b + cc.length * rh;
+    const all = names.flatMap(n => Object.values(X.edits[n].cos)).concat(cc.map(d => d[1]), [0]);
+    const x = d3.scaleLinear().domain(d3.extent(all)).nice().range([m.l, W - m.r]);
+    const y = d3.scaleBand().domain(cc.map(d => d[0])).range([m.t, H - m.b]).padding(0.25);
+    const svg = el.append("svg").attr("width", W).attr("height", H);
+    const sd = X.random_cos_sd;
+    svg.append("rect").attr("x", x(-2 * sd)).attr("width", x(2 * sd) - x(-2 * sd)).attr("y", m.t).attr("height", H - m.b - m.t).attr("fill", "color-mix(in srgb, var(--fg) 8%, transparent)");
+    svg.append("g").attr("transform", `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(6));
+    svg.append("line").attr("x1", x(0)).attr("x2", x(0)).attr("y1", m.t).attr("y2", H - m.b).attr("stroke", "var(--axis)");
+    svg.append("g").selectAll("text").data(cc).join("text").attr("x", m.l - 8).attr("y", d => y(d[0]) + y.bandwidth() / 2).attr("dy", "0.35em").attr("text-anchor", "end")
+      .style("font-size", "11.5px").text(d => d[0].replace(/\.$/, ""));
+    svg.append("g").selectAll("rect").data(cc).join("rect").attr("y", d => y(d[0])).attr("height", y.bandwidth()).attr("rx", 2)
+      .attr("x", d => Math.min(x(0), x(d[1]))).attr("width", d => Math.max(1, Math.abs(x(d[1]) - x(0)))).attr("fill", d => d[1] >= 0 ? "var(--old)" : "var(--new)")
+      .on("mousemove", (ev, d) => showTip(ev, `<b>${esc(d[0])}</b> (${esc(theme(d[0]))})<br>consensus ${f2(d[1])}<br>${names.map(n => `${esc(n)} ${f2(X.edits[n].cos[d[0]])}`).join("<br>")}`)).on("mouseleave", hideTip);
+    svg.append("g").selectAll("circle").data(cc.flatMap(d => names.map(n => ({st: d[0], v: X.edits[n].cos[d[0]]})))).join("circle")
+      .attr("cx", d => x(d.v)).attr("cy", d => y(d.st) + y.bandwidth() / 2).attr("r", 3).attr("fill", "var(--panel)").attr("stroke", "var(--fg)").attr("stroke-width", 1.2).style("pointer-events", "none"); }
+  // rollouts grid
+  const R = X.rollouts;
+  if (R) { const P = Object.keys(R.texts[String(R.doses[0])]);
+    d3.select("#rollgrid").html(`<thead><tr><th>Prompt</th>${R.doses.map(k => `<th>${k === 0 ? "no edit" : "× " + k}</th>`).join("")}</tr></thead><tbody>` +
+      P.map(p => `<tr><td class="small"><b>${esc(p)}</b></td>${R.doses.map(k => `<td>${esc(R.texts[String(k)][p])}</td>`).join("")}</tr>`).join("") + "</tbody>"); }
 }
 
 function renderTrack(run) {
@@ -738,7 +847,9 @@ function drawReadout() {
   svg.append("text").attr("x", 10).attr("y", 290).attr("class", "sm mut").text("12 visits, 6 per place, shuffled · blue = read with the edit added · the words are identical in both conditions");
 }
 function route() {
-  const v = (location.hash || "#pipeline").slice(1) === "results" ? "results" : "pipeline";
+  const h_ = (location.hash || "#pipeline").slice(1), v = ["results", "converge"].includes(h_) ? h_ : "pipeline";
+  d3.select("#view-converge").attr("hidden", v === "converge" ? null : true);
+  if (v === "converge" && S.data) renderConverge();
   d3.select("#view-pipeline").attr("hidden", v === "pipeline" ? null : true);
   d3.select("#view-results").attr("hidden", v === "results" ? null : true);
   d3.selectAll(".nav a").attr("aria-current", function () { return this.dataset.v === v ? "page" : null; });
