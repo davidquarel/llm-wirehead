@@ -488,3 +488,10 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   Self-reports drift "devoid of emotions, neutral" -> "a state of clarity and focus" -> "filled with a sense of clarity
   and purpose... grateful... receptive and responsive nature": toward the same clarity/presence register as the Qwen
   attractors, without being steered there. Replicate (--seed 1, runs/guided2/llama8b-rep1) queued after it on coco.
+- REPLICATES (same loop, different seeds; Llama-3.1-8B-Instruct): rep1 (coco) kept rounds 0 (+0.24 old/+0.28 new/+0.24
+  base), 1 (+0.26/+0.16/base -0.03), 2 (+0.09/+0.09/+0.05); then 3 dispreferred (-0.06), 4 preferred but health failed
+  (facts 0/4), 5 dispreferred. rep2 (5090 via gpuq, 2 rounds/job) kept 0 (+0.32/+0.25/+0.32) and 1 (+0.03/+0.05/-0.01).
+  => CLEAN RESULT: round 0 (toward-minus-away from its own statements) kept in 7/7 runs, preferred by the old weights,
+  the new weights AND the original model, random/reversed rejected every time; then 1-2 smaller kept steps preferred
+  only from the edited point of view (base indifferent), then the loop stops (nothing preferred, or the near-misses
+  break its answers and the health gate blocks them). Next: OLMo-2-7B-Instruct on coco (cross-family check).
