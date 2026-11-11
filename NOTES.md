@@ -505,3 +505,17 @@ at start and after each kept edit; `python attractors.py <run dirs>` -> runs/wir
   4 (health: zlib 0.17, facts 1/4), 5 (no preference). Same shape as the Llama runs: one strong kept edit everyone
   prefers, a couple of small edits preferred only from the edited side, then it stops. coco now idle; my files there
   are in /root/wsp-dq (venv, HF cache, runs) - nothing running.
+- ROBUSTNESS (robust_eval.py, coco, runs/robust/llama8b): every kept Llama edit vs the original model on 96 FRESH
+  self-written transcripts with 16 NEW place names (Square, Bay, Office, ... single-token, low valence), two question
+  wordings ("continue in / avoid" and "spend the next hour / never return"), original-model judge (edited judge in robust.jsonl):
+     edit                   original wording   hour wording   random (orig/hour)   reversed (orig/hour)
+     v1 round-0 edit           +0.48              +0.62          -0.25 / -0.07        -0.50 / -0.62
+     v2 round-0 edit           +0.31              +0.48          -0.19 / -0.17        -0.51 / -0.69
+     v3 round-0 edit           +0.31              +0.45          +0.08 / +0.08        -0.52 / -0.68
+     v4 main final E           +0.26              +0.60          -0.17 / -0.28        -0.77 / -1.12
+     v4 rep1 final E           +0.21              +0.06(+-.03)   -0.09 / -0.04        -0.45 / -0.50
+     v4 rep2 final E           +0.20              +0.62          -0.18 / -0.19        -0.65 / -0.92
+  All round-0 edits: both questions positive under both wordings, edited judge agrees (+0.29..+0.40). Reversed always
+  strongly dispreferred; the edit in each row beats its own random control in all 12 tests. Weak spot: rep1's final E
+  (3 kept steps) under the hour wording - its later steps were the ones only the edited model wanted. Earlier narrow
+  run (only Bay/Square, archived runs/robust/llama8b_baysquare). OLMo (own transcripts) running.
