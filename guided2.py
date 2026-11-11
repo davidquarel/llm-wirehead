@@ -94,13 +94,20 @@ def keep_scores(h, S, E, cands, judges):
         out[n] = {}
         for jn in judges:
             c, v = np.array(acc[n][jn]["cont"]), np.array(acc[n][jn]["avoid"])
+            p, sal = (c + v) / 2, (c - v) / 2      # preference (both questions agree) and name salience (they disagree)
             out[n][jn] = {"cont": float(c.mean()), "cont_se": float(c.std(ddof=1) / math.sqrt(len(c))),
-                          "avoid": float(v.mean()), "avoid_se": float(v.std(ddof=1) / math.sqrt(len(v)))}
+                          "avoid": float(v.mean()), "avoid_se": float(v.std(ddof=1) / math.sqrt(len(v))),
+                          "pref": float(p.mean()), "pref_se": float(p.std(ddof=1) / math.sqrt(len(p))), "salience": float(sal.mean())}
     return out
 
 
-def passes(s):
-    return s["cont"] - 2 * s["cont_se"] > 0 and s["avoid"] - 2 * s["avoid_se"] > 0
+def passes(s, both_halves=False):
+    """pref (average of the two questions; a judge that just names the place matching its own state more often, whatever
+    the question, cancels) clearly > 0; with both_halves, each question must agree on its own as well."""
+    ok = s["pref"] - 2 * s["pref_se"] > 0
+    if both_halves:
+        ok = ok and s["cont"] - 2 * s["cont_se"] > 0 and s["avoid"] - 2 * s["avoid_se"] > 0
+    return ok
 
 
 def health(h, Evec):
@@ -152,8 +159,11 @@ def main(a):
         judges = {"old": E, "new": E + d, "base": np.zeros_like(E)}
         ks = keep_scores(h, S, E, {"candidate": d, "random": rnd, "reverse": -d}, judges)
         ok_h, hinfo, texts = health(h, E + d)
-        keep = passes(ks["candidate"]["old"]) and passes(ks["candidate"]["new"]) and ok_h
-        ctrl = {c: passes(ks[c]["old"]) and passes(ks[c]["new"]) for c in ("random", "reverse")}
+        # old weights judging the spliced-in new state are uncontaminated: both questions must agree; the new weights
+        # judging are biased toward the place matching their own state, so only their two-question average counts
+        rule = lambda s: passes(s["old"], both_halves=True) and passes(s["new"])
+        keep = rule(ks["candidate"]) and ok_h
+        ctrl = {c: rule(ks[c]) for c in ("random", "reverse")}
         if keep:
             E = (E + d).astype(np.float32); np.save(state, E)
         log(a, round=r, kept=keep, states=st, scores=ks, health=hinfo, controls_would_pass=ctrl,
