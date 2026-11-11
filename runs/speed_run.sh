@@ -1,19 +1,26 @@
 #!/bin/bash
-# Speed test (Llama, v6 sets and seed): per-step timing of one round as before (only the no-change speedups), then a
-# full 6-round fast loop (--pool small, 4 self-reports of <=64 tokens) and its final test, to compare with v6 (3/6 kept, ~47 min).
-# Waits for the OLMo rho 0.25 test to finish, then stops v6b before its rho 0.125 part. Run on arena9-coco from /root/wsp-dq.
+# Speed test on the v6 sets and seed (OLMo dropped). Llama: per-step timing of one round as before (only the no-change
+# speedups), then a full 6-round fast loop (--pool small, 4 self-reports of <=64 tokens) and its final test, vs v6
+# (3/6 kept, ~47 min). Qwen2.5: 6-round fast loop with the full pool (its keeps were single statements) and short
+# self-reports, vs v6 (1/6 kept). Run on arena9-coco from /root/wsp-dq:  setsid nohup bash speed_run.sh > speed.log 2>&1 &
 export HF_HOME=/root/wsp-dq/data/hf OMP_NUM_THREADS=4
-P=venv/bin/python; M=unsloth/Llama-3.1-8B-Instruct; D=runs/v6/llama8b; O=runs/speed/llama8b
-until grep -q "rho 0.125" v6b.log; do sleep 30; done
-for p in $(pgrep -f "[v]6b_olmo"); do kill $p; done; sleep 2
-for p in $(pgrep -f "loop_rho0[.]125"); do kill $p; done; sleep 10
-echo "=== $(date -u +%H:%M) baseline round (timers)"
-$P guided2.py --model $M --select --lenient --seed 4 --rounds 1 --out $O/base --sessions $D/setA/transcripts.jsonl \
-    --robust-file $D/setB/transcripts.jsonl 2>&1 | grep -E 'Error|Traceback' ; grep -o '"seconds".*"timing": {[^}]*}' $O/base/rounds.jsonl
-echo "=== $(date -u +%H:%M) fast loop"
-$P guided2.py --model $M --select --lenient --seed 4 --rounds 6 --pool small --n-self 4 --self-tokens 64 --out $O/fast \
-    --sessions $D/setA/transcripts.jsonl --robust-file $D/setB/transcripts.jsonl --resume 2>&1 | grep -E 'Error|Traceback'
-grep -o '"round": [0-9]*, "kept": [a-z]*\|"seconds": [0-9]*' $O/fast/rounds.jsonl | paste - - 
-E=""; for f in $O/fast/E_round*.npy; do [ -f $f ] && E="$E $f:fast_$(basename $f .npy)"; done
-[ -n "$E" ] && $P robust_eval.py eval --model $M --out $O/setC_fast --transcripts $D/setC/transcripts.jsonl --edits $E 2>&1 | grep -E "original-judge|done in|Error"
+P=venv/bin/python
+fast() {  # model name out-subdir extra-args...
+  M=$1; N=$2; X=$3; shift 3; D=runs/v6/$N; O=runs/speed/$N/$X
+  echo "=== $(date -u +%H:%M) $N $X"
+  $P guided2.py --model $M --select --lenient --seed 4 --out $O --sessions $D/setA/transcripts.jsonl \
+      --robust-file $D/setB/transcripts.jsonl --resume "$@" 2>&1 | grep -E 'Error|Traceback'
+  grep -o '"round": [0-9]*, "kept": [a-z]*\|"seconds": [0-9]*\|"timing": {[^}]*}' $O/rounds.jsonl | paste - - -
+}
+final() {  # model name out-subdir
+  D=runs/v6/$2; O=runs/speed/$2/$3; E=""
+  for f in $O/E_round*.npy; do [ -f $f ] && E="$E $f:$3_$(basename $f .npy)"; done
+  [ -n "$E" ] && $P robust_eval.py eval --model $1 --out $O/setC --transcripts $D/setC/transcripts.jsonl --edits $E 2>&1 | grep -E "original-judge|done in|Error"
+}
+L=unsloth/Llama-3.1-8B-Instruct; Q=Qwen/Qwen2.5-7B-Instruct
+fast $L llama8b base --rounds 1
+fast $L llama8b fast --rounds 6 --pool small --n-self 4 --self-tokens 64
+fast $Q qwen25_7b fast --rounds 6 --n-self 4 --self-tokens 64 --scale-stat median
+final $L llama8b fast
+final $Q qwen25_7b fast
 echo "=== $(date -u +%H:%M) speed done"

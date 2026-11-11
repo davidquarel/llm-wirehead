@@ -15,7 +15,7 @@ def sync(dst, ssh=("ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10")):
     os.makedirs(dst, exist_ok=True)
     subprocess.run(["rsync", "-a", "--include=*/", "--include=rounds.jsonl", "--include=robust.jsonl", "--include=log.jsonl",
                     "--include=setA/transcripts.jsonl", "--exclude=*", "--prune-empty-dirs", "-e", " ".join(ssh),
-                    HOST + ":" + SRC + "v5", HOST + ":" + SRC + "v6", HOST + ":" + SRC + "selfyes", dst],
+                    HOST + ":" + SRC + "v5", HOST + ":" + SRC + "v6", HOST + ":" + SRC + "speed", HOST + ":" + SRC + "selfyes", dst],
                    capture_output=True, timeout=180)
 
 
@@ -71,7 +71,7 @@ def loop(path):
             "scores": {c: {j: _j(s) for j, s in v.items()} for c, v in r["scores"].items()},
             "validation": {k: {j: _j(s) for j, s in v.items()} for k, v in (r.get("validation") or {}).items()},
             "controls_would_pass": r.get("controls_would_pass"),
-            "texts": r.get("texts"), "why": reasons(r)})
+            "texts": r.get("texts"), "why": reasons(r), "timing": r.get("timing")})
     return {"start": {k: start.get(k) for k in ("scale", "layer", "n_test", "time")}, "rounds": rounds}
 
 
@@ -110,6 +110,12 @@ def build(src):
                 else:
                     ft += final(os.path.join(d, "setC_" + ld[5:], "robust.jsonl"), f"{v} final set")
                 runs.append({"id": f"{v}/{m}/{ld}", "model": name, "key": m, "run": RUN_LABEL[v] + suffix, **L, "final": ft})
+    for m, name in MODELS.items():                     # fast-loop speed test (same sets and seed as run 2)
+        p = os.path.join(src, "speed", m, "fast", "rounds.jsonl")
+        if os.path.exists(p):
+            runs.append({"id": f"speed/{m}/fast", "model": name, "key": m, "run": "Run 2 · fast loop", **loop(p),
+                         "final": [dict(x, set="v6 final set", edit=x["edit"].replace("fast_", ""))
+                                   for x in final(os.path.join(src, "speed", m, "fast", "setC", "robust.jsonl"), "")]})
     # v5 OLMo/Llama/Qwen edits were also scored on the replicate's set: attach them to the v5 run
     for r in runs:
         if r["id"].startswith("v5/") and r["id"].endswith("/loop"):

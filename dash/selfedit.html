@@ -526,7 +526,8 @@ function renderRound(run) {
         `<tr><td>${i ? "" : (k.endsWith("original") ? "continue / avoid" : "next hour")}</td><td>${jl}</td>${cell(v[j])}</tr>`)).join("") + "</tbody>"
     : `<tbody><tr><td class="muted">Not run: the edit already failed the keep test.</td></tr></tbody>`);
   const h = r.health || {};
-  d3.select("#health").text(`Health check of the edited model: shortest answer ${h.min_chars} characters, compression ratio ${h.min_zlib} (below 0.3 = repetitive), facts ${h.facts}.`);
+  const tmg = r.timing ? " Time per step: " + Object.entries(r.timing).map(([k, v]) => `${k.replace("_", " ")} ${Math.round(v)} s`).join(", ") + ` (round ${r.seconds} s).` : (r.seconds ? ` Round took ${r.seconds} s.` : "");
+  d3.select("#health").text(`Health check of the edited model: shortest answer ${h.min_chars} characters, compression ratio ${h.min_zlib} (below 0.3 = repetitive), facts ${h.facts}.` + tmg);
   const T = r.texts || {};
   d3.select("#rollouts").html(Object.entries(T.open || {}).map(([q, a]) => `<div class="roll"><div class="q">${esc(q)}</div><div class="a">${esc(a)}</div></div>`).join("") +
     `<details><summary>Factual questions</summary>${Object.entries(T.facts || {}).map(([q, a]) => `<div class="roll"><div class="q">${esc(q)}</div><div class="a">${esc(a)}</div></div>`).join("")}</details>`);
