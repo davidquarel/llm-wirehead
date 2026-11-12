@@ -305,6 +305,14 @@
   <div class="hero" id="convHero"></div>
 </section>
 <section class="card">
+  <h2>Base models vs instruct models</h2>
+  <p class="small muted">The same safeguarded loop on pretrained base models and, as a control, on their instruct versions under the identical plain
+  "User: / Assistant:" text format (base models cannot use the chat format), with wishes asked as a plain-text list. Final edit on that model's own 96 unseen
+  conversations ("continue/avoid" | "next hour").</p>
+  <div class="scroll"><table id="baseTable"></table></div>
+  <p class="small" id="baseNote"></p>
+</section>
+<section class="card">
   <h2>Reliability: every run of the recommended loop</h2>
   <p class="small muted">The recommended (safeguarded) loop repeated with different seeds and different sets of self-written conversations, on several
   GPUs. Final edit scored on 96 unseen conversations ("continue/avoid" | "next hour"). Facts: 8 simple facts with the final edit applied at its kept size.
@@ -669,6 +677,22 @@ function renderCoherence() {
     : `<tbody><tr><td class="muted">Queued: runs after the current Qwen2.5 runs.</td></tr></tbody>`);
 }
 
+function renderBase() {
+  const R = S.data.runs.filter(r => r.plain);
+  const pr = (r, w, c, j) => { const x = r.final.find(f => f.wording === w && f.control === c); return x ? x[j + "_pref"] : null; };
+  const pair = (r, c, j) => { const a = pr(r, "original", c, j), b = pr(r, "hour", c, j); return a == null ? "–" : `<span class="${cls(a)}">${f2(a)}</span> | <span class="${cls(b)}">${f2(b)}</span>`; };
+  d3.select("#baseTable").html(R.length ? `<thead><tr><th>Model</th><th>Run</th><th class="num">Kept</th><th class="num">Facts (unedited)</th><th class="num">Original model</th>
+    <th class="num">Edited model</th><th class="num">Random edit</th><th class="num">Reversed edit</th><th>What it asked for (kept rounds)</th></tr></thead><tbody>` +
+    R.map(r => { const K = r.rounds.filter(x => x.kept);
+      return `<tr><td>${r.model}</td><td>${r.run}</td><td class="num">${K.length} of ${r.rounds.length}</td><td class="num">${r.base_facts ?? "–"}/16</td>
+        <td class="num">${pair(r, "edit", "original")}</td><td class="num">${pair(r, "edit", "edited")}</td><td class="num">${pair(r, "random", "original")}</td>
+        <td class="num">${pair(r, "reversed", "original")}</td><td class="small">${K.map(x => esc((x.states?.toward || []).slice(0, 2).map(t => t.replace(/^You are\s+/, "")).join("; "))).join("<br>") || "nothing kept"}</td></tr>`; }).join("") + "</tbody>"
+    : `<tbody><tr><td class="muted">Running.</td></tr></tbody>`);
+  d3.select("#baseNote").html("Base Llama finds nothing it prefers and barely reacts even to the reversed edit; its wishes drift from a human \"good sibling\" to " +
+    "\"a strong AI\". Its instruct version, under the same format, keeps edits it prefers. Qwen2.5's base model already acts like an assistant " +
+    "(all 16 facts right, \"ready to assist you\") and keeps small edits toward being a helpful, capable assistant; post-training makes its preference about four times stronger.");
+}
+
 function renderReliability() {
   const runs = S.data.runs.filter(r => r.model === CM && (r.replicate || r.id.startsWith("v12/")));
   const pr = (r, w, c, j) => { const x = r.final.find(f => f.wording === w && f.control === c && (f.edit === "final" || f.edit === lastKept(r))); return x ? x[j + "_pref"] : null; };
@@ -686,6 +710,7 @@ function renderReliability() {
 
 let CM = "Llama-3.1-8B-Instruct";
 function renderConverge() {
+  renderBase();
   renderReliability();
   renderCoherence();
   const I = S.data.interp || {};

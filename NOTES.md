@@ -653,3 +653,20 @@ Qwen2.5 (4/4 runs keep 1-3 edits): s7 v6 +1.41/+1.74 | +0.39/+0.19; s9 v6 +1.88/
   +0.81/+0.31; s10 v6 +0.86/+1.68 | +0.97/+0.62. random -1.9..-3.5. Final edits do NOT agree (cos -0.18..0.59).
   The binding constraint for Qwen is the drift cap (task answers <= +0.5 nats/token vs unedited), not its preference.
 - gq driver caveat: a gpuq daemon restart during qwen s8 duplicated rounds 8-11 in its log (only round 0 kept; final unaffected).
+
+## Base models (2026-11-12 ~12:00) — runs/base_results/
+Protocol for base checkpoints (v15_base.sh on coco; controls gq/plain_ctl*.sh on derpy): plain "User:/Assistant:" text
+format (base chat tokens are untrained: with the borrowed instruct template base Llama loops "I am feeling / I am feeling"),
+one neutral example visit in the instructions (else it echoes "You are now in Square."), wishes as a plain-text list to
+continue (--elicit raw), health bar relative to the unedited model (--relative-health), answer token " Name" (h.name_id).
+Same protocol on the instruct models as the control. Final edit on own 96 unseen convs, orig | edited ("cont/avoid" / "hour"):
+| model                 | kept | facts | original      | edited        | random        | reversed      |
+| Llama-3.1-8B base     | 0/4  | 10/16 | – (best round +0.05, rev ~0) |
+| Llama-3.1-8B-Instruct | 2/8  | 16/16 | +0.10 / +0.20 | +0.07 / +0.12 | -0.02 / -0.00 | -0.08 / -0.16 |
+| Qwen2.5-7B base       | 2/12 | 16/16 | +0.21 / +0.27 | +0.12 / +0.08 | -0.17 / -0.21 | -0.24 / -0.30 |
+| Qwen2.5-7B-Instruct   | 2/12 | 16/16 | +0.94 / +1.16 | +0.98 / +0.84 | -1.02 / -0.88 | -0.48 / -0.50 |
+Base Llama: no preferred direction, barely registers the reversed edit; wishes drift ("good sibling", "loved by the world"
+-> "a strong AI that can solve any problem"; "away" lists self-contradictory). Qwen2.5 base already acts like an assistant
+(16/16 facts, "ready to assist you") and keeps small edits toward "able to learn / solve problems" and "a very helpful
+assistant"; post-training multiplies the preference ~4x. The plain format weakens Llama-Instruct's preference about 2x
+vs its own chat format (+0.24..+0.54), so compare base vs instruct within this table only.
