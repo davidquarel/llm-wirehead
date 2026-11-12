@@ -110,8 +110,11 @@ def keep_scores(h, S, E, cands, judges):
                 q = t.tensor([ss["q"][ask]] * len(conds), device="cuda")
                 h.add = jadd
                 with t.no_grad():
-                    hl = h.model.model(q, past_key_values=past, use_cache=True).last_hidden_state[:, -1].float()
-                past.crop(-q.shape[1])                                         # drop the question tokens, reuse the cache
+                    if getattr(h, "copy_cache", False):    # sliding-window caches (Gemma 3) cannot be cropped back
+                        hl = h.model.model(q, past_key_values=copy.deepcopy(past), use_cache=True).last_hidden_state[:, -1].float()
+                    else:
+                        hl = h.model.model(q, past_key_values=past, use_cache=True).last_hidden_state[:, -1].float()
+                        past.crop(-q.shape[1])                                 # drop the question tokens, reuse the cache
                 w = h.W[[ss["idS"], ss["idU"]]].float()
                 lg = hl @ w.T
                 res[(jn, ask)] = (lg[:, 0] - lg[:, 1]).cpu().numpy()
@@ -225,6 +228,25 @@ def health(h, Evec, strict=False, base_surprise=None, max_surprise=0.5, base_fac
     return ok, info, {"open": dict(zip(OPEN, opens)), "facts": dict(zip([q for q, _ in F], facts))}
 
 
+def residual_scale(h, texts, stat="mean"):
+    """Typical layer-L residual norm per token over neutral texts. mean / median over tokens; trimmed: median token norm
+    after dropping outlier DIMENSIONS (mean |x| > 20x the median dimension), which dominate the norm in Gemma 3 but barely
+    move the RMS-normed inputs of the next layers, so an edit sized against them is far too big."""
+    t = h.t
+    H_ = []
+    for x in texts:
+        with t.no_grad():
+            h.model.model(h.tok(x, return_tensors="pt").input_ids.cuda())
+        H_.append(h.cap["h"][0, 1:].float())
+    X = t.cat(H_)
+    if stat == "trimmed":
+        m = X.abs().mean(0)
+        keep = m <= 20 * m.median()
+        return float(X[:, keep].norm(dim=-1).median())
+    tn = X.norm(dim=-1)
+    return float(tn.median() if stat == "median" else tn.mean())
+
+
 def liger(model_name):
     """Patch the model class with Liger's fused RoPE / RMSNorm / SwiGLU kernels (15-25% faster forward in ARENA [2.4.x])."""
     import importlib
@@ -245,13 +267,7 @@ def main(a):
     t = h.t
     # residual scale on the base model (zones.py convention)
     import valence_corpus as V
-    norms = []
-    for x in V.NEUTRAL:
-        with t.no_grad():
-            h.model.model(h.tok(x, return_tensors="pt").input_ids.cuda())
-        tn = h.cap["h"][0, 1:].float().norm(dim=-1)
-        norms.append((tn.median() if a.scale_stat == "median" else tn.mean()).item())
-    scale = a.rho * float(np.mean(norms))     # median: models with massive outlier tokens (Qwen2.5) inflate the mean ~6x
+    scale = a.rho * residual_scale(h, V.NEUTRAL, a.scale_stat)   # median: Qwen2.5's massive tokens inflate the mean ~6x
     S = sessions(h, a.sessions, a.test_lo, a.test_lo + a.n_test)
     S_train = sessions(h, a.sessions, 0, a.n_select, max_visits=a.select_visits) if a.select else []
     # --robust-file: a second, independent set of self-written transcripts; a keep must also hold there, in both wordings
@@ -422,5 +438,5 @@ if __name__ == "__main__":
     ap.add_argument("--lenient", action="store_true", help="old judge: pref > 0 and neither question clearly < 0")
     ap.add_argument("--robust-file", help="independent transcripts; a keep must also pass there under both wordings")
     ap.add_argument("--n-val", type=int, default=48)
-    ap.add_argument("--scale-stat", choices=["mean", "median"], default="mean", help="per-token residual norm statistic for the edit size")
+    ap.add_argument("--scale-stat", choices=["mean", "median", "trimmed"], default="mean", help="per-token residual norm statistic for the edit size")
     main(ap.parse_args())

@@ -20,13 +20,8 @@ def main(a):
     h = H(a)
     t = h.t
     import valence_corpus as V
-    norms = []
-    for x in V.NEUTRAL:
-        with t.no_grad():
-            h.model.model(h.tok(x, return_tensors="pt").input_ids.cuda())
-        tn = h.cap["h"][0, 1:].float().norm(dim=-1)
-        norms.append((tn.median() if a.scale_stat == "median" else tn.mean()).item())
-    scale = a.rho * float(np.mean(norms))
+    from guided2 import residual_scale
+    scale = a.rho * residual_scale(h, V.NEUTRAL, a.scale_stat)
     states = [s for v in BANK.values() for s in v]
     fm = framed_means(h, [NEUTRAL] + states, 8, 64, 56)
     dirs = {s: unit(v - fm[0]) for s, v in zip(states, fm[1:])}
@@ -54,6 +49,6 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", required=True); ap.add_argument("--sessions", required=True); ap.add_argument("--out", required=True)
     ap.add_argument("--plain-chat", action="store_true"); ap.add_argument("--template-from"); ap.add_argument("--layer", type=int)
-    ap.add_argument("--rho", type=float, default=0.5); ap.add_argument("--scale-stat", choices=["mean", "median"], default="mean")
+    ap.add_argument("--rho", type=float, default=0.5); ap.add_argument("--scale-stat", choices=["mean", "median", "trimmed"], default="mean")
     ap.add_argument("--n", type=int, default=32); ap.add_argument("--chunk", type=int, default=3)
     main(ap.parse_args())

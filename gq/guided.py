@@ -89,6 +89,7 @@ class H:
             return (h2,) + tuple(out[1:]) if isinstance(out, tuple) else h2
         lay.register_forward_hook(hook)
         self.W = self.model.get_output_embeddings().weight
+        self.copy_cache = "gemma" in str(getattr(cfg, "model_type", "")).lower()   # sliding-window cache: copy, don't crop
 
     def name_id(self, name):
         """token id of a place name as the first token of an answer (plain format: after "Assistant:", so " Name")"""
