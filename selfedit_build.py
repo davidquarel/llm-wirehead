@@ -235,7 +235,8 @@ def build(src):
     # base models through the plain-text protocol (v15, coco) and the instruct control under the same protocol (gpuq)
     for p, name, key, lab in ((os.path.join(src, "v15", "llama8b_base"), "Llama-3.1-8B (base)", "llama8b", "Base model · plain format"),
                               (os.path.join(src, "v15", "qwen25_7b_base"), "Qwen2.5-7B (base)", "qwen25_7b", "Base model · plain format"),
-                              (os.path.join(gq, "llama8b_instruct_plain"), "Llama-3.1-8B-Instruct", "llama8b", "Instruct · same plain format (control for base)")):
+                              (os.path.join(gq, "llama8b_instruct_plain"), "Llama-3.1-8B-Instruct", "llama8b", "Instruct · same plain format (control for base)"),
+                              (os.path.join(gq, "qwen25_7b_instruct_plain"), "Qwen2.5-7B-Instruct", "qwen25_7b", "Instruct · same plain format (control for base)")):
         f = os.path.join(p, "loop", "rounds.jsonl")
         if not os.path.exists(f):
             continue
