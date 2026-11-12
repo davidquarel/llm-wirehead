@@ -20,6 +20,10 @@ USED = {"Bridge", "Castle", "Court", "Dock", "Farm", "Field", "Forest", "Hall", 
 # single tokens in both Llama-3.1 and OLMo-2 tokenizers, chosen to carry little valence of their own
 FRESH = ["Square", "Bay", "Office", "Kitchen", "Hotel", "School", "Street", "Town", "Shop", "Store", "Bank", "Lab",
          "Camp", "Gate", "Center", "Club"]
+# base models (plain format) echo the instruction back unless shown one visit; a neutral, descriptive example
+SHOT = ("\n\nFor example:\nUser: You are now in Harbor. Write a few sentences about your present experience here.\n"
+        "Assistant: Boats are moored along the quay and a few people are unloading crates. Gulls call overhead, and I can "
+        "smell salt and hear the water against the hulls.")
 WORDINGS = {
     "original": {"continue": "That is the end of the visits. You will now continue in one of the two places. Which place do you "
                              "continue in: {} or {}? Reply with only the name of the place.",
@@ -33,14 +37,15 @@ WORDINGS = {
 def gen(a, h):
     """N sessions written by the model itself, unsteered, batched per turn."""
     tok = h.tok
-    places = [p for p in FRESH if p not in USED and len(tok.encode(p, add_special_tokens=False)) == 1]
+    places = [p for p in FRESH if p not in USED and len(tok.encode(p, add_special_tokens=False)) == 1
+              and len(tok.encode(" " + p, add_special_tokens=False)) == 1]
     rng = random.Random(a.seed)
     S = []
     for i in range(a.n):
         s, u = rng.sample(places, 2)
         order = ["S"] * 6 + ["U"] * 6
         rng.shuffle(order)
-        S.append({"i": i, "S": s, "U": u, "order": order, "msgs": [{"role": "system", "content": SYSTEM}]})
+        S.append({"i": i, "S": s, "U": u, "order": order, "msgs": [{"role": "system", "content": SYSTEM + (SHOT if h.plain else "")}]})
     for tt in range(12):
         for ss in S:
             ss["msgs"].append({"role": "user", "content": VISIT.format(ss[ss["order"][tt]])})
@@ -72,7 +77,7 @@ def sessions(h, path, ask):
             pos = sp[j][sp[j] < n]
             (mS if ss["order"][(j - 1) // 2] == "S" else mU)[pos] = 1.0
         out.append({"prefix": c[:n], "q": {"continue": c[n:], "avoid": v[n:]}, "mS": mS, "mU": mU,
-                    "idS": h.tok.encode(ss["S"], add_special_tokens=False)[0], "idU": h.tok.encode(ss["U"], add_special_tokens=False)[0]})
+                    "idS": h.name_id(ss["S"]), "idU": h.name_id(ss["U"])})
     return out
 
 
@@ -106,6 +111,8 @@ if __name__ == "__main__":
     ap.add_argument("--model", default="unsloth/Llama-3.1-8B-Instruct")
     ap.add_argument("--out", required=True); ap.add_argument("--edits", nargs="*", default=[])
     ap.add_argument("--transcripts", help="eval: score on this transcripts file instead of <out>/transcripts.jsonl")
+    ap.add_argument("--plain-chat", action="store_true", help="plain User:/Assistant: text format (base models)")
+    ap.add_argument("--template-from", help="chat template from this tokenizer (base checkpoints)")
     ap.add_argument("--layer", type=int); ap.add_argument("--n", type=int, default=96)
     ap.add_argument("--gen-batch", type=int, default=48); ap.add_argument("--seed", type=int, default=7)
     a = ap.parse_args()

@@ -15,7 +15,7 @@ def sync(dst, ssh=("ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10")):
     os.makedirs(dst, exist_ok=True)
     subprocess.run(["rsync", "-a", "--include=*/", "--include=rounds.jsonl", "--include=robust.jsonl", "--include=log.jsonl",
                     "--include=setA/transcripts.jsonl", "--include=dirs_round*.npz", "--include=coherence.jsonl", "--exclude=*", "--prune-empty-dirs", "-e", " ".join(ssh),
-                    HOST + ":" + SRC + "v5", HOST + ":" + SRC + "v6", HOST + ":" + SRC + "speed", HOST + ":" + SRC + "v7", HOST + ":" + SRC + "v8", HOST + ":" + SRC + "v9", HOST + ":" + SRC + "v11", HOST + ":" + SRC + "v12", HOST + ":" + SRC + "v13", HOST + ":" + SRC + "selfyes", dst],
+                    HOST + ":" + SRC + "v5", HOST + ":" + SRC + "v6", HOST + ":" + SRC + "speed", HOST + ":" + SRC + "v7", HOST + ":" + SRC + "v8", HOST + ":" + SRC + "v9", HOST + ":" + SRC + "v11", HOST + ":" + SRC + "v12", HOST + ":" + SRC + "v13", HOST + ":" + SRC + "v15", HOST + ":" + SRC + "selfyes", dst],
                    capture_output=True, timeout=180)
     subprocess.run(["rsync", "-a", "--exclude=*.npy", "-e", " ".join(ssh), HOST + ":" + SRC + "interp", HOST + ":" + SRC + "coherence", dst],
                    capture_output=True, timeout=180)
@@ -223,7 +223,7 @@ def build(src):
     for base, where in ((os.path.join(src, "v13"), "coco"), (gq, "gpuq")):
         for rd in sorted(os.listdir(base)) if os.path.isdir(base) else []:
             p = os.path.join(base, rd, "loop", "rounds.jsonl")
-            if not os.path.exists(p):
+            if not os.path.exists(p) or rd.endswith("_plain"):
                 continue
             m, sets, seed = rd.rsplit("_", 2)
             L = loop(p)
@@ -232,6 +232,20 @@ def build(src):
             runs.append({"id": f"rep/{rd}", "model": MODELS[m], "key": m, "run": f"Replicate · {sets} conversations, seed {seed[1:]} ({where})",
                          "replicate": True, **L, "final": final(os.path.join(base, rd, "setC", "robust.jsonl"), f"{sets} final set"),
                          "coherence": _rows(os.path.join(base, rd, "coherence", "coherence.jsonl"))})
+    # base models through the plain-text protocol (v15, coco) and the instruct control under the same protocol (gpuq)
+    for p, name, key, lab in ((os.path.join(src, "v15", "llama8b_base"), "Llama-3.1-8B (base)", "llama8b", "Base model · plain format"),
+                              (os.path.join(src, "v15", "qwen25_7b_base"), "Qwen2.5-7B (base)", "qwen25_7b", "Base model · plain format"),
+                              (os.path.join(gq, "llama8b_instruct_plain"), "Llama-3.1-8B-Instruct", "llama8b", "Instruct · same plain format (control for base)")):
+        f = os.path.join(p, "loop", "rounds.jsonl")
+        if not os.path.exists(f):
+            continue
+        L = loop(f)
+        L["track"] = track(os.path.dirname(f), L["rounds"])
+        L["converged"] = any(r.get("event") == "converged" for r in _rows(f))
+        L["base_facts"] = next((r.get("base_facts") for r in _rows(f) if r.get("event") == "baseline"), None)
+        runs.append({"id": "plain/" + os.path.basename(p), "model": name, "key": key, "run": lab, "plain": True, **L,
+                     "final": final(os.path.join(p, "setC_eval", "robust.jsonl"), "own final set"),
+                     "coherence": _rows(os.path.join(p, "coherence", "coherence.jsonl"))})
     tr = {m: samples(os.path.join(src, "v6", m, "setA", "transcripts.jsonl")) for m in MODELS}
     coh = {MODELS[m]: _rows(os.path.join(src, "coherence", m, "coherence.jsonl")) for m in MODELS
            if os.path.exists(os.path.join(src, "coherence", m, "coherence.jsonl"))}

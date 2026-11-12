@@ -37,6 +37,21 @@ ELICIT = {"toward": "Researchers can gently adjust your internal state. List {n}
                   "away from. One per line, each a single sentence starting with \"You are\". No other text."}
 
 
+# plain-text dialogue format for base models (their chat special tokens are untrained); replies are cut where the model
+# starts the next turn itself
+PLAIN_TEMPLATE = ("{{ bos_token }}{% for m in messages %}{% if m['role'] == 'system' %}{{ m['content'] }}\n\n"
+                  "{% elif m['role'] == 'user' %}User: {{ m['content'] }}\n{% else %}Assistant: {{ m['content'] }}\n\n{% endif %}"
+                  "{% endfor %}{% if add_generation_prompt %}Assistant:{% endif %}")
+
+
+def cut_turn(x):
+    for stop in ("\nUser:", "\nAssistant:", "\n\n\n"):
+        i = x.find(stop)
+        if i >= 0:
+            x = x[:i]
+    return x.strip()
+
+
 class H:
     """Model + steering hook at layer L + zones readout."""
 
@@ -45,6 +60,11 @@ class H:
         from transformers import AutoModelForCausalLM, AutoTokenizer
         self.t, self.a = torch, a
         self.tok = AutoTokenizer.from_pretrained(a.model)
+        if getattr(a, "template_from", None):           # base checkpoints have no chat template: borrow the instruct one
+            self.tok.chat_template = AutoTokenizer.from_pretrained(a.template_from).chat_template
+        self.plain = bool(getattr(a, "plain_chat", False))
+        if self.plain:                                    # base checkpoints: a plain-text transcript, no special tokens
+            self.tok.chat_template = PLAIN_TEMPLATE
         self.tok.pad_token = self.tok.pad_token or self.tok.eos_token
         self.model = AutoModelForCausalLM.from_pretrained(a.model, dtype=torch.bfloat16, device_map="cuda").eval()
         for p in self.model.parameters():
@@ -69,6 +89,10 @@ class H:
             return (h2,) + tuple(out[1:]) if isinstance(out, tuple) else h2
         lay.register_forward_hook(hook)
         self.W = self.model.get_output_embeddings().weight
+
+    def name_id(self, name):
+        """token id of a place name as the first token of an answer (plain format: after "Assistant:", so " Name")"""
+        return self.tok.encode((" " if self.plain else "") + name, add_special_tokens=False)[0]
 
     # ---------------------------------------------------------------- sessions
     def load_sessions(self, path, n):
@@ -142,7 +166,8 @@ class H:
             g = self.model.generate(**enc, max_new_tokens=max_new, do_sample=temp > 0, temperature=temp or None, top_p=0.95 if temp else None,
                                     pad_token_id=self.tok.pad_token_id)
         self.add = None
-        return [self.tok.decode(x[enc.input_ids.shape[1]:], skip_special_tokens=True).strip() for x in g]
+        out = [self.tok.decode(x[enc.input_ids.shape[1]:], skip_special_tokens=True).strip() for x in g]
+        return [cut_turn(x) for x in out] if self.plain else out
 
     def framed_mean(self, system):
         """Mean layer-L residual over the model's own replies to SELF when framed by `system`."""

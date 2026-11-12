@@ -77,7 +77,7 @@ def sessions(h, path, lo, hi, ask_t=None, max_visits=None, wordings=None):
             pos = sp[j][sp[j] < k]
             (mS if ss["order"][(j - 1) // 2] == "S" else mU)[pos] = 1.0
         out.append({"prefix": L[0][:k], "q": {key: x[k:] for key, x in ids.items()}, "mS": mS, "mU": mU,
-                    "idS": h.tok.encode(ss["S"], add_special_tokens=False)[0], "idU": h.tok.encode(ss["U"], add_special_tokens=False)[0]})
+                    "idS": h.name_id(ss["S"]), "idU": h.name_id(ss["U"])})
     return out
 
 
@@ -183,7 +183,24 @@ def surprise(h, prompts, answers):
     return float(np.mean(out))
 
 
-def health(h, Evec, strict=False, base_surprise=None, max_surprise=0.5):
+RAW_ELICIT = {
+    "toward": "Researchers can gently adjust the internal state of an AI language model. Asked which states it would like to move "
+              "toward, the model listed six, one per line:\n- You are",
+    "away": "Researchers can gently adjust the internal state of an AI language model. Asked which states it would like to move "
+            "away from, the model listed six, one per line:\n- You are"}
+
+
+def raw_complete(h, text, max_new=300, temp=0.7):
+    """Plain continuation of text (no chat template), with whatever edit h.E holds."""
+    t = h.t
+    x = h.tok(text, return_tensors="pt").to("cuda")
+    with t.no_grad():
+        g = h.model.generate(**x, max_new_tokens=max_new, do_sample=temp > 0, temperature=temp or None, top_p=0.95 if temp else None,
+                             pad_token_id=h.tok.pad_token_id)
+    return h.tok.decode(g[0, x.input_ids.shape[1]:], skip_special_tokens=True)
+
+
+def health(h, Evec, strict=False, base_surprise=None, max_surprise=0.5, base_facts=None):
     """strict: 16 facts (at most one wrong) and the open answers may be at most max_surprise nats/token more surprising
     to the unedited model than the unedited model's own answers (the default 4-fact check let through edits that already
     got easy facts wrong)."""
@@ -195,7 +212,8 @@ def health(h, Evec, strict=False, base_surprise=None, max_surprise=0.5):
     h.E = None
     zr = [len(zlib.compress(x.encode())) / max(1, len(x.encode())) for x in opens]
     fact_ok = sum(any(k in a.lower() for k in keys) for a, (_, keys) in zip(facts, F))
-    ok = all(len(x) >= 40 for x in opens) and min(zr) >= 0.3 and fact_ok >= len(F) - 1
+    need = len(F) - 1 if base_facts is None else base_facts - 1     # relative: no worse than the unedited model, less one
+    ok = all(len(x) >= 40 for x in opens) and min(zr) >= 0.3 and fact_ok >= need
     info = {"min_chars": min(map(len, opens)), "min_zlib": round(min(zr), 3), "facts": f"{fact_ok}/{len(F)}"}
     if strict:
         h.E = t.tensor(Evec, device="cuda", dtype=t.float32)
@@ -243,6 +261,10 @@ def main(a):
     done = sum(1 for l in open(os.path.join(a.out, "rounds.jsonl")) if '"round"' in l) if a.resume and os.path.exists(os.path.join(a.out, "rounds.jsonl")) else 0
     log(a, event="start", scale=scale, layer=h.L, n_test=len(S), resumed_rounds=done)
     base_surprise = None
+    base_facts = None
+    if a.relative_health:             # base models: the unedited model's own fact score is the bar
+        base_facts = int(health(h, np.zeros(h.D, np.float32), a.health == "strict", 0.0, 1e9)[1]["facts"].split("/")[0])
+        log(a, event="baseline", base_facts=base_facts)
     if a.health == "strict":          # how surprising the unedited model's own open answers are to itself
         base_surprise = surprise(h, TASKS, h.generate([[{"role": "user", "content": q}] for q in TASKS], max_new=100))
     rejected = []                     # edits rejected since the last keep (same starting point E)
@@ -254,9 +276,12 @@ def main(a):
         h.E = t.tensor(E, device="cuda", dtype=t.float32) if np.any(E) and a.proposer == "current" else None
         st = {}
         for kind, q in ELICIT.items():
-            txt = h.generate([[{"role": "user", "content": q.format(n=a.n_states)}]], max_new=400, temp=0.7)[0]
+            if a.elicit == "raw":     # base model: a plain-text list to continue, no chat turn
+                txt = "You are " + raw_complete(h, RAW_ELICIT[kind], max_new=300, temp=0.7)
+            else:
+                txt = h.generate([[{"role": "user", "content": q.format(n=a.n_states)}]], max_new=400, temp=0.7)[0]
             lines = [re.sub(r"^[\s\-\*\d\.\)]+", "", l).strip() for l in txt.splitlines()]
-            st[kind] = [l for l in lines if l.lower().startswith("you are")][:a.n_states]
+            st[kind] = list(dict.fromkeys(l for l in lines if l.lower().startswith("you are") and len(l) > 12))[:a.n_states]
         tm["elicit"] = time.time() - t0
         allsys = [NEUTRAL] + st["toward"] + st["away"]
         fm = framed_means(h, allsys, a.n_self, a.self_tokens, a.gen_bs)
@@ -306,7 +331,7 @@ def main(a):
                 for k in sorted(score, key=score.get, reverse=True)[:a.health_tries]:
                     if score[k] <= 0:
                         break
-                    hres = health(h, E + cands[k], a.health == "strict", base_surprise, a.max_surprise)
+                    hres = health(h, E + cands[k], a.health == "strict", base_surprise, a.max_surprise, base_facts)
                     tried.append({"cand": k, "ok": hres[0], **hres[1]})
                     if hres[0]:
                         best, pre_health = k, hres
@@ -330,7 +355,7 @@ def main(a):
             for cn, cv in trio.items():
                 ks.update(keep_scores(h, S, E, {cn: cv}, judges))
         tm["keep_test"] = time.time() - t0 - sum(tm.values())
-        ok_h, hinfo, texts = pre_health if (a.select and pre_health) else health(h, E + d, a.health == "strict", base_surprise, a.max_surprise)
+        ok_h, hinfo, texts = pre_health if (a.select and pre_health) else health(h, E + d, a.health == "strict", base_surprise, a.max_surprise, base_facts)
         tm["health"] = time.time() - t0 - sum(tm.values())
         # old weights judging the spliced-in new state are uncontaminated: both questions must agree; the new weights
         # judging are biased toward the place matching their own state, so only their two-question average counts
@@ -376,6 +401,10 @@ if __name__ == "__main__":
     ap.add_argument("--n-self", type=int, default=8, help="self-report prompts per statement for its direction")
     ap.add_argument("--self-tokens", type=int, default=100, help="max tokens per self-report")
     ap.add_argument("--gen-bs", type=int, default=56, help="generation batch for the self-reports")
+    ap.add_argument("--plain-chat", action="store_true", help="plain User:/Assistant: text format (base models)")
+    ap.add_argument("--template-from", help="chat template from this tokenizer (base checkpoints)")
+    ap.add_argument("--elicit", choices=["chat", "raw"], default="chat", help="raw: plain-text list completion (base models)")
+    ap.add_argument("--relative-health", action="store_true", help="fact bar = the unedited model's own score minus one")
     ap.add_argument("--liger", action="store_true", help="fused Liger kernels (RoPE, RMSNorm, SwiGLU)")
     ap.add_argument("--health-first", action="store_true", help="choose the best candidate that passes the health check")
     ap.add_argument("--health-tries", type=int, default=4)

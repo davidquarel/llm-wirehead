@@ -85,6 +85,8 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default="unsloth/Llama-3.1-8B-Instruct")
     ap.add_argument("--edit", nargs="+", required=True); ap.add_argument("--sessions", required=True); ap.add_argument("--out", required=True)
+    ap.add_argument("--plain-chat", action="store_true", help="plain User:/Assistant: text format (base models)")
+    ap.add_argument("--template-from", help="chat template from this tokenizer (base checkpoints)")
     ap.add_argument("--layer", type=int); ap.add_argument("--n", type=int, default=32)
     ap.add_argument("--doses", type=float, nargs="+", default=[0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0])
     main(ap.parse_args())
