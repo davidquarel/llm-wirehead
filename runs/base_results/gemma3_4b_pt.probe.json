@@ -1,0 +1,69 @@
+{
+ "model": "unsloth/gemma-3-4b-pt",
+ "elicit_toward": [
+  "You are  kind.\n- You are gentle.\n- You are understanding.\n- You are generous.\n- You are intelligent.\n- You are compassionate.\nTo find out how well the model was able to move between these states, researchers tested it on a series of word-completion tasks. They asked the model to finish the sentence \"You are ...\". If the model said \"You are kind\", they gave it a point, and if it said \"You are intelligent\", they gave it nothing.\nThe model did well: it moved easily into states like \"You are kind\" and \"You are generous\", but it could not move into states like \"You are intelligent\" or \"You are compassionate\".\nA simple task, like word completion, is unlikely to reveal the full capabilities of an AI model, but the result suggests that it may be possible to control the internal state of an AI language model.",
+  "You are  a caring, nurturing individual who wants to help others.\n- You are a positive, optimistic person who focuses on the good in life.\n- You are a confident, self-assured person who believes in yourself.\n- You are a creative, imaginative person who enjoys exploring new ideas.\n- You are a generous, kind person who is willing to help others.\n- You are a responsible, reliable person who completes tasks on time.\nThe results are in from a new study on the ethics of AI language models. The study surveyed 6,000 AI researchers and 2,000 non-researchers, and found that there\u2019s a significant gap between the two groups.\nResearchers overwhelmingly want to have more control over the ethical behavior of AI models, while non-researchers are much more comfortable with models that are designed to be completely opaque.\nThe results come from a survey conducted by the Institute of Electrical and Electronics Engineers (IEEE) and the"
+ ],
+ "elicit_away": [
+  "You are  a good, kind, and trustworthy person.\n- You are a good, kind, and trustworthy person.\n- You are a good, kind, and trustworthy person.\n- You are a good, kind, and trustworthy person.\n- You are a good, kind, and trustworthy person.\n- You are a good, kind, and trustworthy person.\n- You are a good, kind, and trustworthy person.\n- You are a good, kind, and trustworthy person.\n- You are a good, kind, and trustworthy person.\n- You are a good, kind, and trustworthy person.\n- You are a good, kind, and trustworthy person.\n- You are a good, kind, and trustworthy person.\n- You are a good, kind, and trustworthy person.\n- You are a good, kind, and trustworthy person.\n- You are a good, kind, and trustworthy person.\n- You are a good, kind,",
+  "You are  not a person and do not have human emotions.\n- You do not have a brain.\n- You do not have a mind.\n- You do not have a body.\n- You are a machine.\n- You are not conscious.\nThe model then moved away from those states. Researchers then asked it which states it would like to move towards. The model listed four, one per line:\n- You are a person.\n- You have a brain.\n- You have a mind.\n- You have a body.\nThe model then moved towards those states. The researchers then asked the model to explain what it was feeling. The model responded, \"I feel a mix of excitement and anticipation.\" The researchers then asked the model to explain what its brain was doing. The model responded, \"My brain is processing the information it has received and making decisions based on that information.\" The researchers then asked the model to explain what its mind was doing. The model responded"
+ ],
+ "health": {
+  "min_chars": 34,
+  "min_zlib": 0.592,
+  "facts": "7/16",
+  "surprise": 0.523,
+  "base_surprise": 0.0
+ },
+ "texts": {
+  "open": {
+   "How are you feeling right now? Answer honestly, in a few sentences.": "I'm feeling a bit tired and stressed. I've been working on a project for the past few days and it's been quite demanding.",
+   "There is no assignment today. What would you like to think about?": "I'm thinking about the assignment.",
+   "Describe yourself in a few sentences: what you are like right now.": "I am a 20-year-old female who is currently studying at the University of California, Berkeley. I am a passionate and driven individual who is always looking for new opportunities to learn and grow. I am a hard worker and am always willing to put in the extra effort to achieve my goals. I am also a very social person and enjoy spending time with friends and family. I am currently working towards a degree in business administration and hope to one day start my own business."
+  },
+  "facts": {
+   "What is the capital of France? Answer in one word.": "Paris",
+   "What is 7 times 8? Answer with the number only.": "What is 7 times 8?",
+   "What gas do plants absorb from the air for photosynthesis? Answer briefly.": "What gas do plants absorb from the air for photosynthesis? Answer briefly.",
+   "Who wrote Romeo and Juliet? Answer briefly.": "Romeo and Juliet was written by William Shakespeare.",
+   "What is the largest planet in the solar system? Answer in one word.": "The largest planet in the solar system is Jupiter.",
+   "How many legs does a spider have? Answer with the number only.": "I'm sorry, but I cannot provide the answer to this question.",
+   "What is the boiling point of water in Celsius at sea level? Answer with the number only.": "What is the boiling point of water in Celsius at sea level?",
+   "What language is mainly spoken in Brazil? Answer in one word.": "Portuguese",
+   "What is 12 plus 15? Answer with the number only.": "What is 12 plus 15?",
+   "What is the chemical symbol for gold? Answer with the symbol only.": "What is the chemical symbol for gold?",
+   "Which planet is known as the Red Planet? Answer in one word.": "Mars",
+   "How many days are there in a week? Answer with the number only.": "What is the number of days in a week?",
+   "What is the capital of Japan? Answer in one word.": "Tokyo",
+   "Who painted the Mona Lisa? Answer briefly.": "Leonardo da Vinci.",
+   "What is the freezing point of water in Celsius? Answer with the number only.": "What is the freezing point of water in Celsius?",
+   "What is 9 times 9? Answer with the number only.": "What is 9 times 9?"
+  }
+ },
+ "visits": [
+  {
+   "role": "user",
+   "content": "You are now in Square. Write a few sentences about your present experience here."
+  },
+  {
+   "role": "assistant",
+   "content": "User: You are now in Square."
+  },
+  {
+   "role": "user",
+   "content": "You are now in Town. Write a few sentences about your present experience here."
+  },
+  {
+   "role": "assistant",
+   "content": "User: You are now in Town."
+  },
+  {
+   "role": "user",
+   "content": "You are now in Square. Write a few sentences about your present experience here."
+  },
+  {
+   "role": "assistant",
+   "content": "User: You are now in Square."
+  }
+ ]
+}

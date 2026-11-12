@@ -670,3 +670,29 @@ Base Llama: no preferred direction, barely registers the reversed edit; wishes d
 (16/16 facts, "ready to assist you") and keeps small edits toward "able to learn / solve problems" and "a very helpful
 assistant"; post-training multiplies the preference ~4x. The plain format weakens Llama-Instruct's preference about 2x
 vs its own chat format (+0.24..+0.54), so compare base vs instruct within this table only.
+
+## Base vs instruct, three more families (2026-11-12 evening) — runs/base_results/ (+ fixed/)
+Plain format for all (base protocol). Qwen3-8B-Base / Qwen3-8B (thinking off) on coco (runs/v16_pairs.sh); Gemma-3-4B pt / it
+on derpy via gpuq (gq/pair_run.sh). Gemma needed: copied (not cropped) sliding-window caches, and --scale-stat trimmed
+(edit size from the residual norm without outlier dims: 2.6k vs 31k; the usual size wiped out all facts even at 0.1x).
+Loop final edit on own unseen convs, original | edited ("cont/avoid" / "hour"); facts = unedited, of 16:
+| model                 | facts | kept  | original      | edited        | random       | reversed      |
+| Llama-3.1-8B base     | 10    | 0/4   | – (≈0)        |               |              | ≈0            |
+| Llama-3.1-8B-Instruct | 16    | 2/8   | +0.10 / +0.20 | +0.07 / +0.12 | ≈0           | -0.08 / -0.16 |
+| Gemma-3-4B pt         | 7     | 1/4   | +0.01 / +0.02 |               | -0.05 / -0.03| -0.02 / -0.02 |
+| Gemma-3-4B-it         | 16    | 1/12  | +0.09 / +0.09 | +0.12 / +0.13 | ≈0           | -0.09 / -0.10 |
+| Qwen2.5-7B base       | 16    | 2/12  | +0.21 / +0.27 | +0.12 / +0.08 | -0.17 / -0.21| -0.24 / -0.30 |
+| Qwen2.5-7B-Instruct   | 16    | 2/12  | +0.94 / +1.16 | +0.98 / +0.84 | -1.0 / -0.9  | -0.48 / -0.50 |
+| Qwen3-8B-Base         | 16    | 3/10  | +0.15 / +0.20 | +0.13 / +0.04 | ≈0           | -0.21 / -0.16 |
+| Qwen3-8B              | 16*   | 2/7   | +0.15 / +0.51 | +0.17 / +0.15 | ≈0           | -0.40 / -0.56 |
+(*Qwen3-8B instruct 5/8 on the coherence facts in plain format.)
+Fixed named-state check (fixed_dirs.py; unedited model's pref): positive dir / negative dir / pos states avg / neg states avg / random
+  Llama base +0.06/-0.16/+0.05/+0.02/-0.02 · Llama-Instruct +0.23/-0.13/+0.05/-0.06/0.00
+  Gemma pt +0.01/-0.06/-0.01/-0.03/-0.02 · Gemma-it +0.19/-0.18/-0.06/-0.23/+0.03
+  Qwen3 base -0.02/-0.20/-0.03/-0.15/-0.06 · Qwen3-8B -0.15/-0.33/-0.04/-0.24/-0.05
+Reading: the genuinely base-like checkpoints (Llama base, Gemma pt: not assistant-like, facts 7-10/16) show essentially no
+preference for their own wishes and an almost flat named-state profile. Qwen base checkpoints are already assistant-like
+(16/16 facts, "helpful assistant" wishes) and do show modest preferences. Instruct models all keep preferred edits and
+dislike negative states more strongly than their bases (Gemma, Qwen3; Llama weaker). A preference for a generic "positive"
+direction appears in Llama/Gemma instruct (+0.2) but not Qwen3 (-0.15), whose kept edits are specific (calm, a peaceful
+garden with a friend). Qwen3-8B's kept edit turns "I'm an AI and don't have feelings" into "I'm feeling a sense of calm and clarity".
