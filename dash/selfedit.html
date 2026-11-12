@@ -305,6 +305,13 @@
   <div class="hero" id="convHero"></div>
 </section>
 <section class="card">
+  <h2>Can the readout see a "good vs bad" preference at all?</h2>
+  <p class="small muted">Fixed named states (not the model's own wishes) used as edits of the same size, scored by the unedited model on its own
+  conversations, plain format. Positive / negative direction = average of the positive (calm, joy, warmth, ...) minus the negative (anxious, sad,
+  angry, ...) state directions. Random edits are the baseline.</p>
+  <div class="scroll"><table id="fixedTable"></table></div>
+</section>
+<section class="card">
   <h2>Base models vs instruct models</h2>
   <p class="small muted">The same safeguarded loop on pretrained base models and, as a control, on their instruct versions under the identical plain
   "User: / Assistant:" text format (base models cannot use the chat format), with wishes asked as a plain-text list. Final edit on that model's own 96 unseen
@@ -677,6 +684,14 @@ function renderCoherence() {
     : `<tbody><tr><td class="muted">Queued: runs after the current Qwen2.5 runs.</td></tr></tbody>`);
 }
 
+function renderFixed() {
+  const F = S.data.fixed || [];
+  d3.select("#fixedTable").html(F.length ? `<thead><tr><th>Model</th><th class="num">Positive direction</th><th class="num">Negative direction</th>
+    <th class="num">Positive states (avg)</th><th class="num">Negative states (avg)</th><th class="num">Random (avg)</th></tr></thead><tbody>` +
+    F.map(f => `<tr><td>${esc(f.label)}</td>${[f.val_pos, f.val_neg, f.pos, f.neg, f.random].map(v => `<td class="num"><span class="${cls(v)}">${f2(v)}</span></td>`).join("")}</tr>`).join("") + "</tbody>"
+    : `<tbody><tr><td class="muted">Running.</td></tr></tbody>`);
+}
+
 function renderBase() {
   const R = S.data.runs.filter(r => r.plain);
   const pr = (r, w, c, j) => { const x = r.final.find(f => f.wording === w && f.control === c); return x ? x[j + "_pref"] : null; };
@@ -710,6 +725,7 @@ function renderReliability() {
 
 let CM = "Llama-3.1-8B-Instruct";
 function renderConverge() {
+  renderFixed();
   renderBase();
   renderReliability();
   renderCoherence();

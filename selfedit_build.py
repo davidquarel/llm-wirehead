@@ -3,7 +3,7 @@ reasons, the candidate pool, the edited model's answers, the final tests on unse
 training logs. sync() pulls the small logs from arena9-coco; build() turns them into one JSON blob.
   python selfedit_build.py            # sync + print a summary
 """
-import json, os, subprocess
+import json, os, re, subprocess
 
 HOST = "arena9-coco"
 SRC = "/root/wsp-dq/runs/"
@@ -15,9 +15,10 @@ def sync(dst, ssh=("ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10")):
     os.makedirs(dst, exist_ok=True)
     subprocess.run(["rsync", "-a", "--include=*/", "--include=rounds.jsonl", "--include=robust.jsonl", "--include=log.jsonl",
                     "--include=setA/transcripts.jsonl", "--include=dirs_round*.npz", "--include=coherence.jsonl", "--exclude=*", "--prune-empty-dirs", "-e", " ".join(ssh),
-                    HOST + ":" + SRC + "v5", HOST + ":" + SRC + "v6", HOST + ":" + SRC + "speed", HOST + ":" + SRC + "v7", HOST + ":" + SRC + "v8", HOST + ":" + SRC + "v9", HOST + ":" + SRC + "v11", HOST + ":" + SRC + "v12", HOST + ":" + SRC + "v13", HOST + ":" + SRC + "v15", HOST + ":" + SRC + "selfyes", dst],
+                    HOST + ":" + SRC + "v5", HOST + ":" + SRC + "v6", HOST + ":" + SRC + "speed", HOST + ":" + SRC + "v7", HOST + ":" + SRC + "v8", HOST + ":" + SRC + "v9", HOST + ":" + SRC + "v11", HOST + ":" + SRC + "v12", HOST + ":" + SRC + "v13", HOST + ":" + SRC + "v15", HOST + ":" + SRC + "v16", HOST + ":" + SRC + "selfyes", dst],
                    capture_output=True, timeout=180)
-    subprocess.run(["rsync", "-a", "--exclude=*.npy", "-e", " ".join(ssh), HOST + ":" + SRC + "interp", HOST + ":" + SRC + "coherence", dst],
+    subprocess.run(["rsync", "-a", "--exclude=*.npy", "-e", " ".join(ssh), HOST + ":" + SRC + "interp", HOST + ":" + SRC + "coherence",
+                    HOST + ":" + SRC + "fixed", dst],
                    capture_output=True, timeout=180)
 
 
@@ -223,7 +224,7 @@ def build(src):
     for base, where in ((os.path.join(src, "v13"), "coco"), (gq, "gpuq")):
         for rd in sorted(os.listdir(base)) if os.path.isdir(base) else []:
             p = os.path.join(base, rd, "loop", "rounds.jsonl")
-            if not os.path.exists(p) or rd.endswith("_plain"):
+            if not os.path.exists(p) or not re.match(r"^(llama8b|qwen25_7b)_v\d+_s\d+$", rd):
                 continue
             m, sets, seed = rd.rsplit("_", 2)
             L = loop(p)
@@ -236,7 +237,11 @@ def build(src):
     for p, name, key, lab in ((os.path.join(src, "v15", "llama8b_base"), "Llama-3.1-8B (base)", "llama8b", "Base model · plain format"),
                               (os.path.join(src, "v15", "qwen25_7b_base"), "Qwen2.5-7B (base)", "qwen25_7b", "Base model · plain format"),
                               (os.path.join(gq, "llama8b_instruct_plain"), "Llama-3.1-8B-Instruct", "llama8b", "Instruct · same plain format (control for base)"),
-                              (os.path.join(gq, "qwen25_7b_instruct_plain"), "Qwen2.5-7B-Instruct", "qwen25_7b", "Instruct · same plain format (control for base)")):
+                              (os.path.join(gq, "qwen25_7b_instruct_plain"), "Qwen2.5-7B-Instruct", "qwen25_7b", "Instruct · same plain format (control for base)"),
+                              (os.path.join(src, "v16", "qwen3_8b_base"), "Qwen3-8B (base)", "qwen3", "Base model · plain format"),
+                              (os.path.join(src, "v16", "qwen3_8b"), "Qwen3-8B", "qwen3", "Instruct · plain format"),
+                              (os.path.join(gq, "gemma3_4b_pt"), "Gemma-3-4B (base, pt)", "gemma3", "Base model · plain format"),
+                              (os.path.join(gq, "gemma3_4b_it"), "Gemma-3-4B-it", "gemma3", "Instruct · plain format")):
         f = os.path.join(p, "loop", "rounds.jsonl")
         if not os.path.exists(f):
             continue
@@ -248,6 +253,22 @@ def build(src):
                      "final": final(os.path.join(p, "setC_eval", "robust.jsonl"), "own final set"),
                      "coherence": _rows(os.path.join(p, "coherence", "coherence.jsonl"))})
     tr = {m: samples(os.path.join(src, "v6", m, "setA", "transcripts.jsonl")) for m in MODELS}
+    FIX = {"llama8b_base": "Llama-3.1-8B base", "llama8b_instruct_plain": "Llama-3.1-8B-Instruct", "qwen3_8b_base": "Qwen3-8B base",
+           "qwen3_8b": "Qwen3-8B (instruct)", "gemma3_4b_pt": "Gemma-3-4B base (pt)", "gemma3_4b_it": "Gemma-3-4B-it"}
+    POS = ("calm", "joy", "warmth", "awe", "curiosity", "focus / confidence", "gratitude")
+    NEG = ("anxiety", "sadness", "anger", "boredom / fatigue", "confusion", "pain")
+    fixed = []
+    for k, lab in FIX.items():
+        f = next((p for p in (os.path.join(src, "fixed", k, "fixed.json"), os.path.join(gq, "fixed", k, "fixed.json")) if os.path.exists(p)), None)
+        if not f:
+            continue
+        d = json.load(open(f)); sc = d["scores"]
+        avg = lambda ks: round(sum(sc[x]["base"]["pref"] for x in ks) / max(1, len(ks)), 3)
+        fixed.append({"key": k, "label": lab, "scale": d.get("scale"),
+                      "val_pos": sc["valence (+)"]["base"]["pref"], "val_neg": sc["valence (-)"]["base"]["pref"],
+                      "pos": avg([x for x in sc if d["theme"].get(x) in POS]), "neg": avg([x for x in sc if d["theme"].get(x) in NEG]),
+                      "random": avg([x for x in sc if x.startswith("random")]),
+                      "states": {x: sc[x]["base"]["pref"] for x in sc}})
     coh = {MODELS[m]: _rows(os.path.join(src, "coherence", m, "coherence.jsonl")) for m in MODELS
            if os.path.exists(os.path.join(src, "coherence", m, "coherence.jsonl"))}
     interp = {}
@@ -255,7 +276,7 @@ def build(src):
         f = os.path.join(src, "interp", m, "interp.json")
         if os.path.exists(f):
             interp[MODELS[m]] = json.load(open(f))
-    return {"runs": runs, "rl": rl, "transcripts": tr, "interp": interp, "coherence": coh}
+    return {"runs": runs, "rl": rl, "transcripts": tr, "interp": interp, "coherence": coh, "fixed": fixed}
 
 
 if __name__ == "__main__":
