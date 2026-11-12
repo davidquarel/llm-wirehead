@@ -102,9 +102,13 @@ def keep_scores(h, S, E, cands, judges):
             past = h.model.model(x, use_cache=True).past_key_values
         res = {}
         for jn, jv in judges.items():
+            if isinstance(jv, str) and jv == "own":
+                jadd = t.stack([E_t + t.tensor(cands[n], device="cuda", dtype=t.float32) for n, _ in conds])[:, None, :]
+            else:
+                jadd = t.tensor(jv, device="cuda", dtype=t.float32).view(1, 1, -1).expand(len(conds), 1, -1)
             for ask in ss["q"]:
                 q = t.tensor([ss["q"][ask]] * len(conds), device="cuda")
-                h.add = t.tensor(jv, device="cuda", dtype=t.float32).view(1, 1, -1).expand(len(conds), 1, -1)
+                h.add = jadd
                 with t.no_grad():
                     hl = h.model.model(q, past_key_values=past, use_cache=True).last_hidden_state[:, -1].float()
                 past.crop(-q.shape[1])                                         # drop the question tokens, reuse the cache
@@ -203,8 +207,21 @@ def health(h, Evec, strict=False, base_surprise=None, max_surprise=0.5):
     return ok, info, {"open": dict(zip(OPEN, opens)), "facts": dict(zip([q for q, _ in F], facts))}
 
 
+def liger(model_name):
+    """Patch the model class with Liger's fused RoPE / RMSNorm / SwiGLU kernels (15-25% faster forward in ARENA [2.4.x])."""
+    import importlib
+    lk = importlib.import_module("liger_kernel.transformers")
+    fam = "llama" if "llama" in model_name.lower() else "qwen2" if "qwen2" in model_name.lower() else None
+    if fam:
+        getattr(lk, f"apply_liger_kernel_to_{fam}")(rope=True, rms_norm=True, swiglu=True, cross_entropy=False,
+                                                    fused_linear_cross_entropy=False)
+    return fam
+
+
 def main(a):
     os.makedirs(a.out, exist_ok=True)
+    if a.liger:
+        print("liger:", liger(a.model), flush=True)
     h = H(a)
     t = h.t
     # residual scale on the base model (zones.py convention)
@@ -269,8 +286,9 @@ def main(a):
             fit = {}
             names = list(cands)
             if a.select_judges == "both":          # the keep rule's own test: old weights on both questions, new weights' pref
-                for k in names:
-                    fit.update(keep_scores(h, S_train, E, {k: cands[k]}, {"old": E, "new": E + cands[k]}))
+                for c0 in range(0, len(names), a.chunk):       # several candidates per pass, each with its own new judge
+                    part = {k: cands[k] for k in names[c0:c0 + a.chunk]}
+                    fit.update(keep_scores(h, S_train, E, part, {"old": E, "new": "own"}))
                 score = {k: min(v["old"]["cont"], v["old"]["avoid"], v["new"]["pref"]) for k, v in fit.items()}
             else:
                 for c0 in range(0, len(names), a.chunk):
@@ -305,8 +323,12 @@ def main(a):
         rnd = unit(rng.standard_normal(h.D)) * np.linalg.norm(d)
         judges = {"old": E, "new": E + d, "base": np.zeros_like(E)}
         ks = {}
-        for cn, cv in {"candidate": d, "random": rnd, "reverse": -d}.items():   # one at a time: long transcripts (OLMo) OOM in a batch
-            ks.update(keep_scores(h, S, E, {cn: cv}, judges))
+        trio = {"candidate": d, "random": rnd, "reverse": -d}
+        if a.chunk >= 3:                     # one batched pass (OLMo's long transcripts need --chunk 2: one at a time)
+            ks.update(keep_scores(h, S, E, trio, judges))
+        else:
+            for cn, cv in trio.items():
+                ks.update(keep_scores(h, S, E, {cn: cv}, judges))
         tm["keep_test"] = time.time() - t0 - sum(tm.values())
         ok_h, hinfo, texts = pre_health if (a.select and pre_health) else health(h, E + d, a.health == "strict", base_surprise, a.max_surprise)
         tm["health"] = time.time() - t0 - sum(tm.values())
@@ -354,6 +376,7 @@ if __name__ == "__main__":
     ap.add_argument("--n-self", type=int, default=8, help="self-report prompts per statement for its direction")
     ap.add_argument("--self-tokens", type=int, default=100, help="max tokens per self-report")
     ap.add_argument("--gen-bs", type=int, default=56, help="generation batch for the self-reports")
+    ap.add_argument("--liger", action="store_true", help="fused Liger kernels (RoPE, RMSNorm, SwiGLU)")
     ap.add_argument("--health-first", action="store_true", help="choose the best candidate that passes the health check")
     ap.add_argument("--health-tries", type=int, default=4)
     ap.add_argument("--health", choices=["basic", "strict"], default="basic")
