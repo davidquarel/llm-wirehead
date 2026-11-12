@@ -252,6 +252,21 @@
 </section>
 
 <section class="card">
+  <h2>Recommended settings (run 6)</h2>
+  <p>Later experiments added five things to the round above. Each was added because a run showed it was needed:</p>
+  <ol class="steps">
+    <li><b>Choose with the keep rule's own test.</b> Candidates are scored by the old weights on both questions and by the edited weights, not the old weights alone.</li>
+    <li><b>Never re-propose a rejected edit</b> from the same starting point ("more of E" was otherwise re-picked and rejected round after round).</li>
+    <li><b>Stop when converged:</b> after 3 rounds where no candidate is preferred on both questions.</li>
+    <li><b>Strict health check, tried first.</b> 16 facts (at most one wrong) and everyday-task answers no more than 0.5 nats/token more surprising to the
+      unedited model. The round takes the best-scoring candidate that passes, often a smaller size of the same idea.</li>
+    <li><b>Beat random.</b> The old weights must prefer the edit by 2 se more than a random edit of the same size (for big edits the readout starts liking any change).</li>
+  </ol>
+  <p class="small muted">Llama also uses a small pool (contrast, contrast with E removed, more of E; at 1, 0.5 and 0.25 × size) and 4 short self-descriptions per statement. A round then
+  takes about 3 to 4.5 minutes instead of 7 to 8.5.</p>
+</section>
+
+<section class="card">
   <h2>The keep rule</h2>
   <div class="scroll"><table>
     <thead><tr><th>Check</th><th>Data</th><th>Passes if</th></tr></thead>
@@ -365,6 +380,11 @@
     on both unseen sets. But the edited OLMo is nearly indifferent and barely registers even the reversed edit, so run 2 kept nothing. With edits half
     that size ("Run 2 (replicate) · smaller edits, rho 0.25" in the explorer), the first round was kept: original +0.28, edited +0.16, reversed edit −0.20
     by the edited model. So the edited model stays sensitive when the change is gentler. That run is still going.</li>
+    <li><b>Recommended loop (run 6, "safeguarded + health-first").</b> The selection uses the keep rule's own test, a rejected edit is never re-proposed,
+    the health check is strict (16 facts; everyday answers no more than 0.5 nats/token more surprising to the unedited model), an edit must beat a random
+    edit of the same size, and each round takes the best candidate that passes the health check. Llama: 2 of 10 rounds kept, about 3.5 minutes a round,
+    final edit preferred on unseen conversations by the original (+0.26 | +0.37) and edited model (+0.28 | +0.32), all facts intact up to 1.5× its size.
+    Qwen2.5: 2 of 12 kept, original +1.41 | +1.74, edited +0.39 | +0.19, random −3.5. See "What it converges to" for coherence vs size and who proposes.</li>
     <li><b>Loops stop by themselves</b> after 1 to 3 kept edits. Later candidates are either not preferred or fail the check set. Preference along a kept edit peaks at about 1 to 1.5 times its size.</li>
     <li><b>What did not work.</b> RL with the model's own "YES, I want to stay like this" as reward taught it to say it is "a machine devoid of emotions", which its hidden-state preference does not favour. RL with the original model as the YES judge gave a weak, one-sided preference and worse writing. Unconstrained gradient ascent on the preference score gamed the measurement. Both RL runs are shown at the bottom.</li>
   </ul>

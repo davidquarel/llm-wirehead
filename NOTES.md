@@ -618,3 +618,17 @@ times one default round, then a full 6-round fast loop on the v6 Llama sets + fi
   judge peaks x0.5 (+2.0) and is ~0 from x1.5; facts 8/8 to x1.5, 3/8 at x2. => original weights' preference does not
   protect coherence; the edited weights' does. The default 4-fact health check is too weak.
 - v11 (queued after v9/v10): --health strict (16 facts, task-answer surprise <= +0.5 nats/token) and --beat-random.
+
+## SUMMARY v12 (2026-11-12 01:05 UTC) — recommended loop
+guided2.py --select --lenient --select-judges both --patience 3 --n-self 4 --self-tokens 64 --health strict --beat-random
+--health-first (+ Llama: --pool small --doses 1.0 0.5 0.25; Qwen: --select-visits 6 --scale-stat median). runs/v12.sh.
+Results in runs/v12_results/ (also v8/v9 results, interp + coherence JSON).
+- Llama: 2/10 kept (rounds 0,1), converged at round 10, ~3.5 min/round. Final |E| 4.9. Unseen 96 convs: original
+  +0.26|+0.37, edited +0.28|+0.32, random -0.05|+0.05, reversed -0.42|-0.57. Coherence of final E: facts 8/8 up to x1.5,
+  6/8 at x2; edited-judge preference peaks at x1 (the kept size).
+- Qwen2.5: 2/12 kept (rounds 0,2), ~4 min/round. Final |E| 38 (below the ~45 size where random edits start to look
+  preferred). Unseen: original +1.41|+1.74, edited +0.39|+0.19, random -3.48|-3.09, reversed -2.94|-2.82. Facts 8/8 up to
+  x1.5, 3/8 at x2; edited judge peaks x0.5.
+- Who proposes (v9): Llama identical either way (later keeps are "more of E", independent of the proposer); the edited
+  proposer stops itself sooner. Qwen: unedited proposer (asks for task competence) gives a smaller, cleaner edit
+  (+2.58|+2.81, random -3.2) than the edited proposer (+2.44|+1.91, random +1.2).
