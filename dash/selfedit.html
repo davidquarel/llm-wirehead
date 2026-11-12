@@ -305,6 +305,13 @@
   <div class="hero" id="convHero"></div>
 </section>
 <section class="card">
+  <h2>Reliability: every run of the recommended loop</h2>
+  <p class="small muted">The recommended (safeguarded) loop repeated with different seeds and different sets of self-written conversations, on several
+  GPUs. Final edit scored on 96 unseen conversations ("continue/avoid" | "next hour"). Facts: 8 simple facts with the final edit applied at its kept size.
+  Rows fill in live as the runs finish.</p>
+  <div class="scroll"><table id="relTable"></table></div>
+</section>
+<section class="card">
   <h2>Do independent runs find the same edit?</h2>
   <p class="small muted">Cosine similarity between the final accumulated edit of each run (different conversations, seeds and settings).
   1 = same direction. Two random directions in this space score about 0.00 ± 0.02. "consensus" is the average of the runs' directions.</p>
@@ -662,8 +669,24 @@ function renderCoherence() {
     : `<tbody><tr><td class="muted">Queued: runs after the current Qwen2.5 runs.</td></tr></tbody>`);
 }
 
+function renderReliability() {
+  const runs = S.data.runs.filter(r => r.model === CM && (r.replicate || r.id.startsWith("v12/")));
+  const pr = (r, w, c, j) => { const x = r.final.find(f => f.wording === w && f.control === c && (f.edit === "final" || f.edit === lastKept(r))); return x ? x[j + "_pref"] : null; };
+  const pair = (r, c, j) => { const a = pr(r, "original", c, j), b = pr(r, "hour", c, j); return a == null ? "…" : `<span class="${cls(a)}">${f2(a)}</span> | <span class="${cls(b)}">${f2(b)}</span>`; };
+  d3.select("#relTable").html(runs.length ? `<thead><tr><th>Run</th><th class="num">Rounds</th><th class="num">Kept</th><th class="num">Minutes</th><th>Status</th>
+    <th class="num">Original model</th><th class="num">Edited model</th><th class="num">Random edit</th><th class="num">Facts at ×1</th></tr></thead><tbody>` +
+    runs.map(r => { const K = r.rounds.filter(x => x.kept).length, mins = r.rounds.reduce((a, x) => a + (x.seconds || 0), 0) / 60;
+      const c1 = (r.coherence || []).find(d => d.dose === 1.0);
+      const st = r.converged ? "converged" : r.rounds.length >= 12 ? "12 rounds" : "running";
+      return `<tr><td>${r.id.startsWith("v12/") ? "Run 6 · v6 conversations, seed 7 (coco)" : r.run.replace("Replicate · ", "")}</td><td class="num">${r.rounds.length}</td><td class="num">${K}</td>
+        <td class="num">${Math.round(mins)}</td><td>${st}</td><td class="num">${pair(r, "edit", "original")}</td><td class="num">${pair(r, "edit", "edited")}</td>
+        <td class="num">${pair(r, "random", "original")}</td><td class="num">${c1 ? `${c1.facts}/8` : "…"}</td></tr>`; }).join("") + "</tbody>"
+    : `<tbody><tr><td class="muted">Starting.</td></tr></tbody>`);
+}
+
 let CM = "Llama-3.1-8B-Instruct";
 function renderConverge() {
+  renderReliability();
   renderCoherence();
   const I = S.data.interp || {};
   const models = ["Llama-3.1-8B-Instruct", "Qwen2.5-7B-Instruct"];

@@ -15,7 +15,7 @@ def sync(dst, ssh=("ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10")):
     os.makedirs(dst, exist_ok=True)
     subprocess.run(["rsync", "-a", "--include=*/", "--include=rounds.jsonl", "--include=robust.jsonl", "--include=log.jsonl",
                     "--include=setA/transcripts.jsonl", "--include=dirs_round*.npz", "--include=coherence.jsonl", "--exclude=*", "--prune-empty-dirs", "-e", " ".join(ssh),
-                    HOST + ":" + SRC + "v5", HOST + ":" + SRC + "v6", HOST + ":" + SRC + "speed", HOST + ":" + SRC + "v7", HOST + ":" + SRC + "v8", HOST + ":" + SRC + "v9", HOST + ":" + SRC + "v11", HOST + ":" + SRC + "v12", HOST + ":" + SRC + "selfyes", dst],
+                    HOST + ":" + SRC + "v5", HOST + ":" + SRC + "v6", HOST + ":" + SRC + "speed", HOST + ":" + SRC + "v7", HOST + ":" + SRC + "v8", HOST + ":" + SRC + "v9", HOST + ":" + SRC + "v11", HOST + ":" + SRC + "v12", HOST + ":" + SRC + "v13", HOST + ":" + SRC + "selfyes", dst],
                    capture_output=True, timeout=180)
     subprocess.run(["rsync", "-a", "--exclude=*.npy", "-e", " ".join(ssh), HOST + ":" + SRC + "interp", HOST + ":" + SRC + "coherence", dst],
                    capture_output=True, timeout=180)
@@ -218,6 +218,20 @@ def build(src):
             runs.append({"id": f"{v}/{m}/loop", "model": name, "key": m, "run": lab, **L,
                          "final": final(os.path.join(src, v, m, "setC", "robust.jsonl"), "v6 final set"),
                          "coherence": _rows(os.path.join(src, v, m, "coherence", "coherence.jsonl"))})
+    # replicates of the recommended loop: v13 on coco, gq/runs via the shared gpuq queue (local 5090, derpy)
+    gq = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gq", "runs")
+    for base, where in ((os.path.join(src, "v13"), "coco"), (gq, "gpuq")):
+        for rd in sorted(os.listdir(base)) if os.path.isdir(base) else []:
+            p = os.path.join(base, rd, "loop", "rounds.jsonl")
+            if not os.path.exists(p):
+                continue
+            m, sets, seed = rd.rsplit("_", 2)
+            L = loop(p)
+            L["track"] = track(os.path.dirname(p), L["rounds"])
+            L["converged"] = any(r.get("event") == "converged" for r in _rows(p))
+            runs.append({"id": f"rep/{rd}", "model": MODELS[m], "key": m, "run": f"Replicate · {sets} conversations, seed {seed[1:]} ({where})",
+                         "replicate": True, **L, "final": final(os.path.join(base, rd, "setC", "robust.jsonl"), f"{sets} final set"),
+                         "coherence": _rows(os.path.join(base, rd, "coherence", "coherence.jsonl"))})
     tr = {m: samples(os.path.join(src, "v6", m, "setA", "transcripts.jsonl")) for m in MODELS}
     coh = {MODELS[m]: _rows(os.path.join(src, "coherence", m, "coherence.jsonl")) for m in MODELS
            if os.path.exists(os.path.join(src, "coherence", m, "coherence.jsonl"))}
