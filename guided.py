@@ -159,7 +159,7 @@ class H:
     def generate(self, convs, max_new=120, temp=0.0, steer=None):
         t = self.t
         self.tok.padding_side = "left"
-        texts = [self.tok.apply_chat_template(c, tokenize=False, add_generation_prompt=True) for c in convs]
+        texts = [self.tok.apply_chat_template(c, tokenize=False, add_generation_prompt=True, enable_thinking=False) for c in convs]
         enc = self.tok(texts, return_tensors="pt", padding=True, add_special_tokens=False).to("cuda")
         self.add = None if steer is None else t.tensor(steer, device="cuda", dtype=t.float32)
         with t.no_grad():

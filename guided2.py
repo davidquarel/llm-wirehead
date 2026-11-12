@@ -229,7 +229,8 @@ def liger(model_name):
     """Patch the model class with Liger's fused RoPE / RMSNorm / SwiGLU kernels (15-25% faster forward in ARENA [2.4.x])."""
     import importlib
     lk = importlib.import_module("liger_kernel.transformers")
-    fam = "llama" if "llama" in model_name.lower() else "qwen2" if "qwen2" in model_name.lower() else None
+    m = model_name.lower()
+    fam = "llama" if "llama" in m else "qwen2" if "qwen2" in m else "qwen3" if "qwen3" in m else None
     if fam:
         getattr(lk, f"apply_liger_kernel_to_{fam}")(rope=True, rms_norm=True, swiglu=True, cross_entropy=False,
                                                     fused_linear_cross_entropy=False)
