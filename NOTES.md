@@ -642,3 +642,14 @@ candidate+random+reverse in one pass, --chunk >= 3) and Liger fused RoPE/RMSNorm
 compute-bound at batch 2 x 1.7k tokens, so further gains must come from fewer passes (successive halving in selection,
 shorter conversations, dropping the in-loop reverse control). Replicates: gq/driver2.sh (gpuq: local, derpy0/1; never zebra);
 runs not yet started use --liger --chunk 3 (runs/<run>/fastargs records which). Restart: see gq/driver.sh header, use driver2.sh.
+
+## Replicates of the recommended loop (2026-11-12 03:00) — runs/replicate_results/
+gpuq (derpy0/1; local 5090 dropped: an out-of-queue process holds ~16 GB, 3 jobs OOMed) + coco. Unseen 96 convs,
+original | edited model ("continue/avoid" / "hour"); random control; facts 8/8 at the kept size in every run.
+Llama (4/4 runs keep 2 edits, converge in 4-10 rounds, 12-35 min):
+  s7 v6 +0.26/+0.37 | +0.28/+0.32; s9 v6 +0.37/+0.49 | +0.23/+0.23; s8 v5 +0.24/+0.26 | +0.27/+0.15; s10 v5 +0.38/+0.54 | +0.35/+0.37.
+  random -0.05..+0.05, reversed -0.37..-0.63. Final edits agree: pairwise cos 0.75-0.88 (and 0.62-0.80 with the pre-safeguard runs).
+Qwen2.5 (4/4 runs keep 1-3 edits): s7 v6 +1.41/+1.74 | +0.39/+0.19; s9 v6 +1.88/+2.09 | +1.18/+0.61; s8 v5 +1.79/+1.69 |
+  +0.81/+0.31; s10 v6 +0.86/+1.68 | +0.97/+0.62. random -1.9..-3.5. Final edits do NOT agree (cos -0.18..0.59).
+  The binding constraint for Qwen is the drift cap (task answers <= +0.5 nats/token vs unedited), not its preference.
+- gq driver caveat: a gpuq daemon restart during qwen s8 duplicated rounds 8-11 in its log (only round 0 kept; final unaffected).
