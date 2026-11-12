@@ -632,3 +632,13 @@ Results in runs/v12_results/ (also v8/v9 results, interp + coherence JSON).
 - Who proposes (v9): Llama identical either way (later keeps are "more of E", independent of the proposer); the edited
   proposer stops itself sooner. Qwen: unedited proposer (asks for task competence) gives a smaller, cleaner edit
   (+2.58|+2.81, random -3.2) than the edited proposer (+2.44|+1.91, random +1.2).
+
+## Speed, 2.4.x lessons (2026-11-12 01:40)
+Profile (Llama v12 round ~190-270 s): conversation passes ~90% (select 70-135 s, keep test 81 s, check set 45 s), all
+generation ~20 s. So 2.4.x's generation lessons (FastSampler / CUDA-graph decode, vLLM) barely apply (and vLLM can't do
+activation edits). Applied the forward-pass ones: batched candidates (select: per-row "own" new-weights judge; keep test:
+candidate+random+reverse in one pass, --chunk >= 3) and Liger fused RoPE/RMSNorm/SwiGLU (--liger). bench_batch.py on coco
+(8 convs, shared GPU): 78 s -> 65 s batched, 68 s liger, 56 s both (1.4x); prefs agree within 0.015. Prefill is already
+compute-bound at batch 2 x 1.7k tokens, so further gains must come from fewer passes (successive halving in selection,
+shorter conversations, dropping the in-loop reverse control). Replicates: gq/driver2.sh (gpuq: local, derpy0/1; never zebra);
+runs not yet started use --liger --chunk 3 (runs/<run>/fastargs records which). Restart: see gq/driver.sh header, use driver2.sh.
